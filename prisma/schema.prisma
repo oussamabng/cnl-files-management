@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model File {
+  id       String    @id @default(cuid())
+  name     String
+  path     String
+  folderId String? // Files can belong to a folder
+  folder   Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  keywords Keyword[]
+
+  dateTexte   DateTime?
+  commentaire String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, folderId]) // Unique name within the same folder
+  @@index([name])
+  @@index([folderId])
+}
+
+model Folder {
+  id       String   @id @default(cuid())
+  name     String
+  parentId String? // For hierarchical structure
+  parent   Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Folder[] @relation("FolderHierarchy")
+  files    File[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, parentId]) // Unique name within the same parent folder
+  @@index([name])
+  @@index([parentId])
+}
+
+model Keyword {
+  id    String @id @default(cuid())
+  name  String
+  files File[]
+
+  @@unique([name])
+  @@index([name])
+}
