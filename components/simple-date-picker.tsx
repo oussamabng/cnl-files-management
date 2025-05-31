@@ -3,23 +3,27 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, X } from "lucide-react";
+import { Calendar, X, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { DateInput } from "@/components/date-input";
-import { Separator } from "@/components/ui/separator";
+import { ImprovedDateInput } from "./improved-date-input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface SimpleDatePickerProps {
   selected?: Date;
   onSelect?: (date: Date | undefined) => void;
   placeholder?: string;
   className?: string;
+  buttonClassName?: string;
 }
 
 export function SimpleDatePicker({
@@ -27,28 +31,48 @@ export function SimpleDatePicker({
   onSelect,
   placeholder = "Sélectionner une date",
   className,
+  buttonClassName,
 }: SimpleDatePickerProps) {
   const [open, setOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date | undefined>(selected);
+  const [activeTab, setActiveTab] = useState("manual");
+  const isSmallScreen = useMediaQuery("(max-width: 640px)");
 
   useEffect(() => {
     setTempDate(selected);
   }, [selected]);
+
+  useEffect(() => {
+    if (isSmallScreen && activeTab === "calendar") {
+      setActiveTab("manual");
+    }
+  }, [isSmallScreen, activeTab]);
 
   const clearDate = () => {
     onSelect?.(undefined);
     setOpen(false);
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    setTempDate(date);
+    onSelect?.(date);
+  };
+
+  const handleConfirm = () => {
+    onSelect?.(tempDate);
+    setOpen(false);
+  };
+
   return (
     <div className={cn("space-y-2", className)}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
           <Button
             variant="outline"
             className={cn(
               "w-full justify-start text-left font-normal",
-              !selected && "text-muted-foreground"
+              !selected && "text-muted-foreground",
+              buttonClassName
             )}
           >
             <Calendar className="mr-2 h-4 w-4" />
@@ -56,60 +80,76 @@ export function SimpleDatePicker({
               ? format(selected, "dd MMMM yyyy", { locale: fr })
               : placeholder}
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-3 space-y-3">
-            {/* Manual Date Input */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Saisie manuelle :</p>
-              <DateInput
-                value={tempDate}
-                onChange={(date) => {
-                  setTempDate(date);
-                  onSelect?.(date);
-                  if (date) {
-                    setOpen(false);
-                  }
-                }}
-              />
-            </div>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Sélectionner une date</DialogTitle>
+          </DialogHeader>
 
-            <Separator />
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="manual" className="flex items-center gap-2">
+                <Edit3 className="h-4 w-4" />
+                Saisie
+              </TabsTrigger>
+              <TabsTrigger
+                value="calendar"
+                disabled={isSmallScreen}
+                className="flex items-center gap-2"
+              >
+                <Calendar className="h-4 w-4" />
+                Calendrier
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Calendar Selection */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Sélection calendrier :</p>
-              <CalendarComponent
-                mode="single"
-                selected={tempDate}
-                onSelect={(date) => {
-                  setTempDate(date);
-                  onSelect?.(date);
-                  if (date) {
-                    setOpen(false);
-                  }
-                }}
-                initialFocus
-                locale={fr}
-              />
+            <TabsContent value="manual" className="py-4 space-y-3">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  Saisie manuelle de la date :
+                </p>
+                <ImprovedDateInput
+                  value={tempDate}
+                  onChange={handleDateSelect}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="calendar" className="py-4 space-y-3">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  Sélection par calendrier :
+                </p>
+                <div className="flex justify-center overflow-hidden">
+                  <CalendarComponent
+                    mode="single"
+                    selected={tempDate}
+                    onSelect={handleDateSelect}
+                    initialFocus
+                    locale={fr}
+                    className="border rounded shadow-sm"
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-between mt-4">
+            {selected && (
+              <Button variant="outline" size="sm" onClick={clearDate}>
+                <X className="mr-2 h-4 w-4" />
+                Effacer
+              </Button>
+            )}
+            <div className={cn("flex justify-end", !selected && "w-full")}>
+              <Button onClick={handleConfirm}>Confirmer</Button>
             </div>
           </div>
-
-          {selected && (
-            <div className="p-3 border-t">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearDate}
-                className="w-full"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Effacer la date
-              </Button>
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

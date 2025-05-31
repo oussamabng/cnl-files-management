@@ -270,36 +270,6 @@ export function FileUploadDialog({
             </div>
           )}
 
-          {/* Additional Fields */}
-          <div className="flex flex-col gap-4">
-            {/* Date Texte */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Date document</Label>
-              <SimpleDatePicker
-                selected={dateTexte}
-                onSelect={setDateTexte}
-                placeholder="Sélectionner une date"
-              />
-            </div>
-
-            {/* Commentaire */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Commentaire</Label>
-              <Textarea
-                value={commentaire}
-                onChange={(e) => setCommentaire(e.target.value)}
-                placeholder="Ajouter un commentaire..."
-                className="min-h-[80px] max-h-[200px] resize-none overflow-y-auto break-words"
-                style={{
-                  wordWrap: "break-word",
-                  overflowWrap: "break-word",
-                  whiteSpace: "pre-wrap",
-                }}
-                disabled={isLoading}
-              />
-            </div>
-          </div>
-
           {/* Keywords Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">
@@ -346,6 +316,40 @@ export function FileUploadDialog({
                 étiquettes.
               </p>
             )}
+          </div>
+
+          {/* Additional Fields */}
+          <div className="flex flex-col gap-4">
+            {/* Date Texte */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Date document (Optionnelle)
+              </Label>
+              <SimpleDatePicker
+                selected={dateTexte}
+                onSelect={setDateTexte}
+                placeholder="Sélectionner une date"
+              />
+            </div>
+
+            {/* Commentaire */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Commentaire (Optionnelle)
+              </Label>
+              <Textarea
+                value={commentaire}
+                onChange={(e) => setCommentaire(e.target.value)}
+                placeholder="Ajouter un commentaire..."
+                className="min-h-[80px] max-h-[200px] resize-none overflow-y-auto break-words"
+                style={{
+                  wordWrap: "break-word",
+                  overflowWrap: "break-word",
+                  whiteSpace: "pre-wrap",
+                }}
+                disabled={isLoading}
+              />
+            </div>
           </div>
 
           {error && (
