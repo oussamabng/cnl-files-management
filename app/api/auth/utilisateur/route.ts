@@ -5,10 +5,11 @@ export async function POST() {
   try {
     (await cookies()).set("auth_token", "utilisateur", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 365, // 1 year
+      maxAge: 60 * 60 * 24 * 365, // 1 year,
+      domain: "cnl.local",
     });
 
     return NextResponse.json({ success: true });

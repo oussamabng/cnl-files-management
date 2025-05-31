@@ -22,10 +22,11 @@ export async function POST(req: Request) {
     }
     (await cookies()).set("auth_token", "admin", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 365, // ✅ 1 year in seconds
+      maxAge: 60 * 60 * 24 * 365, // 1 year,
+      domain: "cnl.local",
     });
 
     return NextResponse.json({ success: true });
