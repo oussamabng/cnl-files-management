@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 365, // 1 year,
-      domain: "cnl.local",
+      //domain: "cnl.local",
     });
 
     return NextResponse.json({ success: true });
