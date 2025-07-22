@@ -8,6 +8,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  firstName String?
+  lastName  String?
+  password  String
+  userRoles UserRole[]
+}
+
 model File {
   id       String    @id @default(cuid())
   name     String
@@ -48,4 +57,36 @@ model Keyword {
 
   @@unique([name])
   @@index([name])
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  key             String           @unique
+  description     String
+  rolePermissions RolePermission[]
+}
+
+model Role {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId Int
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
 }

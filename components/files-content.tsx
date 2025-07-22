@@ -127,20 +127,6 @@ export function FilesContent() {
   const [userRole, setUserRole] = useState<string>("");
   const [folderMap, setFolderMap] = useState<Map<string, string>>(new Map());
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      try {
-        const response = await fetch("/api/auth/status");
-        if (response.ok) {
-          const data = await response.json();
-          setUserRole(data.role);
-        }
-      } catch (err) {
-        console.error("Échec de la récupération du rôle utilisateur:", err);
-      }
-    };
-    fetchUserRole();
-  }, []);
 
   // Fetch folder hierarchy to build path map
   const fetchFolderPaths = async () => {

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { deleteFile } from "@/lib/file-utils";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 
 // PUT update file - Allow both admin and utilisateur
 export async function PUT(
@@ -10,11 +12,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (!role) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FILES_MANAGE);
+    if (error) return error;
 
     // Both admin and utilisateur can update files
     const { name, keywordIds, folderId, dateTexte, commentaire } =
@@ -97,11 +96,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (!role) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FILES_MANAGE);
+    if (error) return error;
 
     // Both admin and utilisateur can delete files
     const { id } = params;

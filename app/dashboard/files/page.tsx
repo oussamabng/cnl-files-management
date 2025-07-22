@@ -10,22 +10,24 @@ import {
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
 import { FilesContent } from "@/components/files-content";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { checkPermission } from "@/lib/auth/checkPermission";
 
 export default async function FilesPage() {
-  const role = (await cookies()).get("auth_token")?.value;
+  const user = checkPermission(PERMISSIONS.FILES_VIEW);
 
-  if (!role) {
+  if (!user) {
     redirect("/login");
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar role={role} />
+      {/* <AppSidebar role={role} /> */}
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <Breadcrumb>
             <BreadcrumbList>
-              {role === "admin" && (
+              {/* {role === "admin" && (
                 <>
                   <BreadcrumbItem>
                     <BreadcrumbLink href="/dashboard">
@@ -41,7 +43,7 @@ export default async function FilesPage() {
                 <BreadcrumbItem>
                   <BreadcrumbPage>Gestion des fichiers</BreadcrumbPage>
                 </BreadcrumbItem>
-              )}
+              )} */}
             </BreadcrumbList>
           </Breadcrumb>
         </header>

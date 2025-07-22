@@ -27,12 +27,19 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 
 interface AppSidebarProps {
-  role: string;
+  permissions: string[];
 }
 
-export function AppSidebar({ role }: AppSidebarProps) {
+type MenuItem = {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+export function AppSidebar({ permissions }: AppSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -42,9 +49,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (response.ok) {
@@ -60,49 +65,44 @@ export function AppSidebar({ role }: AppSidebarProps) {
     }
   };
 
-  const menuItems = [
-    ...(role === "admin"
-      ? [
-          {
-            title: "Tableau de bord",
-            url: "/dashboard",
-            icon: LayoutDashboard,
-          },
-        ]
-      : []),
-    ...(role === "admin"
-      ? [
-          {
-            title: "Gestion des dossiers",
-            url: "/dashboard/folders",
-            icon: Folder,
-          },
-          {
-            title: "Gestion des filtres",
-            url: "/dashboard/filters",
-            icon: Filter,
-          },
-        ]
-      : []),
-    {
+  const rawMenuItems: (false | MenuItem)[] = [
+    permissions.includes(PERMISSIONS.DASHBOARD_VIEW) && {
+      title: "Tableau de bord",
+      url: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && {
+      title: "Gestion des dossiers",
+      url: "/dashboard/folders",
+      icon: Folder,
+    },
+    permissions.includes(PERMISSIONS.FILTERS_MANAGE) && {
+      title: "Gestion des filtres",
+      url: "/dashboard/filters",
+      icon: Filter,
+    },
+    permissions.includes(PERMISSIONS.FILES_VIEW) && {
       title: "Gestion des fichiers",
       url: "/dashboard/files",
       icon: FileText,
     },
   ];
 
+  const menuItems: MenuItem[] = rawMenuItems.filter((item): item is MenuItem =>
+    Boolean(item)
+  );
+
   const isActive = (url: string) => {
-    if (url === "/dashboard") {
-      return pathname === "/dashboard";
-    }
-    if (url === "/dashboard/files") {
-      return (
-        pathname.startsWith(url) ||
-        (role === "utilisateur" && pathname === "/dashboard")
-      );
-    }
-    return pathname.startsWith(url);
+    return pathname === url || pathname.startsWith(url);
   };
+
+const getPanelLabel = () => {
+  if (permissions.includes(PERMISSIONS.SUPER_ADMIN)) return "Panneau SuperAdmin";
+  if (permissions.includes(PERMISSIONS.DASHBOARD_VIEW)) return "Panneau Admin";
+  return "Panneau utilisateur";
+};
+
+  const isLoggedIn = permissions.length > 0;
 
   return (
     <Sidebar>
@@ -112,9 +112,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
             <User className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-sm font-medium">
-              {role === "admin" ? "Panneau Admin" : "Panneau utilisateur"}
-            </p>
+            <p className="text-sm font-medium">{getPanelLabel()}</p>
           </div>
         </div>
       </SidebarHeader>
@@ -125,7 +123,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
@@ -140,7 +138,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
-        {role === "utilisateur" ? (
+        {!isLoggedIn ? (
           <Button variant="outline" className="w-full" asChild>
             <Link href="/login">
               <User className="h-4 w-4 mr-2" />

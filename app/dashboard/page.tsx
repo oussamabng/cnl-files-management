@@ -1,6 +1,3 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
@@ -9,22 +6,18 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { DashboardStats } from "@/components/dashboard-stats";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { redirect } from "next/navigation";
+import { checkPermission } from "@/lib/auth/checkPermission";
 
 export default async function DashboardPage() {
-  const role = (await cookies()).get("auth_token")?.value;
-
-  if (!role) {
+  const user = await checkPermission(PERMISSIONS.DASHBOARD_VIEW);
+  if (!user) {
     redirect("/login");
-  }
-
-  // Rediriger les utilisateurs vers la page des fichiers car le dashboard est réservé aux admins
-  if (role !== "admin") {
-    redirect("/dashboard/files");
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar role={role} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <Breadcrumb>

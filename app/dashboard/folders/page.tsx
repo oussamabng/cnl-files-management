@@ -10,21 +10,19 @@ import {
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
 import { FoldersContent } from "@/components/folders-content";
+import { checkPermission } from "@/lib/auth/checkPermission";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 
 export default async function FoldersPage() {
-  const role = (await cookies()).get("auth_token")?.value;
+  const user = checkPermission(PERMISSIONS.FOLDERS_VIEW);
 
-  if (!role) {
+  if (!user) {
     redirect("/login");
-  }
-
-  if (role !== "admin") {
-    redirect("/dashboard/files");
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar role={role} />
+      {/* <AppSidebar role={role} /> */}
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <Breadcrumb>
