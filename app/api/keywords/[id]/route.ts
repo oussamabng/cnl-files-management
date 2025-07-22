@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 
 // PUT update keyword - Admin only
 export async function PUT(
@@ -9,14 +11,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_MANAGE);
+    if (error) return error;
 
     const { name } = await req.json();
     const { id } = params;
@@ -70,14 +66,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_MANAGE);
+    if (error) return error;
 
     const { id } = params;
 

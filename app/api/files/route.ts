@@ -27,7 +27,7 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
 // GET files with search and filter - Allow both admin and utilisateur
 export async function GET(req: Request) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.DASHBOARD_VIEW);
+    const { error } = await requireApiPermission(PERMISSIONS.FILES_VIEW);
     if (error) return error;
 
     // Both admin and utilisateur can read files

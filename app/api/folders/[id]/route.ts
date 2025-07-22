@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 
 // GET single folder with details
 export async function GET(
@@ -9,11 +10,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (!role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
+    if (error) return error;
 
     const { id } = params;
 
@@ -81,14 +79,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_MANAGE);
+    if (error) return error;
 
     const { name, parentId } = await req.json();
     const { id } = params;
@@ -164,14 +156,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_MANAGE);
+    if (error) return error;
 
     const { id } = params;
 

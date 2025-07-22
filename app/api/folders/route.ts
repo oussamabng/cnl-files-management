@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 
 // Helper function to get all descendant folder IDs
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
@@ -23,11 +25,8 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
 // GET all folders with hierarchy
 export async function GET(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (!role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
+    if (error) return error;
 
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get("parentId") || null;
@@ -152,14 +151,8 @@ export async function GET(req: Request) {
 // POST create new folder - Admin only
 export async function POST(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_MANAGE);
+    if (error) return error;
 
     const { name, parentId } = await req.json();
 

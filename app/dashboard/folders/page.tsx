@@ -12,14 +12,16 @@ import {
 import { FoldersContent } from "@/components/folders-content";
 import { checkPermission } from "@/lib/auth/checkPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { getUserPermissions } from '../../../lib/auth/getUserPermissions';
 
 export default async function FoldersPage() {
-  const user = checkPermission(PERMISSIONS.FOLDERS_VIEW);
+  const user = await checkPermission(PERMISSIONS.FOLDERS_VIEW);
 
   if (!user) {
     redirect("/login");
   }
-
+  const permissions = getUserPermissions(user);
+  
   return (
     <SidebarProvider>
       {/* <AppSidebar role={role} /> */}
@@ -40,7 +42,7 @@ export default async function FoldersPage() {
         </header>
 
         <div className="flex flex-1 flex-col gap-4 p-4">
-          <FoldersContent />
+          <FoldersContent permissions={permissions}  />
         </div>
       </SidebarInset>
     </SidebarProvider>

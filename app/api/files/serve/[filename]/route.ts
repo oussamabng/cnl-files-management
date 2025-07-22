@@ -11,7 +11,10 @@ export async function GET(
   { params }: { params: { filename: string } }
 ) {
   try {
+
     const { error } = await requireApiPermission(PERMISSIONS.FILES_MANAGE);
+    console.log(error);
+
     if (error) return error;
 
     // Both admin and utilisateur can access files

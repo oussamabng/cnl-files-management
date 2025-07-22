@@ -2,15 +2,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 
 // GET all keywords - Allow both admin and utilisateur to read
 export async function GET() {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (!role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
+    if (error) return error;
 
     // Both admin and utilisateur can read keywords for filtering and file operations
     const keywords = await prisma.keyword.findMany({
@@ -39,14 +38,8 @@ export async function GET() {
 // POST create new keyword - Admin only
 export async function POST(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_MANAGE);
+    if (error) return error;
 
     const { name } = await req.json();
 

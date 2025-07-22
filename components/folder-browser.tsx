@@ -36,6 +36,7 @@ import {
 import { FolderForm } from "@/components/folder-form";
 import { DeleteFolderDialog } from "@/components/delete-folder-dialog";
 import { Loading } from "@/components/ui/loading";
+import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 
 interface FolderData {
   id: string;
@@ -49,7 +50,7 @@ interface FolderData {
 }
 
 interface FolderBrowserProps {
-  role: string;
+  permissions: PermissionValue[];
   currentFolderId: string | null;
   onFolderChange: (folderId: string | null) => void;
   onFolderSelect?: (folderId: string | null) => void; // For folder selection in upload
@@ -57,7 +58,7 @@ interface FolderBrowserProps {
 }
 
 export function FolderBrowser({
-  role,
+  permissions,
   currentFolderId,
   onFolderChange,
   onFolderSelect,
@@ -157,7 +158,7 @@ export function FolderBrowser({
                 Naviguez dans votre structure de dossiers
               </CardDescription>
             </div>
-            {role === "admin" && (
+            {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && (
               <Button disabled>
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Nouveau dossier
@@ -186,7 +187,7 @@ export function FolderBrowser({
                 : "Naviguez dans votre structure de dossiers"}
             </CardDescription>
           </div>
-          {role === "admin" && !selectionMode && (
+          {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && !selectionMode && (
             <Button onClick={() => setShowCreateForm(true)}>
               <FolderPlus className="mr-2 h-4 w-4" />
               Nouveau dossier
@@ -304,7 +305,7 @@ export function FolderBrowser({
                   </div>
                 </div>
 
-                {role === "admin" && !selectionMode && (
+                {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && !selectionMode && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -348,7 +349,7 @@ export function FolderBrowser({
           <div className="text-center py-8 text-muted-foreground">
             <Folder className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Aucun dossier trouvé à cet emplacement</p>
-            {role === "admin" && (
+            {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && (
               <p className="text-sm mt-2">
                 Créez votre premier dossier pour commencer
               </p>

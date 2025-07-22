@@ -14,7 +14,7 @@ import { checkPermission } from "@/lib/auth/checkPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
 export default async function FiltersPage() {
-  const user = checkPermission(PERMISSIONS.FILES_VIEW);
+  const user = checkPermission(PERMISSIONS.FILTERS_VIEW);
 
   if (!user) {
     redirect("/login");
