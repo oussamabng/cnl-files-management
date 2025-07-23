@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { FilesContent } from "@/components/files-content";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { checkPermission } from "@/lib/auth/checkPermission";
+import { checkPermission } from "@/lib/auth/server/checkPermission";
 
 export default async function FilesPage() {
   const user = checkPermission(PERMISSIONS.FILES_VIEW);

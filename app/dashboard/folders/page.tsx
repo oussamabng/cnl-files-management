@@ -10,9 +10,9 @@ import {
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
 import { FoldersContent } from "@/components/folders-content";
-import { checkPermission } from "@/lib/auth/checkPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { getUserPermissions } from '../../../lib/auth/getUserPermissions';
+import { checkPermission } from "@/lib/auth/server/checkPermission";
+import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
 
 export default async function FoldersPage() {
   const user = await checkPermission(PERMISSIONS.FOLDERS_VIEW);
@@ -21,7 +21,7 @@ export default async function FoldersPage() {
     redirect("/login");
   }
   const permissions = getUserPermissions(user);
-  
+
   return (
     <SidebarProvider>
       {/* <AppSidebar role={role} /> */}

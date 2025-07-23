@@ -10,7 +10,7 @@ import {
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
 import { FiltersContent } from "@/components/filters-content";
-import { checkPermission } from "@/lib/auth/checkPermission";
+import { checkPermission } from "@/lib/auth/server/checkPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
 export default async function FiltersPage() {

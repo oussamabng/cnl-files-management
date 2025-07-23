@@ -26,3 +26,4 @@ export type UserWithRolesAndPermissions = Prisma.UserGetPayload<{
     };
   };
 }>;
+

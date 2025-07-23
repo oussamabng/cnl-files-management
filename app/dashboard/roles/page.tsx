@@ -9,15 +9,18 @@ import {
   BreadcrumbPage,
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
-import { checkPermission } from "@/lib/auth/checkPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { RolesContent } from "@/components/roles-content";
+import { checkPermission } from "@/lib/auth/server/checkPermission";
+import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
 
 export default async function RolesPage() {
-  const user = checkPermission(PERMISSIONS.ROLES_VIEW);
+  const user = await checkPermission(PERMISSIONS.ROLES_VIEW);
 
   if (!user) {
     redirect("/login");
   }
+  const permissions = getUserPermissions(user);
 
   return (
     <SidebarProvider>
@@ -39,7 +42,7 @@ export default async function RolesPage() {
         </header>
 
         <div className="flex flex-1 flex-col gap-4 p-4">
-
+          <RolesContent permissions={permissions}/>
         </div>
       </SidebarInset>
     </SidebarProvider>

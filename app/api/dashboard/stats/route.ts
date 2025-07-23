@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
 
 export async function GET() {
   console.log("_DASHOBARD_STATS_GET");

@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import {
@@ -8,10 +7,12 @@ import {
   User,
   LayoutDashboard,
   Folder,
+  UsersIcon,
+  Crown,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,10 +28,14 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { PERMISSIONS } from "@/lib/constants/permissions";
+
+import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
+import { UserWithRolesAndPermissions } from "@/types/authorization";
+import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
+import { ROLES } from "@/lib/constants/roles";
 
 interface AppSidebarProps {
-  permissions: string[];
+  user: UserWithRolesAndPermissions;
 }
 
 type MenuItem = {
@@ -39,10 +44,27 @@ type MenuItem = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-export function AppSidebar({ permissions }: AppSidebarProps) {
+export function AppSidebar({ user }: AppSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [permissions, setPermissions] = useState<PermissionValue[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [roles, setRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchPermissions = () => {
+      const userPermissions = getUserPermissions(user);
+      setPermissions(userPermissions);
+      setLoading(false);
+    };
+    fetchPermissions();
+  }, [user]);
+
+  useEffect(() => {
+    const userRoles = user.userRoles.map((r) => r.role.name);
+    setRoles(userRoles);
+  }, [user]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -51,7 +73,6 @@ export function AppSidebar({ permissions }: AppSidebarProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
-
       if (response.ok) {
         router.push("/login");
         router.refresh();
@@ -86,6 +107,16 @@ export function AppSidebar({ permissions }: AppSidebarProps) {
       url: "/dashboard/files",
       icon: FileText,
     },
+    permissions.includes(PERMISSIONS.USERS_VIEW) && {
+      title: "Gestion des utilisateurs",
+      url: "/dashboard/users",
+      icon: UsersIcon,
+    },
+    permissions.includes(PERMISSIONS.ROLES_VIEW) && {
+      title: "Gestion des roles",
+      url: "/dashboard/roles",
+      icon: Crown,
+    },
   ];
 
   const menuItems: MenuItem[] = rawMenuItems.filter((item): item is MenuItem =>
@@ -96,11 +127,13 @@ export function AppSidebar({ permissions }: AppSidebarProps) {
     return pathname === url || pathname.startsWith(url);
   };
 
-const getPanelLabel = () => {
-  if (permissions.includes(PERMISSIONS.SUPER_ADMIN)) return "Panneau SuperAdmin";
-  if (permissions.includes(PERMISSIONS.DASHBOARD_VIEW)) return "Panneau Admin";
-  return "Panneau utilisateur";
-};
+  const getPanelLabel = () => {
+    if (roles.map((role) => role === ROLES.SUPERADMIN))
+      return "Panneau SuperAdmin";
+    if (permissions.includes(PERMISSIONS.DASHBOARD_VIEW))
+      return "Panneau Admin";
+    return "Panneau utilisateur";
+  };
 
   const isLoggedIn = permissions.length > 0;
 
@@ -116,7 +149,6 @@ const getPanelLabel = () => {
           </div>
         </div>
       </SidebarHeader>
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -136,7 +168,6 @@ const getPanelLabel = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
       <SidebarFooter className="border-t p-4">
         {!isLoggedIn ? (
           <Button variant="outline" className="w-full" asChild>
@@ -157,7 +188,6 @@ const getPanelLabel = () => {
           </Button>
         )}
       </SidebarFooter>
-
       <SidebarRail />
     </Sidebar>
   );

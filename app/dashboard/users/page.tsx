@@ -9,15 +9,20 @@ import {
   BreadcrumbPage,
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
-import { checkPermission } from "@/lib/auth/checkPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { UsersContent } from "@/components/users-content";
+import { checkPermission } from "@/lib/auth/server/checkPermission";
+import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
+import { getUserRoles } from "@/lib/auth/client/getUserRole";
 
 export default async function UsersPage() {
-  const user = checkPermission(PERMISSIONS.USERS_VIEW);
+  const currentUser = await checkPermission(PERMISSIONS.USERS_VIEW);
 
-  if (!user) {
+  if (!currentUser) {
     redirect("/login");
   }
+
+  const permissions = getUserPermissions(currentUser);
 
   return (
     <SidebarProvider>
@@ -39,7 +44,7 @@ export default async function UsersPage() {
         </header>
 
         <div className="flex flex-1 flex-col gap-4 p-4">
-            
+          <UsersContent permissions={permissions}/>
         </div>
       </SidebarInset>
     </SidebarProvider>

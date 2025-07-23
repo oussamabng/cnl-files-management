@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { deleteFile } from "@/lib/file-utils";
-import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
 // PUT update file - Allow both admin and utilisateur

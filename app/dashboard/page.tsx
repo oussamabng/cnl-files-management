@@ -8,7 +8,8 @@ import {
 import { DashboardStats } from "@/components/dashboard-stats";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { redirect } from "next/navigation";
-import { checkPermission } from "@/lib/auth/checkPermission";
+import { checkPermission } from "@/lib/auth/server/checkPermission";
+
 
 export default async function DashboardPage() {
   const user = await checkPermission(PERMISSIONS.DASHBOARD_VIEW);

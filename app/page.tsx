@@ -1,9 +1,9 @@
 // app/page.tsx
 
 import { redirect } from "next/navigation";
-import { getSessionUser } from "@/lib/auth/getUserSession";
-import { getUserPermissions } from "@/lib/auth/getUserPermissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { getSessionUser } from "@/lib/auth/server/getUserSession";
+import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
 
 export default async function HomePage() {
   const sessionUser = await getSessionUser();

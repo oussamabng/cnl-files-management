@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
-import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
 // Helper function to get all descendant folder IDs

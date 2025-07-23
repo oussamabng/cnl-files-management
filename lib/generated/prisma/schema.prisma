@@ -11,10 +11,12 @@ datasource db {
 model User {
   id        String     @id @default(cuid())
   email     String     @unique
-  firstName String?
-  lastName  String?
+  firstName String
+  lastName  String
   password  String
   userRoles UserRole[]
+
+  createdAt DateTime @default(now())
 }
 
 model File {
@@ -69,8 +71,10 @@ model Permission {
 model Role {
   id              Int              @id @default(autoincrement())
   name            String           @unique
+  description     String?
   rolePermissions RolePermission[]
   userRoles       UserRole[]
+  createdAt       DateTime         @default(now())
 }
 
 model UserRole {
