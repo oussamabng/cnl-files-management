@@ -37,3 +37,4 @@ next-env.d.ts
 
 # Data directory (contains uploaded files)
 /data/
+.env
