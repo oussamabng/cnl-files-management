@@ -11,15 +11,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { RoleWithPermissions } from "@/types/roles";
 
-interface Role {
-  id: string;
-  name: string;
-  userCount: number;
-}
+
 
 interface DeleteRoleDialogProps {
-  role: Role | null;
+  role: RoleWithPermissions | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRoleDeleted: () => void;
@@ -61,9 +58,9 @@ export function DeleteRoleDialog({
           <AlertDialogTitle>Supprimer le rôle</AlertDialogTitle>
           <AlertDialogDescription>
             Êtes-vous sûr de vouloir supprimer le rôle "{role.name}" ?
-            {role.userCount > 0 && (
+            {role._count.userRoles > 0 && (
               <span className="block mt-2 text-destructive font-medium">
-                Attention : Ce rôle est assigné à {role.userCount}{" "}
+                Attention : Ce rôle est assigné à {role._count.userRoles}{" "}
                 utilisateur(s). Vous devez d'abord réassigner ces utilisateurs à
                 un autre rôle.
               </span>
@@ -75,7 +72,7 @@ export function DeleteRoleDialog({
           <AlertDialogCancel>Annuler</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
-            disabled={loading || role.userCount > 0}
+            disabled={loading || role._count.userRoles > 0}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {loading ? "Suppression..." : "Supprimer"}

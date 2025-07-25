@@ -90,10 +90,11 @@ export function FolderBrowser({
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         setFolders(data);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || "Échec du chargement des dossiers");
+        setError(errorData.message || "Échec du chargement des dossiers");
       }
     } catch {
       setError("Une erreur s'est produite");
@@ -158,7 +159,7 @@ export function FolderBrowser({
                 Naviguez dans votre structure de dossiers
               </CardDescription>
             </div>
-            {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && (
+            {permissions.includes(PERMISSIONS.FOLDERS_CREATE) && (
               <Button disabled>
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Nouveau dossier
@@ -187,12 +188,13 @@ export function FolderBrowser({
                 : "Naviguez dans votre structure de dossiers"}
             </CardDescription>
           </div>
-          {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && !selectionMode && (
-            <Button onClick={() => setShowCreateForm(true)}>
-              <FolderPlus className="mr-2 h-4 w-4" />
-              Nouveau dossier
-            </Button>
-          )}
+          {permissions.includes(PERMISSIONS.FOLDERS_CREATE) &&
+            !selectionMode && (
+              <Button onClick={() => setShowCreateForm(true)}>
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Nouveau dossier
+              </Button>
+            )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -202,7 +204,6 @@ export function FolderBrowser({
           </Alert>
         )}
 
-        {/* Breadcrumbs */}
         {breadcrumbs.length > 0 && (
           <div className="flex items-center gap-2">
             <Button
@@ -305,7 +306,7 @@ export function FolderBrowser({
                   </div>
                 </div>
 
-                {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && !selectionMode && (
+                {!selectionMode && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -323,6 +324,9 @@ export function FolderBrowser({
                           e.stopPropagation();
                           setEditingFolder(folder);
                         }}
+                        disabled={
+                          !permissions.includes(PERMISSIONS.FOLDERS_UPDATE)
+                        }
                       >
                         <Edit className="mr-2 h-4 w-4" />
                         Renommer
@@ -332,6 +336,9 @@ export function FolderBrowser({
                           e.stopPropagation();
                           setDeletingFolder(folder);
                         }}
+                        disabled={
+                          !permissions.includes(PERMISSIONS.FOLDERS_DELETE)
+                        }
                         className="text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -349,7 +356,7 @@ export function FolderBrowser({
           <div className="text-center py-8 text-muted-foreground">
             <Folder className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Aucun dossier trouvé à cet emplacement</p>
-            {permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && (
+            {permissions.includes(PERMISSIONS.FOLDERS_CREATE) && (
               <p className="text-sm mt-2">
                 Créez votre premier dossier pour commencer
               </p>

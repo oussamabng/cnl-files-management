@@ -1,1 +1,0 @@
-export const ADMIN_EMAIL="taha@gmail.com"

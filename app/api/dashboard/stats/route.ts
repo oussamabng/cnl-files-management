@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET() {
-  console.log("_DASHOBARD_STATS_GET");
-
   try {
     const { error } = await requireApiPermission(
       PERMISSIONS.DASHBOARD_VIEW
@@ -76,7 +74,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal session error" },
       { status: 500 }
     );
   }

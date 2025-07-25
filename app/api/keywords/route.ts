@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
-// GET all keywords - Allow both admin and utilisateur to read
 export async function GET() {
   try {
     const { error } = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
     if (error) return error;
 
-    // Both admin and utilisateur can read keywords for filtering and file operations
     const keywords = await prisma.keyword.findMany({
       include: {
         _count: {
@@ -29,23 +26,28 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching keywords:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
 }
 
-// POST create new keyword - Admin only
 export async function POST(req: Request) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_MANAGE);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_CREATE);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
     const { name } = await req.json();
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
-        { error: "Keyword name is required" },
+        { error: "Le nom du mot-clé est requis" },
         { status: 400 }
       );
     }
@@ -66,16 +68,14 @@ export async function POST(req: Request) {
     return NextResponse.json(keyword);
   } catch (error: any) {
     console.error("Error creating keyword:", error);
-
     if (error.code === "P2002") {
       return NextResponse.json(
-        { error: "Keyword already exists" },
+        { error: "Le mot-clé existe déjà" },
         { status: 409 }
       );
     }
-
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }

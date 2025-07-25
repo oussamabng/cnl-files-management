@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
 export async function GET(
@@ -11,13 +11,15 @@ export async function GET(
   { params }: { params: { filename: string } }
 ) {
   try {
+    const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
 
-    const { error } = await requireApiPermission(PERMISSIONS.FILES_MANAGE);
-    console.log(error);
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
-    if (error) return error;
-
-    // Both admin and utilisateur can access files
     const { filename } = params;
 
     // Verify file exists in database

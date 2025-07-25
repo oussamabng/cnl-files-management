@@ -28,3 +28,11 @@ export type RoleWithPermissions = Prisma.RoleGetPayload<{
     userRoles: number;
   };
 };
+export type RolePermission = Prisma.RolePermissionGetPayload<{
+  include: {
+    permission: true;
+  };
+}>;
+
+
+export type Permission = Prisma.PermissionGetPayload<{}>;

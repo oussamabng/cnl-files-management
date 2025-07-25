@@ -129,11 +129,11 @@ export function FileEditDialog({
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (data.success) {
         onSuccess();
         onOpenChange(false);
       } else {
-        setError(data.error || "Une erreur s'est produite");
+        setError(data.message || "Une erreur s'est produite");
       }
     } catch {
       setError("Une erreur s'est produite");

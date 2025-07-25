@@ -26,11 +26,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loading } from "@/components/ui/loading";
-import { Eye, EyeOff, Shield, User } from "lucide-react";
+import { Eye, EyeOff, User } from "lucide-react";
+import { ROLES } from "@/lib/constants/roles";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(1, { message: "Password is required" }),
+  email: z
+    .string()
+    .email({ message: "Veuillez saisir une adresse e-mail valide." }),
+  password: z.string().min(1, { message: "Le mot de passe est obligatoire." }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -49,10 +52,7 @@ export default function LoginPage() {
     },
   });
 
-  const handleLogin = async (
-    values: LoginFormValues,
-    loginType: "regular" | "admin"
-  ) => {
+  const handleLogin = async (values: LoginFormValues) => {
     setError("");
     setIsLoading(true);
 
@@ -61,60 +61,28 @@ export default function LoginPage() {
         method: "POST",
         body: JSON.stringify({
           ...values,
-          loginType: loginType === "admin" ? "admin" : "regular",
         }),
         headers: { "Content-Type": "application/json" },
       });
 
       const data = await res.json();
+      console.log(data);
 
-      if (res.ok) {
+      if (data.success) {
         router.push("/dashboard");
         router.refresh();
       } else {
-        setError(data.error || "Invalid credentials");
+        setError(data.error || "Identifiant ou mot de passe incorrect");
       }
     } catch {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setError("");
-    setIsLoading(true);
-
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          loginType: "utilisateur",
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        router.push("/dashboard");
-        router.refresh();
-      } else {
-        setError(data.error || "Failed to login as guest");
-      }
-    } catch {
-      setError("An error occurred. Please try again.");
+      setError("Une erreur s'est produite. Veuillez réessayer.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const onSubmit = (values: LoginFormValues) => {
-    handleLogin(values, "regular");
-  };
-
-  const onAdminSubmit = (values: LoginFormValues) => {
-    handleLogin(values, "admin");
+    handleLogin(values);
   };
 
   return (
@@ -122,11 +90,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Sign In
+            Se connecter
           </CardTitle>
-          <CardDescription className="text-center">
-            Choose your login method to access your account
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Form {...form}>
@@ -136,11 +101,11 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Adresse e-mail</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Entrez votre adresse e-mail"
                         {...field}
                         disabled={isLoading}
                         autoComplete="email"
@@ -156,12 +121,12 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Mot de passe</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
+                          placeholder="Entrez votre mot de passe"
                           {...field}
                           disabled={isLoading}
                           autoComplete="current-password"
@@ -199,24 +164,7 @@ export default function LoginPage() {
                   ) : (
                     <>
                       <User className="w-4 h-4 mr-2" />
-                      Sign In as User
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  type="button"
-                  onClick={form.handleSubmit(onAdminSubmit)}
-                  variant="secondary"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loading variant="spinner" size="sm" text="Signing in..." />
-                  ) : (
-                    <>
-                      <Shield className="w-4 h-4 mr-2" />
-                      Sign In as Admin
+                      Se connecter
                     </>
                   )}
                 </Button>
@@ -229,40 +177,15 @@ export default function LoginPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or
-              </span>
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            onClick={handleGuestLogin}
-            className="w-full bg-transparent"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loading variant="spinner" size="sm" text="Connecting..." />
-            ) : (
-              "Continue as Guest"
-            )}
-          </Button>
-
           <div className="text-center text-sm">
             <span className="text-muted-foreground">
-              Don't have an account?{" "}
+              Vous n'avez pas de compte ?{" "}
             </span>
             <Link
               href="/signup"
               className="text-primary hover:underline font-medium"
             >
-              Sign up
+              Inscrivez-vous
             </Link>
           </div>
         </CardContent>

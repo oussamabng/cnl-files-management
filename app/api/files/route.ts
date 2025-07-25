@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 // Helper function to get all descendant folder IDs
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
@@ -27,9 +27,14 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
 // GET files with search and filter - Allow both admin and utilisateur
 export async function GET(req: Request) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FILES_VIEW);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
 
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
     // Both admin and utilisateur can read files
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
@@ -134,12 +139,16 @@ export async function GET(req: Request) {
   }
 }
 
-// POST upload files - Allow both admin and utilisateur
 export async function POST(req: Request) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FILES_UPLOAD);
-    if (error) return error;
-    // Both admin and utilisateur can upload files
+    const response = await requireApiPermission(PERMISSIONS.FILES_UPLOAD);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const keywordIds = JSON.parse(

@@ -1,8 +1,6 @@
-// app/page.tsx
-
 import { redirect } from "next/navigation";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { getSessionUser } from "@/lib/auth/server/getUserSession";
+import { getSessionUser } from "@/lib/auth/session/getUserSession";
 import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
 
 export default async function HomePage() {
@@ -13,15 +11,8 @@ export default async function HomePage() {
   }
 
   const permissions = getUserPermissions(sessionUser);
-  console.log("user perssions are:", permissions);
-  console.log("user session is:", sessionUser);
 
-  // // Super admin has full access
-  if (permissions.includes(PERMISSIONS.SUPER_ADMIN)) {
-    redirect("/dashboard");
-  }
 
-  // Prioritized redirection based on permission
   if (permissions.includes(PERMISSIONS.DASHBOARD_VIEW)) {
     redirect("/dashboard");
   }
@@ -33,8 +24,14 @@ export default async function HomePage() {
   if (permissions.includes(PERMISSIONS.FOLDERS_VIEW)) {
     redirect("/dashboard/folders");
   }
-  return <>taha</>;
 
-  // Default fallback (no known permission)
-  redirect("/unauthorized"); // Or a friendly access denied page
+  if (permissions.includes(PERMISSIONS.USERS_VIEW)) {
+    redirect("/dashboard/users");
+  }
+
+  if (permissions.includes(PERMISSIONS.ROLES_VIEW)) {
+    redirect("/dashboard/roles");
+  }
+
+  redirect("/unauthorized");
 }

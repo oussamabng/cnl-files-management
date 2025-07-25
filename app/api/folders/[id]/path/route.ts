@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
-// GET folder path for breadcrumbs
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
@@ -14,13 +12,13 @@ export async function GET(
     if (error) return error;
 
     const { id } = params;
-
     const path = await getFolderPath(id);
+
     return NextResponse.json(path);
   } catch (error) {
     console.error("Error fetching folder path:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" }, // Translated
       { status: 500 }
     );
   }
@@ -39,7 +37,7 @@ async function getFolderPath(
   });
 
   if (!folder) {
-    throw new Error("Folder not found");
+    throw new Error("Dossier introuvable"); // Translated
   }
 
   const path = [{ id: folder.id, name: folder.name }];

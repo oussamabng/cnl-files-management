@@ -2,19 +2,22 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
-// GET single folder with details
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
 
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
     const { id } = params;
-
     const folder = await prisma.folder.findUnique({
       where: { id },
       include: {
@@ -60,52 +63,61 @@ export async function GET(
     });
 
     if (!folder) {
-      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Dossier introuvable" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(folder);
   } catch (error) {
     console.error("Error fetching folder:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
 }
 
-// PUT update folder - Admin only
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_MANAGE);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FOLDERS_UPDATE);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
     const { name, parentId } = await req.json();
     const { id } = params;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
-        { error: "Folder name is required" },
+        { error: "Le nom du dossier est requis" },
         { status: 400 }
       );
     }
 
-    // Prevent moving folder to be its own child (circular reference)
     if (parentId === id) {
       return NextResponse.json(
-        { error: "Cannot move folder to itself" },
+        { error: "Impossible de déplacer le dossier vers lui-même" },
         { status: 400 }
       );
     }
 
-    // Check if moving to a descendant (would create circular reference)
     if (parentId) {
       const isDescendant = await checkIfDescendant(id, parentId);
       if (isDescendant) {
         return NextResponse.json(
-          { error: "Cannot move folder to its own descendant" },
+          {
+            error:
+              "Impossible de déplacer le dossier vers l'un de ses descendants",
+          },
           { status: 400 }
         );
       }
@@ -128,40 +140,42 @@ export async function PUT(
     });
 
     return NextResponse.json(folder);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error updating folder:", error);
-
     if (error.code === "P2002") {
       return NextResponse.json(
-        { error: "Folder name already exists in this location" },
+        { error: "Un dossier avec ce nom existe déjà à cet emplacement" },
         { status: 409 }
       );
     }
-
     if (error.code === "P2025") {
-      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Dossier introuvable" },
+        { status: 404 }
+      );
     }
-
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
 }
 
-// DELETE folder - Admin only
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_MANAGE);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FOLDERS_DELETE);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
     const { id } = params;
-
-    // Check if folder has children or files
     const folder = await prisma.folder.findUnique({
       where: { id },
       include: {
@@ -175,12 +189,18 @@ export async function DELETE(
     });
 
     if (!folder) {
-      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Dossier introuvable" },
+        { status: 404 }
+      );
     }
 
     if (folder._count.children > 0 || folder._count.files > 0) {
       return NextResponse.json(
-        { error: "Cannot delete folder that contains files or subfolders" },
+        {
+          error:
+            "Impossible de supprimer un dossier contenant des fichiers ou des sous-dossiers",
+        },
         { status: 400 }
       );
     }
@@ -192,19 +212,19 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting folder:", error);
-
     if (error.code === "P2025") {
-      return NextResponse.json({ error: "Folder not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Dossier introuvable" },
+        { status: 404 }
+      );
     }
-
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
 }
 
-// Helper function to check if a folder is a descendant of another
 async function checkIfDescendant(
   folderId: string,
   potentialAncestorId: string
@@ -226,6 +246,5 @@ async function checkIfDescendant(
       return true;
     }
   }
-
   return false;
 }

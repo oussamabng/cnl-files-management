@@ -1,14 +1,19 @@
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { createUser } from "@/lib/auth/server/create-user";
-import { Prisma } from "@/lib/generated/prisma";
+import { createUser } from "@/lib/auth/session/create-user";
 
 export async function GET(req: Request) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.USERS_VIEW);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.USERS_VIEW);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
     const users = await prisma.user.findMany({
       include: {
@@ -35,7 +40,7 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal session error" },
       { status: 500 }
     );
   }
@@ -43,6 +48,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const response = await requireApiPermission(PERMISSIONS.USERS_CREATE);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
     const { email, password, firstName, lastName, roleIds } = await req.json();
 
     const userRoles = roleIds?.map((id: string | number) => ({
@@ -59,9 +72,13 @@ export async function POST(req: Request) {
       userRoles: { create: userRoles },
     });
 
-    if(!user) return NextResponse.json({message:"User already exists",status:false})
+    if (!user)
+      return NextResponse.json({
+        message: "User already exists",
+        status: false,
+      });
 
-    return NextResponse.json({success:true,data:user});
+    return NextResponse.json({ success: true, data: user });
   } catch (error) {
     console.error("User registration failed:", error);
     return NextResponse.json(

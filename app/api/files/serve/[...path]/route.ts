@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
-import { requireApiPermission } from "@/lib/auth/server/requireApiPermission";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
 export async function GET(
@@ -11,8 +11,14 @@ export async function GET(
   { params }: { params: { path: string[] } }
 ) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FILES_MANAGE);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
     const filePath = params.path.join("/");
 

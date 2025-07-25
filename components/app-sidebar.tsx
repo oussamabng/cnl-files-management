@@ -32,7 +32,7 @@ import {
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 import { UserWithRolesAndPermissions } from "@/types/authorization";
 import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
-import { ROLES } from "@/lib/constants/roles";
+import { getUserName } from "@/lib/utils";
 
 interface AppSidebarProps {
   user: UserWithRolesAndPermissions;
@@ -63,6 +63,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   useEffect(() => {
     const userRoles = user.userRoles.map((r) => r.role.name);
+    console.log(user.userRoles);
+
     setRoles(userRoles);
   }, [user]);
 
@@ -92,12 +94,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
       url: "/dashboard",
       icon: LayoutDashboard,
     },
-    permissions.includes(PERMISSIONS.FOLDERS_MANAGE) && {
+    permissions.includes(PERMISSIONS.FOLDERS_VIEW) && {
       title: "Gestion des dossiers",
       url: "/dashboard/folders",
       icon: Folder,
     },
-    permissions.includes(PERMISSIONS.FILTERS_MANAGE) && {
+    permissions.includes(PERMISSIONS.FILTERS_VIEW) && {
       title: "Gestion des filtres",
       url: "/dashboard/filters",
       icon: Filter,
@@ -127,25 +129,25 @@ export function AppSidebar({ user }: AppSidebarProps) {
     return pathname === url || pathname.startsWith(url);
   };
 
-  const getPanelLabel = () => {
-    if (roles.map((role) => role === ROLES.SUPERADMIN))
-      return "Panneau SuperAdmin";
-    if (permissions.includes(PERMISSIONS.DASHBOARD_VIEW))
-      return "Panneau Admin";
-    return "Panneau utilisateur";
-  };
-
   const isLoggedIn = permissions.length > 0;
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-6 py-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <User className="h-4 w-4" />
+      <SidebarHeader className="border-b px-6 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <User className="h-5 w-5" />
           </div>
-          <div>
-            <p className="text-sm font-medium">{getPanelLabel()}</p>
+          <div className="flex flex-col justify-center space-y-0.5 truncate">
+            <p className="text-xs uppercase text-muted-foreground flex-wrap">
+              {roles.join(", ")}
+            </p>
+            <p className="text-lg font-bold truncate capitalize leading-tight">
+              {getUserName({
+                firstName: user.firstName,
+                lastName: user.lastName,
+              })}
+            </p>
           </div>
         </div>
       </SidebarHeader>

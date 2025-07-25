@@ -112,6 +112,8 @@ export function FileUploadDialog({
 
     try {
       const formData = new FormData();
+      console.log(formData);
+      
 
       files.forEach((fileItem) => {
         formData.append("files", fileItem.file);
@@ -134,11 +136,14 @@ export function FileUploadDialog({
       if (commentaire.trim()) {
         formData.append("commentaire", commentaire.trim());
       }
+      console.log("uploading");
+      
 
       const response = await fetch("/api/files", {
         method: "POST",
         body: formData,
       });
+      const data = await response.json();
 
       if (response.ok) {
         onSuccess();

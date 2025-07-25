@@ -18,7 +18,7 @@ async function seedPermissions() {
     });
   }
 
-  console.log("✅ Permissions seeded");
+  console.log("Permissions seeded");
 }
 
 async function seedRole(name: string, permissionKeys: string[]) {
@@ -49,24 +49,18 @@ async function seedRole(name: string, permissionKeys: string[]) {
   }
 
   console.log(
-    `✅ Role "${name}" seeded with ${permissions.length} permissions`
+    `Role "${name}" seeded with ${permissions.length} permissions`
   );
   return role;
 }
 
-async function seedUsers(superAdminRoleId: number, regularUserRoleId: number) {
+async function seedUsers(superAdminRoleId: number) {
   const adminEmail = (process.env.ADMIN_EMAIL as string) || "admin@example.com";
-  const regularUserEmail =
-    (process.env.USER_EMAIL as string) || "user@example.com";
-
   const adminPassword = await bcrypt.hash(
     (process.env.ADMIN_PASS as string) || "Admin#123",
     10
   );
-  const userPassword = await bcrypt.hash(
-    (process.env.USER_PASS as string) || "User#123",
-    10
-  );
+
 
   await prisma.user.upsert({
     where: { email: adminEmail },
@@ -83,24 +77,7 @@ async function seedUsers(superAdminRoleId: number, regularUserRoleId: number) {
       },
     },
   });
-
-  await prisma.user.upsert({
-    where: { email: regularUserEmail },
-    update: {},
-    create: {
-      email: regularUserEmail,
-      password: userPassword,
-      firstName: "Regular",
-      lastName: "User",
-      userRoles: {
-        create: {
-          roleId: regularUserRoleId,
-        },
-      },
-    },
-  });
-
-  console.log("✅ Admin and regular user seeded");
+  console.log("ADMIN seeded");
 }
 
 async function main() {
@@ -108,21 +85,11 @@ async function main() {
 
   const allPermissions = Object.values(PERMISSIONS).filter(
     (p) => p !== PERMISSIONS.SUPER_ADMIN
-  );
-
-  const regularUserPermissions = Object.values(PERMISSION_GROUPS)
-    .map((group) => group.find((p) => p.endsWith("_VIEW")))
-    .filter(Boolean) as string[];
-
-  regularUserPermissions.push(
-    PERMISSIONS.DASHBOARD_VIEW,
-    PERMISSIONS.FILES_UPLOAD
-  );
+  )
 
   const superAdmin = await seedRole("SUPERADMIN", allPermissions);
-  const regularUser = await seedRole("REGULARUSER", regularUserPermissions);
 
-  await seedUsers(superAdmin.id, regularUser.id);
+  await seedUsers(superAdmin.id);
 }
 
 main()

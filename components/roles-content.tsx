@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Plus, Edit, Trash2, Users, FolderPlus, Shield, Calendar, MoreHorizontal, Eye, AlertCircle } from "lucide-react"
+import { Plus, Edit, Trash2, Users, Shield, Calendar, MoreHorizontal, Eye, AlertCircle } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,7 +47,13 @@ function RolesTableSkeleton() {
   )
 }
 
-function EmptyRolesState({ onCreateRole, canCreate }: { onCreateRole: () => void; canCreate: boolean }) {
+function EmptyRolesState({
+  onCreateRole,
+  canCreate,
+}: {
+  onCreateRole: () => void
+  canCreate: boolean
+}) {
   return (
     <div className="text-center py-12">
       <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
@@ -67,7 +73,11 @@ function EmptyRolesState({ onCreateRole, canCreate }: { onCreateRole: () => void
   )
 }
 
-function PermissionBadges({ rolePermissions }: { rolePermissions: RoleWithPermissions["rolePermissions"] }) {
+function PermissionBadges({
+  rolePermissions,
+}: {
+  rolePermissions: RoleWithPermissions["rolePermissions"]
+}) {
   const maxVisible = 3
   const visiblePermissions = rolePermissions.slice(0, maxVisible)
   const remainingCount = Math.max(0, rolePermissions.length - maxVisible)
@@ -130,12 +140,9 @@ export function RolesContent({ permissions }: RolesContentProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
   const canViewRoles = permissions.includes(PERMISSIONS.ROLES_VIEW)
-  const canManageRoles = permissions.includes(PERMISSIONS.ROLES_MANAGE)
-  const canManageFolders = permissions.includes(PERMISSIONS.FOLDERS_MANAGE)
 
   useEffect(() => {
     const canView = permissions.includes(PERMISSIONS.ROLES_VIEW)
-
     if (canView) {
       fetchRoles()
     } else {
@@ -158,6 +165,8 @@ export function RolesContent({ permissions }: RolesContentProps) {
       setLoading(false)
     }
   }
+
+  console.log(roles)
 
   const handleCreateRole = () => {
     setSelectedRole(null)
@@ -186,6 +195,10 @@ export function RolesContent({ permissions }: RolesContentProps) {
     setSelectedRole(null)
   }
 
+  const isSuperAdmin = (roleName: string | null): boolean => {
+    return roleName === "SUPERADMIN"
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -196,7 +209,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
           </div>
           <Skeleton className="h-10 w-32" />
         </div>
-
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -236,15 +248,8 @@ export function RolesContent({ permissions }: RolesContentProps) {
             Gérez les rôles et leurs permissions pour contrôler l'accès à votre application
           </p>
         </div>
-
         <div className="flex items-center gap-2">
-          {canManageFolders && (
-            <Button variant="outline" disabled>
-              <FolderPlus className="mr-2 h-4 w-4" />
-              Nouveau dossier
-            </Button>
-          )}
-          {canManageRoles && (
+          {permissions.includes(PERMISSIONS.ROLES_CREATE) && (
             <Button onClick={handleCreateRole}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau rôle
@@ -253,7 +258,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-6">
@@ -266,19 +270,19 @@ export function RolesContent({ permissions }: RolesContentProps) {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Utilisateurs assignés</p>
-                <p className="text-2xl font-bold">{roles.reduce((sum, role) => sum + (role._count.userRoles || 0), 0)}</p>
+                <p className="text-2xl font-bold">
+                  {roles.reduce((sum, role) => sum + (role._count.userRoles || 0), 0)}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2">
@@ -294,7 +298,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </Card>
       </div>
 
-      {/* Main Content */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -308,7 +311,10 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </CardHeader>
         <CardContent>
           {roles.length === 0 ? (
-            <EmptyRolesState onCreateRole={handleCreateRole} canCreate={canManageRoles} />
+            <EmptyRolesState
+              onCreateRole={handleCreateRole}
+              canCreate={permissions.includes(PERMISSIONS.ROLES_CREATE)}
+            />
           ) : (
             <div className="rounded-md border">
               <Table>
@@ -341,17 +347,14 @@ export function RolesContent({ permissions }: RolesContentProps) {
                           </div>
                         </div>
                       </TableCell>
-
                       <TableCell>
                         <p className="text-sm">
                           {role.description || <span className="text-muted-foreground italic">Aucune description</span>}
                         </p>
                       </TableCell>
-
                       <TableCell>
                         <PermissionBadges rolePermissions={role.rolePermissions || []} />
                       </TableCell>
-
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
@@ -360,7 +363,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
                           {(role._count.userRoles || 0) > 0 && <Users className="h-3 w-3 text-muted-foreground" />}
                         </div>
                       </TableCell>
-
                       <TableCell>
                         <div className="text-sm">
                           {role.createdAt ? (
@@ -378,7 +380,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
                           )}
                         </div>
                       </TableCell>
-
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -388,21 +389,22 @@ export function RolesContent({ permissions }: RolesContentProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => handleEditRole(role)}>
+                            <DropdownMenuItem onClick={() => handleEditRole(role)} disabled={!permissions.includes(PERMISSIONS.ROLES_UPDATE)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Modifier
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteRole(role)}
-                              disabled={(role._count.userRoles || 0) > 0}
+                              disabled={isSuperAdmin(role.name) || !permissions.includes(PERMISSIONS.ROLES_DELETE)}
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Supprimer
                               {(role._count.userRoles || 0) > 0 && (
                                 <span className="ml-auto text-xs text-muted-foreground">
-                                  ({role._count.userRoles} utilisateur{(role._count.userRoles || 0) > 1 ? "s" : ""})
+                                  ({role._count.userRoles} utilisateur
+                                  {(role._count.userRoles || 0) > 1 ? "s" : ""})
                                 </span>
                               )}
                             </DropdownMenuItem>
@@ -418,20 +420,20 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
-      {/* <RoleFormDialog
+      <RoleFormDialog
         role={selectedRole}
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         onRoleUpdated={handleRoleUpdated}
       />
-
-      <DeleteRoleDialog
-        role={selectedRole}
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        onRoleDeleted={handleRoleDeleted}
-      /> */}
+      {selectedRole && (
+        <DeleteRoleDialog
+          role={selectedRole}
+          open={isDeleteOpen}
+          onOpenChange={setIsDeleteOpen}
+          onRoleDeleted={handleRoleDeleted}
+        />
+      )}
     </div>
   )
 }

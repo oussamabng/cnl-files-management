@@ -1,7 +1,6 @@
-// lib/constants/permissions.ts
-
 export const ROLES = {
   SUPERADMIN: "Super admin",
+  REGULARUSER: "Utilisateur",
 } as const;
 
 export type Role = keyof typeof ROLES;

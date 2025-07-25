@@ -14,7 +14,6 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, Search, Edit, Trash2 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -50,6 +49,7 @@ import {
 import { KeywordForm } from "@/components/keyword-form";
 import { DeleteKeywordDialog } from "@/components/delete-keyword-dialog";
 import { Loading, TableLoading } from "@/components/ui/loading";
+import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 
 interface Keyword {
   id: string;
@@ -59,7 +59,11 @@ interface Keyword {
   };
 }
 
-export function FiltersContent() {
+export function FiltersContent({
+  permissions,
+}: {
+  permissions: PermissionValue[];
+}) {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
@@ -76,6 +80,10 @@ export function FiltersContent() {
     pageIndex: 0,
     pageSize: 5,
   });
+
+  // Check permissions
+  const canUpdate = permissions.includes(PERMISSIONS.FILTERS_UPDATE);
+  const canDelete = permissions.includes(PERMISSIONS.FILTERS_DELETE);
 
   const columns: ColumnDef<Keyword>[] = [
     {
@@ -110,6 +118,7 @@ export function FiltersContent() {
         const keyword = row.original;
         const isDeleting = deletingKeywordId === keyword.id;
 
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -129,7 +138,8 @@ export function FiltersContent() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() => setEditingKeyword(keyword)}
-                disabled={isDeleting}
+                disabled={!canUpdate || isDeleting}
+                className={!canUpdate ? "opacity-50 cursor-not-allowed" : ""}
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier
@@ -139,8 +149,10 @@ export function FiltersContent() {
                   setDeletingKeyword(keyword);
                   setDeletingKeywordId(keyword.id);
                 }}
-                className="text-destructive"
-                disabled={isDeleting}
+                className={`text-destructive ${
+                  !canDelete ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={!canDelete || isDeleting}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Supprimer
@@ -174,13 +186,11 @@ export function FiltersContent() {
       setSearching(true);
       setError("");
       const response = await fetch("/api/keywords");
-
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         setKeywords(data);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Échec du chargement des mots-clés");
+        setError(data.message || "Échec du chargement des mots-clés");
       }
     } catch {
       setError("Une erreur s'est produite");
@@ -217,10 +227,12 @@ export function FiltersContent() {
                 Gérer les mots-clés utilisés pour filtrer les fichiers
               </CardDescription>
             </div>
-            <Button disabled>
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter un mot-clé
-            </Button>
+            {permissions.includes(PERMISSIONS.FILTERS_CREATE) && (
+              <Button disabled>
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter un mot-clé
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -255,10 +267,12 @@ export function FiltersContent() {
               Gérer les mots-clés utilisés pour filtrer les fichiers
             </CardDescription>
           </div>
-          <Button onClick={() => setShowCreateForm(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Ajouter un mot-clé
-          </Button>
+          {permissions.includes(PERMISSIONS.FILTERS_CREATE) && (
+            <Button onClick={() => setShowCreateForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter un mot-clé
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -267,7 +281,6 @@ export function FiltersContent() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
         <div className="flex items-center py-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -285,7 +298,6 @@ export function FiltersContent() {
             />
           </div>
         </div>
-
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -347,7 +359,6 @@ export function FiltersContent() {
             </TableBody>
           </Table>
         </div>
-
         {/* Search Status */}
         {searching && (
           <div className="flex items-center justify-center py-2">
@@ -358,7 +369,6 @@ export function FiltersContent() {
             />
           </div>
         )}
-
         <div className="flex items-center justify-between space-x-2 py-4">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Lignes par page</p>
@@ -405,24 +415,19 @@ export function FiltersContent() {
               >
                 Précédent
               </Button>
-
               <div className="flex items-center space-x-1">
                 {Array.from(
                   { length: Math.min(5, table.getPageCount()) },
                   (_, i) => {
                     const pageIndex = table.getState().pagination.pageIndex;
                     const totalPages = table.getPageCount();
-
                     let startPage = Math.max(0, pageIndex - 2);
                     const endPage = Math.min(totalPages - 1, startPage + 4);
-
                     if (endPage - startPage < 4) {
                       startPage = Math.max(0, endPage - 4);
                     }
-
                     const page = startPage + i;
                     if (page > endPage) return null;
-
                     return (
                       <Button
                         key={page}
@@ -437,7 +442,6 @@ export function FiltersContent() {
                   }
                 )}
               </div>
-
               <Button
                 variant="outline"
                 size="sm"
@@ -450,20 +454,17 @@ export function FiltersContent() {
           </div>
         </div>
       </CardContent>
-
       <KeywordForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}
         onSuccess={handleSuccess}
       />
-
       <KeywordForm
         open={!!editingKeyword}
         onOpenChange={(open) => !open && setEditingKeyword(null)}
         keyword={editingKeyword}
         onSuccess={handleSuccess}
       />
-
       <DeleteKeywordDialog
         open={!!deletingKeyword}
         onOpenChange={(open) => !open && handleDeleteCancel()}

@@ -79,6 +79,7 @@ import { FolderSelector } from "@/components/folder-selector";
 import { KeywordMultiselect } from "@/components/keyword-multiselect";
 import { SimpleDateRangePicker } from "@/components/simple-date-range-picker";
 import { CommentDisplay } from "@/components/comment-display";
+import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 
 interface FileData {
   id: string;
@@ -96,7 +97,11 @@ interface Keyword {
   name: string;
 }
 
-export function FilesContent() {
+export function FilesContent({
+  permissions,
+}: {
+  permissions: PermissionValue;
+}) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,9 +129,7 @@ export function FilesContent() {
   const [deletingFile, setDeletingFile] = useState<FileData | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
 
-  const [userRole, setUserRole] = useState<string>("");
   const [folderMap, setFolderMap] = useState<Map<string, string>>(new Map());
-
 
   // Fetch folder hierarchy to build path map
   const fetchFolderPaths = async () => {
@@ -321,7 +324,7 @@ export function FilesContent() {
       },
       enableSorting: false,
     },
-    ...(userRole === "admin"
+    ...(true
       ? [
           {
             id: "actions" as const,
@@ -350,7 +353,7 @@ export function FilesContent() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() => setEditingFile(file)}
-                      disabled={isDeleting}
+                      disabled={isDeleting || !permissions.includes(PERMISSIONS.FILES_UPDATE)}
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Modifier
@@ -361,7 +364,7 @@ export function FilesContent() {
                         setDeletingFileId(file.id);
                       }}
                       className="text-destructive"
-                      disabled={isDeleting}
+                      disabled={isDeleting || !permissions.includes(PERMISSIONS.FILES_DELETE)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Supprimer
@@ -417,8 +420,8 @@ export function FilesContent() {
 
       const response = await fetch(`/api/files?${params}`);
 
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         // Add folder paths to files
         const filesWithPaths = data.map((file: FileData) => ({
           ...file,
@@ -426,8 +429,7 @@ export function FilesContent() {
         }));
         setFiles(filesWithPaths);
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || "Échec du chargement des fichiers");
+        setError(data.message || "Échec du chargement des fichiers");
       }
     } catch {
       setError("Une erreur s'est produite");
@@ -447,9 +449,11 @@ export function FilesContent() {
   const fetchKeywords = async () => {
     try {
       const response = await fetch("/api/keywords");
+      const data = await response.json();
       if (response.ok) {
-        const data = await response.json();
         setKeywords(data);
+      } else {
+        setError(data.message || "Une erreur s'est produite.");
       }
     } catch (err) {
       console.error("Échec de la récupération des mots-clés:", err);
@@ -531,10 +535,12 @@ export function FilesContent() {
                   Rechercher, filtrer et gérer vos fichiers
                 </CardDescription>
               </div>
-              <Button disabled>
-                <Upload className="mr-2 h-4 w-4" />
-                Télécharger des fichiers
-              </Button>
+              {permissions.includes(PERMISSIONS.FILES_UPLOAD) && (
+                <Button disabled>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Télécharger des fichiers
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -567,10 +573,12 @@ export function FilesContent() {
                 Rechercher, filtrer et gérer vos fichiers
               </CardDescription>
             </div>
-            <Button onClick={() => setShowUploadDialog(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              Télécharger des fichiers
-            </Button>
+            {permissions.includes(PERMISSIONS.FILES_UPLOAD) && (
+              <Button onClick={() => setShowUploadDialog(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                Télécharger des fichiers
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -930,24 +938,22 @@ export function FilesContent() {
         onSuccess={handleUploadSuccess}
       />
 
-      {userRole === "admin" && (
-        <>
-          <FileEditDialog
-            open={!!editingFile}
-            onOpenChange={(open) => !open && setEditingFile(null)}
-            file={editingFile}
-            keywords={keywords}
-            onSuccess={handleSuccess}
-          />
+      <>
+        <FileEditDialog
+          open={!!editingFile}
+          onOpenChange={(open) => !open && setEditingFile(null)}
+          file={editingFile}
+          keywords={keywords}
+          onSuccess={handleSuccess}
+        />
 
-          <DeleteFileDialog
-            open={!!deletingFile}
-            onOpenChange={(open) => !open && handleDeleteCancel()}
-            file={deletingFile}
-            onSuccess={handleSuccess}
-          />
-        </>
-      )}
+        <DeleteFileDialog
+          open={!!deletingFile}
+          onOpenChange={(open) => !open && handleDeleteCancel()}
+          file={deletingFile}
+          onSuccess={handleSuccess}
+        />
+      </>
     </div>
   );
 }

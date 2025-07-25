@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { redirect } from "next/navigation"
-import { getSessionUser } from "@/lib/auth/server/getUserSession"
-import { getUserPermissions } from "@/lib/auth/client/getUserPermissions"
+import { getSessionUser } from "@/lib/auth/session/getUserSession"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 
