@@ -100,7 +100,7 @@ interface Keyword {
 export function FilesContent({
   permissions,
 }: {
-  permissions: PermissionValue;
+  permissions: PermissionValue[];
 }) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
@@ -353,7 +353,10 @@ export function FilesContent({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() => setEditingFile(file)}
-                      disabled={isDeleting || !permissions.includes(PERMISSIONS.FILES_UPDATE)}
+                      disabled={
+                        isDeleting ||
+                        !permissions.includes(PERMISSIONS.FILES_UPDATE)
+                      }
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Modifier
@@ -364,7 +367,10 @@ export function FilesContent({
                         setDeletingFileId(file.id);
                       }}
                       className="text-destructive"
-                      disabled={isDeleting || !permissions.includes(PERMISSIONS.FILES_DELETE)}
+                      disabled={
+                        isDeleting ||
+                        !permissions.includes(PERMISSIONS.FILES_DELETE)
+                      }
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Supprimer

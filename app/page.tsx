@@ -11,6 +11,8 @@ export default async function HomePage() {
   }
 
   const permissions = getUserPermissions(sessionUser);
+  console.log("user permissions are",permissions);
+  
 
 
   if (permissions.includes(PERMISSIONS.DASHBOARD_VIEW)) {
@@ -18,6 +20,8 @@ export default async function HomePage() {
   }
 
   if (permissions.includes(PERMISSIONS.FILES_VIEW)) {
+    console.log("useer have view files permisisoin");
+    
     redirect("/dashboard/files");
   }
 

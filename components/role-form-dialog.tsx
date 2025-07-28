@@ -23,6 +23,7 @@ import {
   type PermissionValue,
 } from "@/lib/constants/permissions";
 import type { Permission, RoleWithPermissions } from "@/types/roles";
+import { cn } from "@/lib/utils";
 
 interface RoleFormDialogProps {
   role: RoleWithPermissions | null;
@@ -37,6 +38,25 @@ interface RoleFormData {
   permissions: string[]; // Permission keys
 }
 
+// Define permission dependencies - view permissions are prerequisites
+const PERMISSION_DEPENDENCIES: Record<string, string> = {
+  [PERMISSIONS.FILES_UPDATE]: PERMISSIONS.FILES_VIEW,
+  [PERMISSIONS.FILES_UPLOAD]: PERMISSIONS.FILES_VIEW,
+  [PERMISSIONS.FILES_DELETE]: PERMISSIONS.FILES_VIEW,
+  [PERMISSIONS.FOLDERS_CREATE]: PERMISSIONS.FOLDERS_VIEW,
+  [PERMISSIONS.FOLDERS_UPDATE]: PERMISSIONS.FOLDERS_VIEW,
+  [PERMISSIONS.FOLDERS_DELETE]: PERMISSIONS.FOLDERS_VIEW,
+  [PERMISSIONS.FILTERS_CREATE]: PERMISSIONS.FILTERS_VIEW,
+  [PERMISSIONS.FILTERS_UPDATE]: PERMISSIONS.FILTERS_VIEW,
+  [PERMISSIONS.FILTERS_DELETE]: PERMISSIONS.FILTERS_VIEW,
+  [PERMISSIONS.ROLES_CREATE]: PERMISSIONS.ROLES_VIEW,
+  [PERMISSIONS.ROLES_UPDATE]: PERMISSIONS.ROLES_VIEW,
+  [PERMISSIONS.ROLES_DELETE]: PERMISSIONS.ROLES_VIEW,
+  [PERMISSIONS.USERS_CREATE]: PERMISSIONS.USERS_VIEW,
+  [PERMISSIONS.USERS_UPDATE]: PERMISSIONS.USERS_VIEW,
+  [PERMISSIONS.USERS_DELETE]: PERMISSIONS.USERS_VIEW,
+};
+
 const AVAILABLE_PERMISSIONS: { id: string; name: string; category: string }[] =
   Object.entries(PERMISSION_GROUPS).flatMap(([categoryKey, perms]) => {
     const categoryNameMap: Record<string, string> = {
@@ -49,6 +69,7 @@ const AVAILABLE_PERMISSIONS: { id: string; name: string; category: string }[] =
       dashboard: "Tableau de bord",
       admin: "Administration",
     };
+
     return perms.map((perm) => ({
       id: perm,
       name: getPermissionLabel(perm as PermissionValue),
@@ -65,7 +86,7 @@ function getPermissionLabel(permission: string): string {
     case PERMISSIONS.FILES_UPDATE:
       return "Modifier les fichiers";
     case PERMISSIONS.FILES_UPLOAD:
-      return "Télécharger les fichiers";
+      return "Chargement des fichiers";
     case PERMISSIONS.FILES_DELETE:
       return "Supprimer les fichiers";
     case PERMISSIONS.FOLDERS_VIEW:
@@ -84,14 +105,6 @@ function getPermissionLabel(permission: string): string {
       return "Modifier les filtres";
     case PERMISSIONS.FILTERS_DELETE:
       return "Supprimer les filtres";
-    case PERMISSIONS.COMMENTS_VIEW:
-      return "Voir les commentaires";
-    case PERMISSIONS.COMMENTS_CREATE:
-      return "Créer les commentaires";
-    case PERMISSIONS.COMMENTS_UPDATE:
-      return "Modifier les commentaires";
-    case PERMISSIONS.COMMENTS_DELETE:
-      return "Supprimer les commentaires";
     case PERMISSIONS.ROLES_VIEW:
       return "Voir les rôles";
     case PERMISSIONS.ROLES_CREATE:
@@ -154,10 +167,10 @@ export function RoleFormDialog({
         setFetchingAllPermissions(false);
       }
     };
+
     fetchAllPermissions();
   }, []);
 
-  // Create a map for quick lookup of permission IDs by key
   const permissionKeyToIdMap = useMemo(() => {
     const map = new Map<string, number>();
     allPermissions.forEach((p) => map.set(p.key, p.id));
@@ -189,7 +202,7 @@ export function RoleFormDialog({
     try {
       const permissionIds = formData.permissions
         .map((key) => permissionKeyToIdMap.get(key))
-        .filter((id): id is number => id !== undefined); // Filter out undefined (for keys not found)
+        .filter((id): id is number => id !== undefined);
 
       const requestBody = {
         name: formData.name,
@@ -199,7 +212,6 @@ export function RoleFormDialog({
 
       let response: Response;
       if (isEditing) {
-        // Update existing role
         console.log("Sending PUT request:", requestBody);
         response = await fetch(`/api/roles/${role!.id}`, {
           method: "PUT",
@@ -209,7 +221,6 @@ export function RoleFormDialog({
           body: JSON.stringify(requestBody),
         });
       } else {
-        // Create new role
         console.log("Sending POST request:", requestBody);
         response = await fetch("/api/roles", {
           method: "POST",
@@ -237,13 +248,45 @@ export function RoleFormDialog({
     }
   };
 
+  // Check if a permission is disabled due to missing dependency
+  const isPermissionDisabled = (permissionId: string): boolean => {
+    const requiredPermission = PERMISSION_DEPENDENCIES[permissionId];
+    if (!requiredPermission) return false;
+    return !formData.permissions.includes(requiredPermission);
+  };
+
+  // Get all dependent permissions for a given permission
+  const getDependentPermissions = (permissionId: string): string[] => {
+    return Object.keys(PERMISSION_DEPENDENCIES).filter(
+      (key) => PERMISSION_DEPENDENCIES[key] === permissionId
+    );
+  };
+
   const handlePermissionChange = (permissionId: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      permissions: checked
-        ? [...prev.permissions, permissionId]
-        : prev.permissions.filter((p) => p !== permissionId),
-    }));
+    setFormData((prev) => {
+      let newPermissions = [...prev.permissions];
+
+      if (checked) {
+        // Add the permission if not already present
+        if (!newPermissions.includes(permissionId)) {
+          newPermissions.push(permissionId);
+        }
+      } else {
+        // Remove the permission
+        newPermissions = newPermissions.filter((p) => p !== permissionId);
+
+        // Also remove all dependent permissions
+        const dependentPermissions = getDependentPermissions(permissionId);
+        newPermissions = newPermissions.filter(
+          (p) => !dependentPermissions.includes(p)
+        );
+      }
+
+      return {
+        ...prev,
+        permissions: newPermissions,
+      };
+    });
   };
 
   const handleSelectAllGroup = (category: string, checked: boolean) => {
@@ -255,8 +298,19 @@ export function RoleFormDialog({
       const newPermissions = new Set(prev.permissions);
 
       if (checked) {
-        permissionsInGroup.forEach((permId) => newPermissions.add(permId));
+        // When selecting all, add permissions in dependency order
+        // First add all view permissions, then others
+        const viewPermissions = permissionsInGroup.filter(
+          (permId) => !PERMISSION_DEPENDENCIES[permId]
+        );
+        const otherPermissions = permissionsInGroup.filter(
+          (permId) => PERMISSION_DEPENDENCIES[permId]
+        );
+
+        viewPermissions.forEach((permId) => newPermissions.add(permId));
+        otherPermissions.forEach((permId) => newPermissions.add(permId));
       } else {
+        // When deselecting all, remove all permissions in the group
         permissionsInGroup.forEach((permId) => newPermissions.delete(permId));
       }
 
@@ -277,18 +331,20 @@ export function RoleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="min-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Modifier le rôle" : "Créer un nouveau rôle"}
           </DialogTitle>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">Nom du rôle</Label>
@@ -302,6 +358,7 @@ export function RoleFormDialog({
                 required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -317,6 +374,7 @@ export function RoleFormDialog({
                 rows={3}
               />
             </div>
+
             <div>
               <Label>Permissions</Label>
               {fetchingAllPermissions ? (
@@ -332,6 +390,9 @@ export function RoleFormDialog({
                         formData.permissions.filter((permId) =>
                           permissions.some((p) => p.id === permId)
                         );
+                      const availablePermissionsInGroup = permissions.filter(
+                        (p) => !isPermissionDisabled(p.id)
+                      );
                       const isGroupChecked =
                         selectedPermissionsInGroup.length ===
                         permissions.length;
@@ -366,31 +427,50 @@ export function RoleFormDialog({
                             </div>
                           </CardHeader>
                           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {permissions.map((permission) => (
-                              <div
-                                key={permission.id}
-                                className="flex items-center space-x-2"
-                              >
-                                <Checkbox
-                                  id={permission.id}
-                                  checked={formData.permissions.includes(
-                                    permission.id
+                            {permissions.map((permission) => {
+                              const isDisabled = isPermissionDisabled(
+                                permission.id
+                              );
+                              const isChecked = formData.permissions.includes(
+                                permission.id
+                              );
+                              const requiredPermission =
+                                PERMISSION_DEPENDENCIES[permission.id];
+                              return (
+                                <div
+                                  key={permission.id}
+                                  className={cn(
+                                    "flex flex-row flex-wrap items-center gap-2 rounded-md border border-muted p-3 transition-colors",
+                                    isDisabled
+                                      ? "opacity-50 cursor-not-allowed"
+                                      : "hover:bg-muted/30"
                                   )}
-                                  onCheckedChange={(checked) =>
-                                    handlePermissionChange(
-                                      permission.id,
-                                      !!checked
-                                    )
-                                  }
-                                />
-                                <Label
-                                  htmlFor={permission.id}
-                                  className="text-sm font-normal cursor-pointer"
                                 >
-                                  {permission.name}
-                                </Label>
-                              </div>
-                            ))}
+                                  <Checkbox
+                                    id={permission.id}
+                                    checked={isChecked}
+                                    disabled={isDisabled}
+                                    onCheckedChange={(checked) =>
+                                      handlePermissionChange(
+                                        permission.id,
+                                        !!checked
+                                      )
+                                    }
+                                  />
+                                  <Label
+                                    htmlFor={permission.id}
+                                    className={cn(
+                                      "text-sm font-medium",
+                                      isDisabled
+                                        ? "cursor-not-allowed"
+                                        : "cursor-pointer"
+                                    )}
+                                  >
+                                    {permission.name}
+                                  </Label>
+                                </div>
+                              );
+                            })}
                           </CardContent>
                         </Card>
                       );
@@ -399,6 +479,7 @@ export function RoleFormDialog({
                 </div>
               )}
             </div>
+
             {formData.permissions.length > 0 && (
               <div>
                 <Label>Permissions sélectionnées</Label>
@@ -417,6 +498,7 @@ export function RoleFormDialog({
               </div>
             )}
           </div>
+
           <div className="flex justify-end gap-2">
             <Button
               type="button"

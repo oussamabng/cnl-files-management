@@ -6,8 +6,16 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET() {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
-    if (error) return error;
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
+    console.log("response");
+    
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
 
     const keywords = await prisma.keyword.findMany({
       include: {

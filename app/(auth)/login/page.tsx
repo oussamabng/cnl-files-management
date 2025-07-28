@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,15 +18,12 @@ import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loading } from "@/components/ui/loading";
 import { Eye, EyeOff, User } from "lucide-react";
-import { ROLES } from "@/lib/constants/roles";
 
 const loginSchema = z.object({
   email: z
@@ -69,7 +65,7 @@ export default function LoginPage() {
       console.log(data);
 
       if (data.success) {
-        router.push("/dashboard");
+        router.push("/");
         router.refresh();
       } else {
         setError(data.error || "Identifiant ou mot de passe incorrect");
@@ -177,17 +173,7 @@ export default function LoginPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">
-              Vous n'avez pas de compte ?{" "}
-            </span>
-            <Link
-              href="/signup"
-              className="text-primary hover:underline font-medium"
-            >
-              Inscrivez-vous
-            </Link>
-          </div>
+
         </CardContent>
       </Card>
     </div>

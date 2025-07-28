@@ -1,27 +1,55 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Plus, Edit, Trash2, Users, Shield, Calendar, MoreHorizontal, Eye, AlertCircle } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Users,
+  Shield,
+  Calendar,
+  MoreHorizontal,
+  Eye,
+  AlertCircle,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { RoleFormDialog } from "./role-form-dialog"
-import { DeleteRoleDialog } from "./delete-role-dialog"
-import { PERMISSIONS, type PermissionValue } from "@/lib/constants/permissions"
-import type { RoleWithPermissions } from "@/types/roles"
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { RoleFormDialog } from "./role-form-dialog";
+import { DeleteRoleDialog } from "./delete-role-dialog";
+import { PERMISSIONS, type PermissionValue } from "@/lib/constants/permissions";
+import type { RoleWithPermissions } from "@/types/roles";
 
 interface RolesContentProps {
-  permissions: PermissionValue[]
+  permissions: PermissionValue[];
 }
 
 function RolesTableSkeleton() {
@@ -44,15 +72,15 @@ function RolesTableSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 function EmptyRolesState({
   onCreateRole,
   canCreate,
 }: {
-  onCreateRole: () => void
-  canCreate: boolean
+  onCreateRole: () => void;
+  canCreate: boolean;
 }) {
   return (
     <div className="text-center py-12">
@@ -61,7 +89,8 @@ function EmptyRolesState({
       </div>
       <h3 className="text-xl font-semibold mb-2">Aucun rôle configuré</h3>
       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-        Commencez par créer votre premier rôle pour organiser les permissions de votre équipe
+        Commencez par créer votre premier rôle pour organiser les permissions de
+        votre équipe
       </p>
       {canCreate && (
         <Button onClick={onCreateRole} size="lg">
@@ -70,24 +99,24 @@ function EmptyRolesState({
         </Button>
       )}
     </div>
-  )
+  );
 }
 
 function PermissionBadges({
   rolePermissions,
 }: {
-  rolePermissions: RoleWithPermissions["rolePermissions"]
+  rolePermissions: RoleWithPermissions["rolePermissions"];
 }) {
-  const maxVisible = 3
-  const visiblePermissions = rolePermissions.slice(0, maxVisible)
-  const remainingCount = Math.max(0, rolePermissions.length - maxVisible)
+  const maxVisible = 3;
+  const visiblePermissions = rolePermissions.slice(0, maxVisible);
+  const remainingCount = Math.max(0, rolePermissions.length - maxVisible);
 
   if (rolePermissions.length === 0) {
     return (
       <Badge variant="outline" className="text-muted-foreground">
         Aucune permission
       </Badge>
-    )
+    );
   }
 
   return (
@@ -102,7 +131,9 @@ function PermissionBadges({
             </TooltipTrigger>
             <TooltipContent>
               <p className="font-medium">{rolePermission.permission.key}</p>
-              <p className="text-xs text-muted-foreground">{rolePermission.permission.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {rolePermission.permission.description}
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -129,75 +160,77 @@ function PermissionBadges({
         </TooltipProvider>
       )}
     </div>
-  )
+  );
 }
 
 export function RolesContent({ permissions }: RolesContentProps) {
-  const [roles, setRoles] = useState<RoleWithPermissions[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedRole, setSelectedRole] = useState<RoleWithPermissions | null>(null)
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [roles, setRoles] = useState<RoleWithPermissions[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState<RoleWithPermissions | null>(
+    null
+  );
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const canViewRoles = permissions.includes(PERMISSIONS.ROLES_VIEW)
+  const canViewRoles = permissions.includes(PERMISSIONS.ROLES_VIEW);
 
   useEffect(() => {
-    const canView = permissions.includes(PERMISSIONS.ROLES_VIEW)
+    const canView = permissions.includes(PERMISSIONS.ROLES_VIEW);
     if (canView) {
-      fetchRoles()
+      fetchRoles();
     } else {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [permissions])
+  }, [permissions]);
 
   const fetchRoles = async () => {
     try {
-      setLoading(true)
-      const response = await fetch("/api/roles")
+      setLoading(true);
+      const response = await fetch("/api/roles");
       if (response.ok) {
-        const res = await response.json()
-        console.log(res.data)
-        setRoles(res.data || [])
+        const res = await response.json();
+        console.log(res.data);
+        setRoles(res.data || []);
       }
     } catch (error) {
-      console.error("Error fetching roles:", error)
+      console.error("Error fetching roles:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  console.log(roles)
+  console.log(roles);
 
   const handleCreateRole = () => {
-    setSelectedRole(null)
-    setIsFormOpen(true)
-  }
+    setSelectedRole(null);
+    setIsFormOpen(true);
+  };
 
   const handleEditRole = (role: RoleWithPermissions) => {
-    setSelectedRole(role)
-    setIsFormOpen(true)
-  }
+    setSelectedRole(role);
+    setIsFormOpen(true);
+  };
 
   const handleDeleteRole = (role: RoleWithPermissions) => {
-    setSelectedRole(role)
-    setIsDeleteOpen(true)
-  }
+    setSelectedRole(role);
+    setIsDeleteOpen(true);
+  };
 
   const handleRoleUpdated = () => {
-    fetchRoles()
-    setIsFormOpen(false)
-    setSelectedRole(null)
-  }
+    fetchRoles();
+    setIsFormOpen(false);
+    setSelectedRole(null);
+  };
 
   const handleRoleDeleted = () => {
-    fetchRoles()
-    setIsDeleteOpen(false)
-    setSelectedRole(null)
-  }
+    fetchRoles();
+    setIsDeleteOpen(false);
+    setSelectedRole(null);
+  };
 
   const isSuperAdmin = (roleName: string | null): boolean => {
-    return roleName === "SUPERADMIN"
-  }
+    return roleName === "SUPERADMIN";
+  };
 
   if (loading) {
     return (
@@ -221,7 +254,7 @@ export function RolesContent({ permissions }: RolesContentProps) {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!canViewRoles) {
@@ -231,11 +264,13 @@ export function RolesContent({ permissions }: RolesContentProps) {
           <div className="text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Accès non autorisé</h3>
-            <p className="text-muted-foreground">Vous n'avez pas les permissions nécessaires pour voir les rôles.</p>
+            <p className="text-muted-foreground">
+              Vous n'avez pas les permissions nécessaires pour voir les rôles.
+            </p>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -243,9 +278,12 @@ export function RolesContent({ permissions }: RolesContentProps) {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Gestion des rôles</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Gestion des rôles
+          </h1>
           <p className="text-muted-foreground">
-            Gérez les rôles et leurs permissions pour contrôler l'accès à votre application
+            Gérez les rôles et leurs permissions pour contrôler l'accès à votre
+            application
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -264,7 +302,9 @@ export function RolesContent({ permissions }: RolesContentProps) {
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total des rôles</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total des rôles
+                </p>
                 <p className="text-2xl font-bold">{roles.length}</p>
               </div>
             </div>
@@ -275,9 +315,14 @@ export function RolesContent({ permissions }: RolesContentProps) {
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Utilisateurs assignés</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Utilisateurs assignés
+                </p>
                 <p className="text-2xl font-bold">
-                  {roles.reduce((sum, role) => sum + (role._count.userRoles || 0), 0)}
+                  {roles.reduce(
+                    (sum, role) => sum + (role._count.userRoles || 0),
+                    0
+                  )}
                 </p>
               </div>
             </div>
@@ -288,9 +333,19 @@ export function RolesContent({ permissions }: RolesContentProps) {
             <div className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-purple-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Permissions uniques</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Permissions uniques
+                </p>
                 <p className="text-2xl font-bold">
-                  {new Set(roles.flatMap((role) => role.rolePermissions?.map((rp) => rp.permission.id) || [])).size}
+                  {
+                    new Set(
+                      roles.flatMap(
+                        (role) =>
+                          role.rolePermissions?.map((rp) => rp.permission.id) ||
+                          []
+                      )
+                    ).size
+                  }
                 </p>
               </div>
             </div>
@@ -307,7 +362,9 @@ export function RolesContent({ permissions }: RolesContentProps) {
               {roles.length} rôle{roles.length !== 1 ? "s" : ""}
             </Badge>
           </CardTitle>
-          <CardDescription>Visualisez et gérez tous les rôles de votre organisation</CardDescription>
+          <CardDescription>
+            Visualisez et gérez tous les rôles de votre organisation
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {roles.length === 0 ? (
@@ -323,19 +380,30 @@ export function RolesContent({ permissions }: RolesContentProps) {
                     <TableHead className="font-semibold">Nom du rôle</TableHead>
                     <TableHead className="font-semibold">Description</TableHead>
                     <TableHead className="font-semibold">Permissions</TableHead>
-                    <TableHead className="font-semibold">Utilisateurs</TableHead>
+                    <TableHead className="font-semibold">
+                      Utilisateurs
+                    </TableHead>
                     <TableHead className="font-semibold">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         Créé le
                       </div>
                     </TableHead>
-                    <TableHead className="text-right font-semibold">Actions</TableHead>
+                    {permissions.includes(
+                      PERMISSIONS.ROLES_UPDATE || PERMISSIONS.ROLES_DELETE
+                    ) && (
+                      <TableHead className="text-right font-semibold">
+                        Actions
+                      </TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {roles.map((role) => (
-                    <TableRow key={role.id} className="hover:bg-muted/50 transition-colors">
+                    <TableRow
+                      key={role.id}
+                      className="hover:bg-muted/50 transition-colors"
+                    >
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -343,36 +411,53 @@ export function RolesContent({ permissions }: RolesContentProps) {
                           </div>
                           <div>
                             <p className="font-medium">{role.name}</p>
-                            <p className="text-xs text-muted-foreground">ID: {role.id}</p>
+                            <p className="text-xs text-muted-foreground">
+                              ID: {role.id}
+                            </p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <p className="text-sm">
-                          {role.description || <span className="text-muted-foreground italic">Aucune description</span>}
+                          {role.description || (
+                            <span className="text-muted-foreground italic">
+                              Aucune description
+                            </span>
+                          )}
                         </p>
                       </TableCell>
                       <TableCell>
-                        <PermissionBadges rolePermissions={role.rolePermissions || []} />
+                        <PermissionBadges
+                          rolePermissions={role.rolePermissions || []}
+                        />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
                             {role._count.userRoles || 0}
                           </Badge>
-                          {(role._count.userRoles || 0) > 0 && <Users className="h-3 w-3 text-muted-foreground" />}
+                          {(role._count.userRoles || 0) > 0 && (
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
                           {role.createdAt ? (
                             <div>
-                              <p>{new Date(role.createdAt).toLocaleDateString("fr-FR")}</p>
+                              <p>
+                                {new Date(role.createdAt).toLocaleDateString(
+                                  "fr-FR"
+                                )}
+                              </p>
                               <p className="text-xs text-muted-foreground">
-                                {new Date(role.createdAt).toLocaleTimeString("fr-FR", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                                {new Date(role.createdAt).toLocaleTimeString(
+                                  "fr-FR",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </p>
                             </div>
                           ) : (
@@ -380,37 +465,56 @@ export function RolesContent({ permissions }: RolesContentProps) {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => handleEditRole(role)} disabled={!permissions.includes(PERMISSIONS.ROLES_UPDATE)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Modifier
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteRole(role)}
-                              disabled={isSuperAdmin(role.name) || !permissions.includes(PERMISSIONS.ROLES_DELETE)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Supprimer
-                              {(role._count.userRoles || 0) > 0 && (
-                                <span className="ml-auto text-xs text-muted-foreground">
-                                  ({role._count.userRoles} utilisateur
-                                  {(role._count.userRoles || 0) > 1 ? "s" : ""})
-                                </span>
-                              )}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      {permissions.includes(
+                        PERMISSIONS.ROLES_UPDATE || PERMISSIONS.ROLES_DELETE
+                      ) && (
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>{" "}
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem
+                                onClick={() => handleEditRole(role)}
+                                disabled={
+                                  !permissions.includes(
+                                    PERMISSIONS.ROLES_UPDATE
+                                  )
+                                }
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteRole(role)}
+                                disabled={
+                                  isSuperAdmin(role.name) ||
+                                  !permissions.includes(
+                                    PERMISSIONS.ROLES_DELETE
+                                  )
+                                }
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Supprimer
+                                {(role._count.userRoles || 0) > 0 && (
+                                  <span className="ml-auto text-xs text-muted-foreground">
+                                    ({role._count.userRoles} utilisateur
+                                    {(role._count.userRoles || 0) > 1
+                                      ? "s"
+                                      : ""}
+                                    )
+                                  </span>
+                                )}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -435,5 +539,5 @@ export function RolesContent({ permissions }: RolesContentProps) {
         />
       )}
     </div>
-  )
+  );
 }

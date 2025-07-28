@@ -28,6 +28,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -42,9 +44,11 @@ import {
   RefreshCw,
   Lock,
   Copy,
+  Users,
 } from "lucide-react";
-import { UserWithRolesAndPermissions } from "@/types/authorization";
-import { RoleWithPermissions } from "@/types/roles";
+import type { UserWithRolesAndPermissions } from "@/types/authorization";
+import type { RoleWithPermissions } from "@/types/roles";
+import { PERMISSIONS } from "@/lib/constants/permissions"; // Import PERMISSIONS
 
 // Mock types - replace with your actual types
 interface UserFormDialogProps {
@@ -81,37 +85,145 @@ function RolePermissionsTooltip({
     return <>{children}</>;
   }
 
+  // Group permissions by category for better organization
+  const groupedPermissions = role.rolePermissions.reduce(
+    (acc, { permission }) => {
+      const category = permission.key.split("_")[0] || "OTHER";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(permission);
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
+
+  const getCategoryName = (category: string) => {
+    switch (category.toLowerCase()) {
+      case "files":
+        return "Fichiers";
+      case "folders":
+        return "Dossiers";
+      case "users":
+        return "Utilisateurs";
+      case "roles":
+        return "Rôles";
+      case "dashboard":
+        return "Tableau de bord";
+      case "filters":
+        return "Filtres";
+      case "comments":
+        return "Commentaires";
+      case "admin":
+        return "Administration";
+      default:
+        return category;
+    }
+  };
+
+  const getPermissionActionLabel = (key: string) => {
+    if (key.includes("VIEW")) return "Voir";
+    if (key.includes("CREATE")) return "Créer";
+    if (key.includes("UPDATE")) return "Modifier";
+    if (key.includes("DELETE")) return "Supprimer";
+    if (key.includes("UPLOAD")) return "Télécharger";
+    if (key.includes("SUPER_ADMIN")) return "Super Admin";
+    return "Accès";
+  };
+
   return (
-    <Tooltip delayDuration={300}>
+    <Tooltip delayDuration={200}>
       <TooltipTrigger asChild>
         <div className="w-full">{children}</div>
       </TooltipTrigger>
-      <TooltipContent side="right" className="max-w-xs p-0 z-50" sideOffset={5}>
-        <div className="p-3">
-          <div className="flex items-center gap-2 mb-2 pb-2 border-b">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="font-medium text-sm">{role.name}</span>
+      <TooltipContent
+        side="right"
+        className="max-w-sm p-0 z-50 border-0 shadow-xl bg-white dark:bg-gray-900 flex flex-col max-h-[90vh]" // Added flex-col and max-h
+        sideOffset={8}
+      >
+        <div className="overflow-hidden rounded-lg flex flex-col flex-1">
+          {" "}
+          {/* Added flex-col and flex-1 */}
+          {/* Header */}
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 border-b flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                <Shield className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">
+                  {role.name}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {role.rolePermissions.length} permission
+                  {role.rolePermissions.length > 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground mb-2">
-              Permissions ({role.rolePermissions.length})
-            </p>
-            <div className="space-y-1 max-h-32 overflow-y-auto">
-              {role.rolePermissions.map(({ permission }) => (
-                <div
-                  key={permission.id}
-                  className="flex flex-col gap-1 p-2 rounded-sm bg-muted/50"
-                >
-                  <span className="text-xs font-medium text-foreground">
-                    {permission.key}
-                  </span>
-                  {permission.description && (
-                    <span className="text-xs text-muted-foreground">
-                      {permission.description}
-                    </span>
-                  )}
-                </div>
-              ))}
+          {/* Content */}
+          <ScrollArea className="flex-1">
+            {" "}
+            {/* Changed max-h-80 to flex-1 */}
+            <div className="p-4 space-y-4">
+              {Object.entries(groupedPermissions).map(
+                ([category, permissions]) => (
+                  <div key={category} className="space-y-2">
+                    <div className="flex items-center gap-2 pb-2">
+                      <h5 className="font-medium text-xs uppercase tracking-wide text-muted-foreground">
+                        {getCategoryName(category)}
+                      </h5>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {permissions.map((permission) => {
+                        const actionLabel = getPermissionActionLabel(
+                          permission.key
+                        );
+                        return (
+                          <div
+                            key={permission.id}
+                            className="flex items-center gap-2.5 p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium text-foreground">
+                                  {actionLabel}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  sur
+                                </span>
+                                <span className="text-xs text-foreground truncate">
+                                  {getCategoryName(category)}
+                                </span>
+                              </div>
+                              {permission.description && (
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                  {permission.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </ScrollArea>
+          {/* Footer */}
+          <div className="px-4 py-2 bg-muted/20 border-t flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-muted-foreground">
+                  Permissions actives
+                </span>
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                {role.rolePermissions.length}
+              </Badge>
             </div>
           </div>
         </div>
@@ -124,32 +236,97 @@ interface RoleCheckboxItemProps {
   role: RoleWithPermissions;
   isChecked: boolean;
   onCheckedChange: (checked: boolean) => void;
+  allSelectedPermissions: Set<string>; // New prop to pass all currently selected permissions
 }
 
 function RoleCheckboxItem({
   role,
   isChecked,
   onCheckedChange,
+  allSelectedPermissions,
 }: RoleCheckboxItemProps) {
   const hasPermissions =
     role.rolePermissions && role.rolePermissions.length > 0;
 
+  // Determine if this specific role grants USERS_CREATE
+  const grantsUsersCreate = role.rolePermissions.some(
+    (rp) => rp.permission.key === PERMISSIONS.USERS_CREATE
+  );
+
+  // Check if ROLES_VIEW is globally selected (across all currently chosen roles)
+  const hasRolesViewGlobally = allSelectedPermissions.has(
+    PERMISSIONS.ROLES_VIEW
+  );
+
+  // Disable if this role grants USERS_CREATE AND ROLES_VIEW is NOT globally selected,
+  // AND this role itself does NOT grant ROLES_VIEW (to avoid disabling if ROLES_VIEW is part of this role)
+  const isDisabled =
+    grantsUsersCreate &&
+    !hasRolesViewGlobally &&
+    !role.rolePermissions.some(
+      (rp) => rp.permission.key === PERMISSIONS.ROLES_VIEW
+    );
+
   const checkboxContent = (
-    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2 rounded-md hover:bg-muted/50 transition-colors cursor-pointer w-full">
+    <FormItem
+      className={`flex flex-row items-start space-x-3 space-y-0 p-3 rounded-lg border transition-all duration-200 w-full group ${
+        isDisabled
+          ? "opacity-50 cursor-not-allowed bg-muted/20"
+          : "hover:bg-muted/30 cursor-pointer"
+      }`}
+    >
       <FormControl>
-        <Checkbox checked={isChecked} onCheckedChange={onCheckedChange} />
+        <Checkbox
+          checked={isChecked}
+          onCheckedChange={onCheckedChange}
+          className="mt-0.5"
+          disabled={isDisabled} // Apply disabled prop
+        />
       </FormControl>
-      <div className="flex-1 space-y-1 leading-none">
-        <div className="flex items-center gap-2">
-          <FormLabel className="text-sm font-normal cursor-pointer">
-            {role.name}
-          </FormLabel>
-          {hasPermissions && <Info className="h-3 w-3 text-muted-foreground" />}
+      <div className="flex-1 space-y-1.5 leading-none">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FormLabel
+              className={`text-sm font-medium ${
+                isDisabled
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer group-hover:text-primary transition-colors"
+              }`}
+            >
+              {role.name}
+            </FormLabel>
+            {hasPermissions && (
+              <div className="flex items-center gap-1">
+                <Info className="h-3.5 w-3.5 text-primary/60" />
+                <span className="text-xs text-muted-foreground">Détails</span>
+              </div>
+            )}
+          </div>
         </div>
         {hasPermissions && (
-          <p className="text-xs text-muted-foreground">
-            {role.rolePermissions?.length} permission
-            {role.rolePermissions && role.rolePermissions.length > 1 ? "s" : ""}
+          <div className="flex items-center gap-2">
+            <Users className="h-3 w-3 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">
+              {role.rolePermissions?.length} permission
+              {role.rolePermissions && role.rolePermissions.length > 1
+                ? "s"
+                : ""}{" "}
+              assignée
+              {role.rolePermissions && role.rolePermissions.length > 1
+                ? "s"
+                : ""}
+            </p>
+          </div>
+        )}
+        {role.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+            {role.description}
+          </p>
+        )}
+        {isDisabled && (
+          <p className="text-xs text-red-500 mt-1">
+            Nécessite la permission 'Voir les rôles' pour attribuer la création
+            d'utilisateurs.
           </p>
         )}
       </div>
@@ -222,10 +399,9 @@ function generatePassword(): string {
   const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const numbers = "0123456789";
   const special = '!@#$%^&*(),.?":{}|<>';
-
   const allChars = lowercase + uppercase + numbers + special;
-  let password = "";
 
+  let password = "";
   password += uppercase[Math.floor(Math.random() * uppercase.length)];
 
   for (let i = 1; i < 8; i++) {
@@ -363,7 +539,6 @@ function PasswordField({
               </Button>
             </div>
           </div>
-
           {field.value && field.value.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -375,7 +550,6 @@ function PasswordField({
                   {passwordStrength.label}
                 </span>
               </div>
-
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1">
                   {passwordStrength.requirements.length ? (
@@ -474,6 +648,56 @@ export function UserFormDialog({
         message: "Les mots de passe ne correspondent pas",
         path: ["confirmPassword"],
       }
+    )
+    .refine(
+      (data) => {
+        const selectedRoleObjects = availableRoles.filter((role) =>
+          data.roleIds.includes(role.id.toString())
+        );
+
+        const allSelectedPermissions = new Set<string>();
+        selectedRoleObjects.forEach((role) => {
+          role.rolePermissions.forEach((rp) => {
+            allSelectedPermissions.add(rp.permission.key);
+          });
+        });
+
+        // Validation: ROLES_CREATE/UPDATE/DELETE require ROLES_VIEW
+        const dependentRoleManagementPermissions = [
+          PERMISSIONS.ROLES_CREATE,
+          PERMISSIONS.ROLES_UPDATE,
+          PERMISSIONS.ROLES_DELETE,
+        ];
+        const requiresRolesViewForRoleManagement =
+          dependentRoleManagementPermissions.some((depPerm) =>
+            allSelectedPermissions.has(depPerm)
+          );
+
+        if (
+          requiresRolesViewForRoleManagement &&
+          !allSelectedPermissions.has(PERMISSIONS.ROLES_VIEW)
+        ) {
+          return false; // Fails if role management permissions are selected without ROLES_VIEW
+        }
+
+        // New validation: USERS_CREATE requires ROLES_VIEW
+        const requiresRolesViewForUserCreation = allSelectedPermissions.has(
+          PERMISSIONS.USERS_CREATE
+        );
+        if (
+          requiresRolesViewForUserCreation &&
+          !allSelectedPermissions.has(PERMISSIONS.ROLES_VIEW)
+        ) {
+          return false; // Fails if USERS_CREATE is selected without ROLES_VIEW
+        }
+
+        return true; // All checks passed
+      },
+      {
+        message:
+          "Les permissions de création, modification ou suppression de rôles nécessitent la permission de 'Voir les rôles'. De plus, la permission de 'Créer des utilisateurs' nécessite également la permission de 'Voir les rôles'.",
+        path: ["roleIds"], // Attach error to roleIds field
+      }
     );
 
   type FormData = z.infer<typeof formSchema>;
@@ -520,9 +744,11 @@ export function UserFormDialog({
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     setError(null);
+
     try {
       const url = user ? `/api/users/${user.id}` : "/api/users";
       const method = user ? "PUT" : "POST";
+
       const payload: Partial<FormData> = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -541,6 +767,7 @@ export function UserFormDialog({
       });
 
       const result = await response.json();
+
       if (!result.success)
         throw new Error(result.message || "Une erreur est survenue");
 
@@ -593,9 +820,24 @@ export function UserFormDialog({
     form.setValue("confirmPassword", password);
   };
 
+  // Calculate all currently selected permissions based on the form's roleIds
+  const allSelectedPermissions = useMemo(() => {
+    const permissionsSet = new Set<string>();
+    const currentRoleIds = form.watch("roleIds");
+    currentRoleIds.forEach((roleId) => {
+      const role = availableRoles.find((r) => r.id.toString() === roleId);
+      if (role) {
+        role.rolePermissions.forEach((rp) =>
+          permissionsSet.add(rp.permission.key)
+        );
+      }
+    });
+    return permissionsSet;
+  }, [form.watch("roleIds"), availableRoles]); // Re-calculate when roleIds change
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <TooltipProvider>
           <DialogHeader>
             <DialogTitle>
@@ -607,8 +849,9 @@ export function UserFormDialog({
                 : "Remplissez les informations pour créer un nouvel utilisateur."}
             </DialogDescription>
           </DialogHeader>
+
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -722,35 +965,41 @@ export function UserFormDialog({
                 name="roleIds"
                 render={() => (
                   <FormItem>
-                    <FormLabel>Rôles</FormLabel>
-                    <div className="space-y-1 max-h-40 overflow-y-auto border rounded-md p-2">
-                      {availableRoles.map((role) => (
-                        <FormField
-                          key={role.id}
-                          control={form.control}
-                          name="roleIds"
-                          render={({ field }) => (
-                            <RoleCheckboxItem
-                              role={role}
-                              isChecked={
-                                field.value?.includes(role.id.toString()) ||
-                                false
-                              }
-                              onCheckedChange={(checked) =>
-                                handleRoleChange(role.id.toString(), checked)
-                              }
-                            />
-                          )}
-                        />
-                      ))}
-                    </div>
+                    <FormLabel className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Rôles
+                    </FormLabel>
+                    <ScrollArea className="max-h-60 border rounded-lg p-2">
+                      <div className="space-y-2">
+                        {availableRoles.map((role) => (
+                          <FormField
+                            key={role.id}
+                            control={form.control}
+                            name="roleIds"
+                            render={({ field }) => (
+                              <RoleCheckboxItem
+                                role={role}
+                                isChecked={
+                                  field.value?.includes(role.id.toString()) ||
+                                  false
+                                }
+                                onCheckedChange={(checked) =>
+                                  handleRoleChange(role.id.toString(), checked)
+                                }
+                                allSelectedPermissions={allSelectedPermissions} // Pass all selected permissions
+                              />
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
               {error && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
                   {error}
                 </div>
               )}
