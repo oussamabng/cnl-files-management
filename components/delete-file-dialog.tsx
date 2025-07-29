@@ -32,7 +32,6 @@ export function DeleteFileDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Reset error when dialog opens
   useEffect(() => {
     if (open) {
       setError("");

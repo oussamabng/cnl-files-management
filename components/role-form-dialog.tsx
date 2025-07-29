@@ -19,6 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import {
   PERMISSIONS,
+  PERMISSION_DEPENDENCIES,
   PERMISSION_GROUPS,
   type PermissionValue,
 } from "@/lib/constants/permissions";
@@ -35,27 +36,8 @@ interface RoleFormDialogProps {
 interface RoleFormData {
   name: string;
   description: string;
-  permissions: string[]; // Permission keys
+  permissions: string[];
 }
-
-// Define permission dependencies - view permissions are prerequisites
-const PERMISSION_DEPENDENCIES: Record<string, string> = {
-  [PERMISSIONS.FILES_UPDATE]: PERMISSIONS.FILES_VIEW,
-  [PERMISSIONS.FILES_UPLOAD]: PERMISSIONS.FILES_VIEW,
-  [PERMISSIONS.FILES_DELETE]: PERMISSIONS.FILES_VIEW,
-  [PERMISSIONS.FOLDERS_CREATE]: PERMISSIONS.FOLDERS_VIEW,
-  [PERMISSIONS.FOLDERS_UPDATE]: PERMISSIONS.FOLDERS_VIEW,
-  [PERMISSIONS.FOLDERS_DELETE]: PERMISSIONS.FOLDERS_VIEW,
-  [PERMISSIONS.FILTERS_CREATE]: PERMISSIONS.FILTERS_VIEW,
-  [PERMISSIONS.FILTERS_UPDATE]: PERMISSIONS.FILTERS_VIEW,
-  [PERMISSIONS.FILTERS_DELETE]: PERMISSIONS.FILTERS_VIEW,
-  [PERMISSIONS.ROLES_CREATE]: PERMISSIONS.ROLES_VIEW,
-  [PERMISSIONS.ROLES_UPDATE]: PERMISSIONS.ROLES_VIEW,
-  [PERMISSIONS.ROLES_DELETE]: PERMISSIONS.ROLES_VIEW,
-  [PERMISSIONS.USERS_CREATE]: PERMISSIONS.USERS_VIEW,
-  [PERMISSIONS.USERS_UPDATE]: PERMISSIONS.USERS_VIEW,
-  [PERMISSIONS.USERS_DELETE]: PERMISSIONS.USERS_VIEW,
-};
 
 const AVAILABLE_PERMISSIONS: { id: string; name: string; category: string }[] =
   Object.entries(PERMISSION_GROUPS).flatMap(([categoryKey, perms]) => {
@@ -150,19 +132,19 @@ export function RoleFormDialog({
     const fetchAllPermissions = async () => {
       try {
         const response = await fetch("/api/permissions");
+        const res = await response.json();
         if (response.ok) {
-          const { data } = await response.json();
-          setAllPermissions(data);
+          setAllPermissions(res.data);
         } else {
-          console.error(
-            "Failed to fetch all permissions:",
-            await response.json()
+          setError(
+            res.message ||
+              "Erreur lors de la connexion au serveur pour charger les autorisations.."
           );
-          setError("Failed to load all permissions.");
         }
       } catch (err) {
-        console.error("Error fetching all permissions:", err);
-        setError("Error connecting to server to load permissions.");
+        setError(
+          "Erreur lors de la connexion au serveur pour charger les autorisations."
+        );
       } finally {
         setFetchingAllPermissions(false);
       }
@@ -203,7 +185,6 @@ export function RoleFormDialog({
       const permissionIds = formData.permissions
         .map((key) => permissionKeyToIdMap.get(key))
         .filter((id): id is number => id !== undefined);
-
       const requestBody = {
         name: formData.name,
         description: formData.description,
@@ -232,33 +213,46 @@ export function RoleFormDialog({
       }
 
       const result = await response.json();
-      console.log("API Response:", result);
-
       if (response.ok) {
         onRoleUpdated();
         onOpenChange(false);
       } else {
-        setError(result.error || "Une erreur est survenue");
+        setError(result.message || "Une erreur est survenue");
       }
     } catch (error) {
-      console.error("Error submitting role:", error);
       setError("Erreur de connexion au serveur");
     } finally {
       setLoading(false);
     }
   };
 
-  // Check if a permission is disabled due to missing dependency
   const isPermissionDisabled = (permissionId: string): boolean => {
-    const requiredPermission = PERMISSION_DEPENDENCIES[permissionId];
-    if (!requiredPermission) return false;
-    return !formData.permissions.includes(requiredPermission);
+    const requiredPermissions = PERMISSION_DEPENDENCIES[permissionId];
+    if (!requiredPermissions || requiredPermissions.length === 0) return false;
+    return requiredPermissions.some(
+      (requiredPerm) => !formData.permissions.includes(requiredPerm)
+    );
   };
 
-  // Get all dependent permissions for a given permission
+  const getDisabledTooltip = (permissionId: string): string => {
+    const requiredPermissions = PERMISSION_DEPENDENCIES[permissionId];
+    if (!requiredPermissions || requiredPermissions.length === 0) return "";
+
+    const missingPermissions = requiredPermissions.filter(
+      (requiredPerm) => !formData.permissions.includes(requiredPerm)
+    );
+
+    if (missingPermissions.length === 0) return "";
+
+    const missingLabels = missingPermissions.map((perm) =>
+      getPermissionLabel(perm)
+    );
+    return `Requiert: ${missingLabels.join(", ")}`;
+  };
+
   const getDependentPermissions = (permissionId: string): string[] => {
-    return Object.keys(PERMISSION_DEPENDENCIES).filter(
-      (key) => PERMISSION_DEPENDENCIES[key] === permissionId
+    return Object.keys(PERMISSION_DEPENDENCIES).filter((key) =>
+      PERMISSION_DEPENDENCIES[key].includes(permissionId)
     );
   };
 
@@ -267,15 +261,12 @@ export function RoleFormDialog({
       let newPermissions = [...prev.permissions];
 
       if (checked) {
-        // Add the permission if not already present
         if (!newPermissions.includes(permissionId)) {
           newPermissions.push(permissionId);
         }
       } else {
-        // Remove the permission
         newPermissions = newPermissions.filter((p) => p !== permissionId);
 
-        // Also remove all dependent permissions
         const dependentPermissions = getDependentPermissions(permissionId);
         newPermissions = newPermissions.filter(
           (p) => !dependentPermissions.includes(p)
@@ -291,26 +282,26 @@ export function RoleFormDialog({
 
   const handleSelectAllGroup = (category: string, checked: boolean) => {
     setFormData((prev) => {
+      // Get all permissions in the current category
       const permissionsInGroup = AVAILABLE_PERMISSIONS.filter(
         (p) => p.category === category
       ).map((p) => p.id);
 
       const newPermissions = new Set(prev.permissions);
 
-      if (checked) {
-        // When selecting all, add permissions in dependency order
-        // First add all view permissions, then others
-        const viewPermissions = permissionsInGroup.filter(
-          (permId) => !PERMISSION_DEPENDENCIES[permId]
-        );
-        const otherPermissions = permissionsInGroup.filter(
-          (permId) => PERMISSION_DEPENDENCIES[permId]
-        );
+      // Filter for only the *enabled* permissions within the group
+      const enabledPermissionsInGroup = permissionsInGroup.filter(
+        (permId) => !isPermissionDisabled(permId)
+      );
 
-        viewPermissions.forEach((permId) => newPermissions.add(permId));
-        otherPermissions.forEach((permId) => newPermissions.add(permId));
+      if (checked) {
+        // Add only enabled permissions when "Select All" is checked
+        enabledPermissionsInGroup.forEach((permId) =>
+          newPermissions.add(permId)
+        );
       } else {
-        // When deselecting all, remove all permissions in the group
+        // Remove all permissions in the group, regardless of their enabled state,
+        // to ensure a complete uncheck.
         permissionsInGroup.forEach((permId) => newPermissions.delete(permId));
       }
 
@@ -386,19 +377,28 @@ export function RoleFormDialog({
                 <div className="space-y-4 mt-2 p-4 border rounded-md bg-muted/20">
                   {Object.entries(groupedPermissions).map(
                     ([category, permissions]) => {
-                      const selectedPermissionsInGroup =
-                        formData.permissions.filter((permId) =>
-                          permissions.some((p) => p.id === permId)
-                        );
-                      const availablePermissionsInGroup = permissions.filter(
+                      // Filter for *only* the enabled permissions in the group
+                      const enabledPermissionsInGroup = permissions.filter(
                         (p) => !isPermissionDisabled(p.id)
                       );
+
+                      // Determine how many of the *enabled* permissions are currently selected
+                      const selectedEnabledPermissionsInGroup =
+                        formData.permissions.filter((permId) =>
+                          enabledPermissionsInGroup.some((p) => p.id === permId)
+                        );
+
+                      // The group is checked if all *enabled* permissions are selected
                       const isGroupChecked =
-                        selectedPermissionsInGroup.length ===
-                        permissions.length;
+                        enabledPermissionsInGroup.length > 0 &&
+                        selectedEnabledPermissionsInGroup.length ===
+                          enabledPermissionsInGroup.length;
+
+                      // The group is indeterminate if some (but not all) *enabled* permissions are selected
                       const isGroupIndeterminate =
-                        selectedPermissionsInGroup.length > 0 &&
-                        selectedPermissionsInGroup.length < permissions.length;
+                        selectedEnabledPermissionsInGroup.length > 0 &&
+                        selectedEnabledPermissionsInGroup.length <
+                          enabledPermissionsInGroup.length;
 
                       return (
                         <Card key={category}>
@@ -434,40 +434,50 @@ export function RoleFormDialog({
                               const isChecked = formData.permissions.includes(
                                 permission.id
                               );
-                              const requiredPermission =
-                                PERMISSION_DEPENDENCIES[permission.id];
+                              const tooltipMessage = isDisabled
+                                ? getDisabledTooltip(permission.id)
+                                : "";
+
                               return (
                                 <div
                                   key={permission.id}
                                   className={cn(
-                                    "flex flex-row flex-wrap items-center gap-2 rounded-md border border-muted p-3 transition-colors",
+                                    "flex flex-col gap-1 rounded-md border border-muted p-3 transition-colors",
                                     isDisabled
                                       ? "opacity-50 cursor-not-allowed"
                                       : "hover:bg-muted/30"
                                   )}
+                                  title={tooltipMessage}
                                 >
-                                  <Checkbox
-                                    id={permission.id}
-                                    checked={isChecked}
-                                    disabled={isDisabled}
-                                    onCheckedChange={(checked) =>
-                                      handlePermissionChange(
-                                        permission.id,
-                                        !!checked
-                                      )
-                                    }
-                                  />
-                                  <Label
-                                    htmlFor={permission.id}
-                                    className={cn(
-                                      "text-sm font-medium",
-                                      isDisabled
-                                        ? "cursor-not-allowed"
-                                        : "cursor-pointer"
-                                    )}
-                                  >
-                                    {permission.name}
-                                  </Label>
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox
+                                      id={permission.id}
+                                      checked={isChecked}
+                                      disabled={isDisabled}
+                                      onCheckedChange={(checked) =>
+                                        handlePermissionChange(
+                                          permission.id,
+                                          !!checked
+                                        )
+                                      }
+                                    />
+                                    <Label
+                                      htmlFor={permission.id}
+                                      className={cn(
+                                        "text-sm font-medium",
+                                        isDisabled
+                                          ? "cursor-not-allowed"
+                                          : "cursor-pointer"
+                                      )}
+                                    >
+                                      {permission.name}
+                                    </Label>
+                                  </div>
+                                  {isDisabled && tooltipMessage && (
+                                    <div className="text-xs text-muted-foreground pl-6">
+                                      {tooltipMessage}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}

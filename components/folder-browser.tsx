@@ -305,48 +305,49 @@ export function FolderBrowser({
                     </div>
                   </div>
                 </div>
-
-                {!selectionMode && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingFolder(folder);
-                        }}
-                        disabled={
-                          !permissions.includes(PERMISSIONS.FOLDERS_UPDATE)
-                        }
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Renommer
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeletingFolder(folder);
-                        }}
-                        disabled={
-                          !permissions.includes(PERMISSIONS.FOLDERS_DELETE)
-                        }
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Supprimer
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                {!selectionMode &&
+                  (permissions.includes(PERMISSIONS.FOLDERS_UPDATE) ||
+                    permissions.includes(PERMISSIONS.FOLDERS_DELETE)) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingFolder(folder);
+                          }}
+                          disabled={
+                            !permissions.includes(PERMISSIONS.FOLDERS_UPDATE)
+                          }
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Renommer
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingFolder(folder);
+                          }}
+                          disabled={
+                            !permissions.includes(PERMISSIONS.FOLDERS_DELETE)
+                          }
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
               </div>
             </div>
           ))}

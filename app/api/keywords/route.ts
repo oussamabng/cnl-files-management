@@ -6,9 +6,7 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET() {
   try {
-    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
-    console.log("response");
-    
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW)
 
     if (!response.success) {
       return NextResponse.json(

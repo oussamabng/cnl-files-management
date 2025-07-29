@@ -236,63 +236,29 @@ interface RoleCheckboxItemProps {
   role: RoleWithPermissions;
   isChecked: boolean;
   onCheckedChange: (checked: boolean) => void;
-  allSelectedPermissions: Set<string>; // New prop to pass all currently selected permissions
 }
 
 function RoleCheckboxItem({
   role,
   isChecked,
   onCheckedChange,
-  allSelectedPermissions,
 }: RoleCheckboxItemProps) {
   const hasPermissions =
     role.rolePermissions && role.rolePermissions.length > 0;
 
-  // Determine if this specific role grants USERS_CREATE
-  const grantsUsersCreate = role.rolePermissions.some(
-    (rp) => rp.permission.key === PERMISSIONS.USERS_CREATE
-  );
-
-  // Check if ROLES_VIEW is globally selected (across all currently chosen roles)
-  const hasRolesViewGlobally = allSelectedPermissions.has(
-    PERMISSIONS.ROLES_VIEW
-  );
-
-  // Disable if this role grants USERS_CREATE AND ROLES_VIEW is NOT globally selected,
-  // AND this role itself does NOT grant ROLES_VIEW (to avoid disabling if ROLES_VIEW is part of this role)
-  const isDisabled =
-    grantsUsersCreate &&
-    !hasRolesViewGlobally &&
-    !role.rolePermissions.some(
-      (rp) => rp.permission.key === PERMISSIONS.ROLES_VIEW
-    );
-
   const checkboxContent = (
-    <FormItem
-      className={`flex flex-row items-start space-x-3 space-y-0 p-3 rounded-lg border transition-all duration-200 w-full group ${
-        isDisabled
-          ? "opacity-50 cursor-not-allowed bg-muted/20"
-          : "hover:bg-muted/30 cursor-pointer"
-      }`}
-    >
+    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30 transition-all duration-200 cursor-pointer w-full group">
       <FormControl>
         <Checkbox
           checked={isChecked}
           onCheckedChange={onCheckedChange}
           className="mt-0.5"
-          disabled={isDisabled} // Apply disabled prop
         />
       </FormControl>
       <div className="flex-1 space-y-1.5 leading-none">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FormLabel
-              className={`text-sm font-medium ${
-                isDisabled
-                  ? "cursor-not-allowed"
-                  : "cursor-pointer group-hover:text-primary transition-colors"
-              }`}
-            >
+            <FormLabel className="text-sm font-medium cursor-pointer group-hover:text-primary transition-colors">
               {role.name}
             </FormLabel>
             {hasPermissions && (
@@ -321,12 +287,6 @@ function RoleCheckboxItem({
         {role.description && (
           <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
             {role.description}
-          </p>
-        )}
-        {isDisabled && (
-          <p className="text-xs text-red-500 mt-1">
-            Nécessite la permission 'Voir les rôles' pour attribuer la création
-            d'utilisateurs.
           </p>
         )}
       </div>
@@ -662,40 +622,26 @@ export function UserFormDialog({
           });
         });
 
-        // Validation: ROLES_CREATE/UPDATE/DELETE require ROLES_VIEW
-        const dependentRoleManagementPermissions = [
+        const dependentRolePermissions = [
           PERMISSIONS.ROLES_CREATE,
           PERMISSIONS.ROLES_UPDATE,
           PERMISSIONS.ROLES_DELETE,
         ];
-        const requiresRolesViewForRoleManagement =
-          dependentRoleManagementPermissions.some((depPerm) =>
-            allSelectedPermissions.has(depPerm)
-          );
-
-        if (
-          requiresRolesViewForRoleManagement &&
-          !allSelectedPermissions.has(PERMISSIONS.ROLES_VIEW)
-        ) {
-          return false; // Fails if role management permissions are selected without ROLES_VIEW
-        }
-
-        // New validation: USERS_CREATE requires ROLES_VIEW
-        const requiresRolesViewForUserCreation = allSelectedPermissions.has(
-          PERMISSIONS.USERS_CREATE
+        const requiresRolesView = dependentRolePermissions.some((depPerm) =>
+          allSelectedPermissions.has(depPerm)
         );
+
         if (
-          requiresRolesViewForUserCreation &&
+          requiresRolesView &&
           !allSelectedPermissions.has(PERMISSIONS.ROLES_VIEW)
         ) {
-          return false; // Fails if USERS_CREATE is selected without ROLES_VIEW
+          return false;
         }
-
-        return true; // All checks passed
+        return true;
       },
       {
         message:
-          "Les permissions de création, modification ou suppression de rôles nécessitent la permission de 'Voir les rôles'. De plus, la permission de 'Créer des utilisateurs' nécessite également la permission de 'Voir les rôles'.",
+          "Les permissions de création, modification ou suppression de rôles nécessitent la permission de 'Voir les rôles'.",
         path: ["roleIds"], // Attach error to roleIds field
       }
     );
@@ -820,24 +766,9 @@ export function UserFormDialog({
     form.setValue("confirmPassword", password);
   };
 
-  // Calculate all currently selected permissions based on the form's roleIds
-  const allSelectedPermissions = useMemo(() => {
-    const permissionsSet = new Set<string>();
-    const currentRoleIds = form.watch("roleIds");
-    currentRoleIds.forEach((roleId) => {
-      const role = availableRoles.find((r) => r.id.toString() === roleId);
-      if (role) {
-        role.rolePermissions.forEach((rp) =>
-          permissionsSet.add(rp.permission.key)
-        );
-      }
-    });
-    return permissionsSet;
-  }, [form.watch("roleIds"), availableRoles]); // Re-calculate when roleIds change
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         <TooltipProvider>
           <DialogHeader>
             <DialogTitle>
@@ -969,7 +900,7 @@ export function UserFormDialog({
                       <Users className="h-4 w-4" />
                       Rôles
                     </FormLabel>
-                    <ScrollArea className="max-h-60 border rounded-lg p-2">
+                    <ScrollArea className="max-h-30 border rounded-lg p-2">
                       <div className="space-y-2">
                         {availableRoles.map((role) => (
                           <FormField
@@ -986,7 +917,6 @@ export function UserFormDialog({
                                 onCheckedChange={(checked) =>
                                   handleRoleChange(role.id.toString(), checked)
                                 }
-                                allSelectedPermissions={allSelectedPermissions} // Pass all selected permissions
                               />
                             )}
                           />

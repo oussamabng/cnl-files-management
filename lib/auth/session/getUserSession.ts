@@ -8,7 +8,6 @@ import { RoleValue } from "../../constants/roles";
 const JWT_SECRET = (process.env.JWT_SECRET as string) || "your-jwt-secret";
 
 export async function getSessionUser(): Promise<UserWithRolesAndPermissions | null> {
-  console.log("fetching user session");
 
   const token = (await cookies()).get("auth_token")?.value;
   if (!token) return null;
@@ -18,7 +17,6 @@ export async function getSessionUser(): Promise<UserWithRolesAndPermissions | nu
       userId?: string;
       isViewer?: boolean;
     };
-    console.log("decoded",decoded);
 
     if (decoded.isViewer) {
       const viewerRole = await prisma.role.findFirst();

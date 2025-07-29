@@ -12,6 +12,7 @@ import {
   type SortingState,
   type ColumnFiltersState,
   type PaginationState,
+  Row,
 } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, Search, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -110,58 +111,63 @@ export function FiltersContent({
         );
       },
     },
-    {
-      id: "actions",
-      header: "Actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const keyword = row.original;
-        const isDeleting = deletingKeywordId === keyword.id;
+    ...(permissions.includes(PERMISSIONS.FILTERS_DELETE) || permissions.includes(PERMISSIONS.FILTERS_UPDATE)
+      ? [
+          {
+            id: "actions",
+            header: "Actions",
+            enableHiding: false,
+            cell: ({ row }: { row: Row<Keyword> }) => {
+              const keyword = row.original;
+              const isDeleting = deletingKeywordId === keyword.id;
 
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <Loading variant="spinner" size="sm" />
-                ) : (
-                  <MoreHorizontal className="h-4 w-4" />
-                )}
-                <span className="sr-only">Ouvrir le menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => setEditingKeyword(keyword)}
-                disabled={!canUpdate || isDeleting}
-                className={!canUpdate ? "opacity-50 cursor-not-allowed" : ""}
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Modifier
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setDeletingKeyword(keyword);
-                  setDeletingKeywordId(keyword.id);
-                }}
-                className={`text-destructive ${
-                  !canDelete ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={!canDelete || isDeleting}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
+              return (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <Loading variant="spinner" size="sm" />
+                      ) : (
+                        <MoreHorizontal className="h-4 w-4" />
+                      )}
+                      <span className="sr-only">Ouvrir le menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => setEditingKeyword(keyword)}
+                      disabled={!canUpdate || isDeleting}
+                      className={
+                        !canUpdate ? "opacity-50 cursor-not-allowed" : ""
+                      }
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Modifier
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDeletingKeyword(keyword);
+                        setDeletingKeywordId(keyword.id);
+                      }}
+                      className={`text-destructive ${
+                        !canDelete ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      disabled={!canDelete || isDeleting}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Supprimer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   const table = useReactTable({

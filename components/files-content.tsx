@@ -324,7 +324,7 @@ export function FilesContent({
       },
       enableSorting: false,
     },
-    ...(true
+    ...(permissions.includes(PERMISSIONS.FILES_UPDATE) || permissions.includes(PERMISSIONS.FILES_DELETE)
       ? [
           {
             id: "actions" as const,

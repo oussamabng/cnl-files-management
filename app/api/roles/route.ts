@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { PERMISSIONS } from "@/lib/constants/permissions";
+import {
+  PERMISSION_DEPENDENCIES,
+  PERMISSIONS,
+  PermissionValue,
+} from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
+import { getValidationErrorMessage } from "@/lib/utils";
 
 export async function GET() {
   try {
-    const response = await requireApiPermission([PERMISSIONS.ROLES_VIEW,PERMISSIONS.USERS_CREATE]);
+    const response = await requireApiPermission([
+      PERMISSIONS.ROLES_VIEW,
+      PERMISSIONS.USERS_CREATE,
+    ]);
 
     if (!response.success) {
       return NextResponse.json(
@@ -59,27 +67,24 @@ export async function POST(req: Request) {
         { status: response.status }
       );
     }
-
     const body = await req.json();
     const { name, description, permissionIds } = body;
 
     if (!name || !Array.isArray(permissionIds)) {
       return NextResponse.json(
-        { error: "Entrée invalide. 'name' et 'permissionIds' sont requis." }, // Translated
+        { error: "Entrée invalide. 'name' et 'permissionIds' sont requis." },
         { status: 400 }
       );
     }
 
-    // 🔍 Optional: check for existing role name
     const existing = await prisma.role.findUnique({ where: { name } });
     if (existing) {
       return NextResponse.json(
-        { error: `Le rôle "${name}" existe déjà.` }, // Translated
+        { message: `Le rôle "${name}" existe déjà.` },
         { status: 409 }
       );
     }
 
-    // 🔐 Fetch permission IDs by key
     const matchedPermissions = await prisma.permission.findMany({
       where: {
         id: { in: permissionIds },
@@ -96,7 +101,36 @@ export async function POST(req: Request) {
       );
       return NextResponse.json(
         {
-          error: `Clé(s) de permission invalide(s) : ${invalidKeys.join(", ")}`,
+          message: `Clé(s) de permission invalide(s) : ${invalidKeys.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    const permissionsKeys: PermissionValue[] = matchedPermissions.map(
+      (p) => p.key as PermissionValue
+    );
+
+    const missingDependencies: Record<PermissionValue, PermissionValue[]> = {};
+
+    permissionsKeys.forEach((permissionId) => {
+      const requiredPermissions = PERMISSION_DEPENDENCIES[permissionId];
+      if (!requiredPermissions || requiredPermissions.length === 0) return;
+
+      const missing = requiredPermissions.filter(
+        (requiredPerm) => !permissionsKeys.includes(requiredPerm)
+      );
+
+      if (missing.length > 0) {
+        missingDependencies[permissionId] = missing;
+      }
+    });
+
+    if (Object.keys(missingDependencies).length > 0) {
+      const message = getValidationErrorMessage(missingDependencies);
+      return NextResponse.json(
+        {
+          message: message,
         },
         { status: 400 }
       );
@@ -123,7 +157,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ status: 201, data: createdRole });
+    return NextResponse.json({ status: 201, data: createdRole,success:true });
   } catch (err) {
     return NextResponse.json(
       { message: "Erreur interne du serveur" },
