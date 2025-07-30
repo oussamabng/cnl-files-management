@@ -15,6 +15,8 @@ model User {
   lastName  String
   password  String
   userRoles UserRole[]
+  messages  Message[]
+  chatRooms ChatRoom[] @relation("ChatRoomMembers")
 
   createdAt DateTime @default(now())
 }
@@ -93,4 +95,26 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id])
 
   @@id([roleId, permissionId])
+}
+
+model ChatRoom {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+  members  User[]    @relation("ChatRoomMembers")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
 }

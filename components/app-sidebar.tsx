@@ -119,6 +119,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
       url: "/dashboard/roles",
       icon: Crown,
     },
+    permissions.includes(PERMISSIONS.ROLES_VIEW) && {
+      title: "Discussion",
+      url: "/dashboard/discussions",
+      icon: Crown,
+    },
   ];
 
   const menuItems: MenuItem[] = rawMenuItems.filter((item): item is MenuItem =>
