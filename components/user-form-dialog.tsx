@@ -49,8 +49,6 @@ import {
 import type { UserWithRolesAndPermissions } from "@/types/authorization";
 import type { RoleWithPermissions } from "@/types/roles";
 import { PERMISSIONS } from "@/lib/constants/permissions"; // Import PERMISSIONS
-
-// Mock types - replace with your actual types
 interface UserFormDialogProps {
   user: UserWithRolesAndPermissions | null;
   open: boolean;
@@ -85,7 +83,6 @@ function RolePermissionsTooltip({
     return <>{children}</>;
   }
 
-  // Group permissions by category for better organization
   const groupedPermissions = role.rolePermissions.reduce(
     (acc, { permission }) => {
       const category = permission.key.split("_")[0] || "OTHER";
@@ -142,9 +139,6 @@ function RolePermissionsTooltip({
         sideOffset={8}
       >
         <div className="overflow-hidden rounded-lg flex flex-col flex-1">
-          {" "}
-          {/* Added flex-col and flex-1 */}
-          {/* Header */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 border-b flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
@@ -161,10 +155,7 @@ function RolePermissionsTooltip({
               </div>
             </div>
           </div>
-          {/* Content */}
           <ScrollArea className="flex-1">
-            {" "}
-            {/* Changed max-h-80 to flex-1 */}
             <div className="p-4 space-y-4">
               {Object.entries(groupedPermissions).map(
                 ([category, permissions]) => (
@@ -213,7 +204,6 @@ function RolePermissionsTooltip({
               )}
             </div>
           </ScrollArea>
-          {/* Footer */}
           <div className="px-4 py-2 bg-muted/20 border-t flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -313,15 +303,13 @@ function calculatePasswordStrength(password: string): PasswordStrength {
     special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
   };
 
-  // For passwords with minimum 8 characters, we prioritize length and uppercase as main requirements
   let score = 0;
-  if (requirements.length) score += 2; // Length is worth 2 points
-  if (requirements.uppercase) score += 2; // Uppercase is worth 2 points (required)
+  if (requirements.length) score += 2;
+  if (requirements.uppercase) score += 2;
   if (requirements.lowercase) score += 1;
   if (requirements.number) score += 1;
   if (requirements.special) score += 1;
 
-  // Normalize score to 0-5 scale
   const normalizedScore = Math.min(5, score);
 
   let label = "";
@@ -642,7 +630,7 @@ export function UserFormDialog({
       {
         message:
           "Les permissions de création, modification ou suppression de rôles nécessitent la permission de 'Voir les rôles'.",
-        path: ["roleIds"], // Attach error to roleIds field
+        path: ["roleIds"],
       }
     );
 

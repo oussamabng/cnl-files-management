@@ -37,5 +37,9 @@ export default async function HomePage() {
     redirect("/dashboard/roles");
   }
 
+  if (permissions.includes(PERMISSIONS.CHAT_VIEW)) {
+    redirect("/dashboard/chat");
+  }
+
   redirect("/unauthorized");
 }

@@ -24,7 +24,7 @@ export default async function DashboardLayout({
           <div className="h-4 w-px bg-border" />
           <h1 className="text-lg font-semibold">Dashboard</h1>
         </header>
-        <main className="flex-1 p-4">{children}</main>
+        <main className="flex-1 p-4 h-full">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

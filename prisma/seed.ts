@@ -48,9 +48,7 @@ async function seedRole(name: string, permissionKeys: string[]) {
     });
   }
 
-  console.log(
-    `Role "${name}" seeded with ${permissions.length} permissions`
-  );
+  console.log(`Role "${name}" seeded with ${permissions.length} permissions`);
   return role;
 }
 
@@ -60,7 +58,6 @@ async function seedUsers(superAdminRoleId: number) {
     (process.env.ADMIN_PASS as string) || "Admin#123",
     10
   );
-
 
   await prisma.user.upsert({
     where: { email: adminEmail },
@@ -79,17 +76,37 @@ async function seedUsers(superAdminRoleId: number) {
   });
   console.log("ADMIN seeded");
 }
+async function seedChatRoomsBetweenUsers() {
+  const users = await prisma.user.findMany();
+  for (let i = 0; i < users.length; i++) {
+    for (let j = i + 1; j < users.length; j++) {
+      const userA = users[i];
+      const userB = users[j];
+
+      await prisma.chatRoom.create({
+        data: {
+          name: `Chat between ${userA.email} and ${userB.email}`,
+          participants: {
+            connect: [{ id: userA.id }, { id: userB.id }],
+          },
+        },
+      });
+    }
+  }
+}
 
 async function main() {
   await seedPermissions();
 
   const allPermissions = Object.values(PERMISSIONS).filter(
     (p) => p !== PERMISSIONS.SUPER_ADMIN
-  )
+  );
 
   const superAdmin = await seedRole("SUPERADMIN", allPermissions);
 
   await seedUsers(superAdmin.id);
+
+  await seedChatRoomsBetweenUsers();
 }
 
 main()

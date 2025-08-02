@@ -56,6 +56,7 @@ export async function POST(req: Request) {
         { status: response.status }
       );
     }
+
     const { email, password, firstName, lastName, roleIds } = await req.json();
 
     const userRoles = roleIds?.map((id: string | number) => ({
@@ -72,11 +73,33 @@ export async function POST(req: Request) {
       userRoles: { create: userRoles },
     });
 
-    if (!user)
+    if (!user) {
       return NextResponse.json({
         message: "User already exists",
         status: false,
       });
+    }
+
+    const otherUsers = await prisma.user.findMany({
+      where: {
+        id: {
+          not: user.id,
+        },
+      },
+    });
+
+    await Promise.all(
+      otherUsers.map((otherUser) =>
+        prisma.chatRoom.create({
+          data: {
+            name: `Chat between ${user.firstName} and ${otherUser.firstName}`,
+            participants: {
+              connect: [{ id: user.id }, { id: otherUser.id }],
+            },
+          },
+        })
+      )
+    );
 
     return NextResponse.json({ success: true, data: user });
   } catch (error) {

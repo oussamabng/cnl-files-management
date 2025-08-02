@@ -119,6 +119,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
       url: "/dashboard/roles",
       icon: Crown,
     },
+    permissions.includes(PERMISSIONS.CHAT_VIEW) && {
+      title: "chats",
+      url: "/dashboard/chat",
+      icon: Crown,
+    },
   ];
 
   const menuItems: MenuItem[] = rawMenuItems.filter((item): item is MenuItem =>
