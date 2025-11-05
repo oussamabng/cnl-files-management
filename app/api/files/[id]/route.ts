@@ -9,8 +9,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Check permissions
     const response = await requireApiPermission(PERMISSIONS.FILES_UPDATE);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
@@ -18,10 +18,17 @@ export async function PUT(
       );
     }
 
-    const { name, keywordIds, folderId, dateTexte, commentaire } =
-      await req.json();
+    const {
+      name,
+      keywordIds = [],
+      groupIds = [],
+      folderId,
+      dateTexte,
+      commentaire,
+    } = await req.json();
     const { id } = params;
 
+    // Validate file name
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
         { error: "Le nom du fichier est requis" },
@@ -29,15 +36,13 @@ export async function PUT(
       );
     }
 
+    // Check for duplicate name in other files
     const existingFile = await prisma.file.findFirst({
       where: {
         name: name.trim(),
-        NOT: {
-          id: id,
-        },
+        NOT: { id },
       },
     });
-
     if (existingFile) {
       return NextResponse.json(
         { error: "Le nom du fichier existe déjà" },
@@ -45,6 +50,22 @@ export async function PUT(
       );
     }
 
+    // Fetch keywords from the selected groups
+    let groupKeywordIds: string[] = [];
+    if (groupIds.length > 0) {
+      const groupKeywords = await prisma.keywordGroupKeyword.findMany({
+        where: { groupId: { in: groupIds } },
+        select: { keywordId: true },
+      });
+      groupKeywordIds = groupKeywords.map((k) => k.keywordId);
+    }
+
+    // Combine explicit keywordIds with group keywords
+    const allKeywordIds: string[] = Array.from(
+      new Set([...keywordIds, ...groupKeywordIds])
+    );
+
+    // Update the file
     const file = await prisma.file.update({
       where: { id },
       data: {
@@ -53,8 +74,8 @@ export async function PUT(
         dateTexte: dateTexte ? new Date(dateTexte) : null,
         commentaire: commentaire || null,
         keywords: {
-          set: [],
-          connect: keywordIds.map((keywordId: string) => ({ id: keywordId })),
+          set: [], // clear existing
+          connect: allKeywordIds.map((keywordId) => ({ id: keywordId })),
         },
       },
       include: {
@@ -62,13 +83,13 @@ export async function PUT(
           select: {
             id: true,
             name: true,
+            groupLinks: {
+              include: { group: true },
+            },
           },
         },
         folder: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     });

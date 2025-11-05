@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -86,6 +84,7 @@ interface FileData {
   name: string;
   path: string;
   keywords: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string }>; // new property
   folder?: { id: string; name: string } | null;
   folderPath?: string;
   dateTexte?: string | null;
@@ -120,6 +119,9 @@ export function FilesContent({
   const [selectedFolderName, setSelectedFolderName] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+  const [groups, setGroups] = useState<Keyword[]>([]); // array of group objects
+
   const [filterMode, setFilterMode] = useState<"AND" | "OR">("OR");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
@@ -131,20 +133,17 @@ export function FilesContent({
 
   const [folderMap, setFolderMap] = useState<Map<string, string>>(new Map());
 
-  // Fetch folder hierarchy to build path map
+  // Fetch folder hierarchy
   const fetchFolderPaths = async () => {
     try {
       const response = await fetch("/api/folders?includeHierarchy=true");
       if (response.ok) {
         const folders = await response.json();
         const pathMap = new Map<string, string>();
-
-        // Build folder path map
         folders.forEach((folder: any) => {
           const path = calculateFolderPath(folder.id, folders);
           pathMap.set(folder.id, path);
         });
-
         setFolderMap(pathMap);
       }
     } catch (err) {
@@ -155,11 +154,7 @@ export function FilesContent({
   const calculateFolderPath = (folderId: string, folders: any[]): string => {
     const folder = folders.find((f) => f.id === folderId);
     if (!folder) return "";
-
-    if (!folder.parentId) {
-      return folder.name;
-    }
-
+    if (!folder.parentId) return folder.name;
     const parentPath = calculateFolderPath(folder.parentId, folders);
     return `${parentPath} / ${folder.name}`;
   };
@@ -185,7 +180,6 @@ export function FilesContent({
       cell: ({ row }) => {
         const folder = row.original.folder;
         const folderPath = folder ? folderMap.get(folder.id) : null;
-
         if (!folder) {
           return (
             <div className="flex items-center gap-1">
@@ -194,11 +188,8 @@ export function FilesContent({
             </div>
           );
         }
-
-        // Show only the last folder name, but full path in tooltip
         const displayName = folder.name;
         const fullPath = folderPath || folder.name;
-
         return (
           <TooltipProvider>
             <Tooltip>
@@ -267,55 +258,51 @@ export function FilesContent({
     },
     {
       accessorKey: "keywords",
-      header: "Mots-clés",
+      header: "Groupes & Mots-clés",
       cell: ({ row }) => {
-        const keywords = row.original.keywords;
+        const groups = row.original.groups ?? []; // <-- default to []
+        const keywords = row.original.keywords ?? []; // <-- default to []
+        const combined = [
+          ...groups.map((g) => ({ ...g, type: "group" })),
+          ...keywords.map((k) => ({ ...k, type: "keyword" })),
+        ];
+
         const maxVisible = 2;
 
-        if (keywords.length === 0) {
+        if (combined.length === 0) {
           return <span className="text-xs text-muted-foreground">Aucun</span>;
         }
 
-        if (keywords.length <= maxVisible) {
-          return (
-            <div className="flex flex-wrap gap-1">
-              {keywords.map((keyword) => (
-                <Badge key={keyword.id} variant="outline" className="text-xs">
-                  {keyword.name}
-                </Badge>
-              ))}
-            </div>
-          );
-        }
-
-        const visibleKeywords = keywords.slice(0, maxVisible);
-        const remainingCount = keywords.length - maxVisible;
-        const allKeywordNames = keywords.map((k) => k.name).join(", ");
+        const visibleItems = combined.slice(0, maxVisible);
+        const remainingCount = combined.length - maxVisible;
+        const allNames = combined.map((item) => item.name).join(", ");
 
         return (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex flex-wrap gap-1 cursor-help">
-                  {visibleKeywords.map((keyword) => (
+                  {visibleItems.map((item) => (
                     <Badge
-                      key={keyword.id}
-                      variant="outline"
+                      key={item.id}
+                      variant={item.type === "group" ? "secondary" : "outline"}
                       className="text-xs"
                     >
-                      {keyword.name}
+                      {item.name}
                     </Badge>
                   ))}
-                  <Badge variant="secondary" className="text-xs">
-                    +{remainingCount}
-                  </Badge>
+                  {remainingCount > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{remainingCount}
+                    </Badge>
+                  )}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-xs">
                 <p className="break-words">
-                  <strong>Tous les mots-clés :</strong>
+                  <strong>Tous les groupes et mots-clés :</strong>
                   <br />
-                  {allKeywordNames}
+                  {allNames}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -324,7 +311,8 @@ export function FilesContent({
       },
       enableSorting: false,
     },
-    ...(permissions.includes(PERMISSIONS.FILES_UPDATE) || permissions.includes(PERMISSIONS.FILES_DELETE)
+    ...(permissions.includes(PERMISSIONS.FILES_UPDATE) ||
+    permissions.includes(PERMISSIONS.FILES_DELETE)
       ? [
           {
             id: "actions" as const,
@@ -392,10 +380,7 @@ export function FilesContent({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: {
-      sorting,
-      pagination,
-    },
+    state: { sorting, pagination },
     getRowId: (row) => row.id,
   });
 
@@ -408,8 +393,14 @@ export function FilesContent({
       if (searchTerm) params.append("search", searchTerm);
       if (selectedKeywords.length > 0) {
         params.append("keywords", selectedKeywords.join(","));
-        params.append("mode", filterMode);
       }
+      if (selectedGroups.length > 0) {
+        params.append("groups", selectedGroups.join(",")); // <-- added
+      }
+      if (selectedKeywords.length > 0 || selectedGroups.length > 0) {
+        params.append("mode", filterMode); // <-- ensure AND/OR mode is respected
+      }
+
       // Only add folderId if a specific folder is selected
       if (selectedFolderId) {
         params.append("folderId", selectedFolderId);
@@ -427,6 +418,7 @@ export function FilesContent({
       const response = await fetch(`/api/files?${params}`);
 
       const data = await response.json();
+      console.log(data);
       if (response.ok) {
         // Add folder paths to files
         const filesWithPaths = data.map((file: FileData) => ({
@@ -452,24 +444,20 @@ export function FilesContent({
     folderMap,
   ]);
 
-  const fetchKeywords = async () => {
+  const fetchKeywordsAndGroups = async () => {
     try {
-      const response = await fetch("/api/keywords");
-      const data = await response.json();
-      if (response.ok) {
-        setKeywords(data);
-      } else {
-        setError(data.message || "Une erreur s'est produite.");
-      }
+      const keywordRes = await fetch("/api/keywords");
+      const groupRes = await fetch("/api/keyword-groups");
+      if (keywordRes.ok) setKeywords(await keywordRes.json());
+      if (groupRes.ok) setGroups(await groupRes.json());
     } catch (err) {
-      console.error("Échec de la récupération des mots-clés:", err);
+      console.error("Échec de la récupération des mots-clés ou groupes:", err);
     }
   };
 
   useEffect(() => {
-    fetchKeywords();
+    fetchKeywordsAndGroups();
   }, []);
-
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -747,10 +735,20 @@ export function FilesContent({
               Mots-clés
             </Label>
             <KeywordMultiselect
-              keywords={keywords}
-              selectedKeywords={selectedKeywords}
-              onSelectionChange={setSelectedKeywords}
-              placeholder="Rechercher et sélectionner des mots-clés..."
+              items={[
+                ...keywords.map((k) => ({ ...k, type: "keyword" as const })),
+                ...groups.map((g) => ({ ...g, type: "group" as const })),
+              ]}
+              selectedIds={[...selectedKeywords, ...selectedGroups]}
+              onSelectionChange={(newSelected) => {
+                setSelectedKeywords(
+                  newSelected.filter((id) => keywords.some((k) => k.id === id))
+                );
+                setSelectedGroups(
+                  newSelected.filter((id) => groups.some((g) => g.id === id))
+                );
+              }}
+              placeholder="Sélectionner mots-clés et groupes..."
             />
           </div>
 

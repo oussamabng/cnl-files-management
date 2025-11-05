@@ -34,6 +34,16 @@ export type Folder = $Result.DefaultSelection<Prisma.$FolderPayload>
  */
 export type Keyword = $Result.DefaultSelection<Prisma.$KeywordPayload>
 /**
+ * Model KeywordGroup
+ * 
+ */
+export type KeywordGroup = $Result.DefaultSelection<Prisma.$KeywordGroupPayload>
+/**
+ * Model KeywordGroupKeyword
+ * 
+ */
+export type KeywordGroupKeyword = $Result.DefaultSelection<Prisma.$KeywordGroupKeywordPayload>
+/**
  * Model Permission
  * 
  */
@@ -228,6 +238,26 @@ export class PrismaClient<
     * ```
     */
   get keyword(): Prisma.KeywordDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.keywordGroup`: Exposes CRUD operations for the **KeywordGroup** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KeywordGroups
+    * const keywordGroups = await prisma.keywordGroup.findMany()
+    * ```
+    */
+  get keywordGroup(): Prisma.KeywordGroupDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.keywordGroupKeyword`: Exposes CRUD operations for the **KeywordGroupKeyword** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KeywordGroupKeywords
+    * const keywordGroupKeywords = await prisma.keywordGroupKeyword.findMany()
+    * ```
+    */
+  get keywordGroupKeyword(): Prisma.KeywordGroupKeywordDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.permission`: Exposes CRUD operations for the **Permission** model.
@@ -732,6 +762,8 @@ export namespace Prisma {
     File: 'File',
     Folder: 'Folder',
     Keyword: 'Keyword',
+    KeywordGroup: 'KeywordGroup',
+    KeywordGroupKeyword: 'KeywordGroupKeyword',
     Permission: 'Permission',
     Role: 'Role',
     UserRole: 'UserRole',
@@ -756,7 +788,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "file" | "folder" | "keyword" | "permission" | "role" | "userRole" | "rolePermission" | "chatRoom" | "message"
+      modelProps: "user" | "file" | "folder" | "keyword" | "keywordGroup" | "keywordGroupKeyword" | "permission" | "role" | "userRole" | "rolePermission" | "chatRoom" | "message"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1053,6 +1085,154 @@ export namespace Prisma {
           count: {
             args: Prisma.KeywordCountArgs<ExtArgs>
             result: $Utils.Optional<KeywordCountAggregateOutputType> | number
+          }
+        }
+      }
+      KeywordGroup: {
+        payload: Prisma.$KeywordGroupPayload<ExtArgs>
+        fields: Prisma.KeywordGroupFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KeywordGroupFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KeywordGroupFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>
+          }
+          findFirst: {
+            args: Prisma.KeywordGroupFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KeywordGroupFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>
+          }
+          findMany: {
+            args: Prisma.KeywordGroupFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>[]
+          }
+          create: {
+            args: Prisma.KeywordGroupCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>
+          }
+          createMany: {
+            args: Prisma.KeywordGroupCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.KeywordGroupCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>[]
+          }
+          delete: {
+            args: Prisma.KeywordGroupDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>
+          }
+          update: {
+            args: Prisma.KeywordGroupUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>
+          }
+          deleteMany: {
+            args: Prisma.KeywordGroupDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KeywordGroupUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.KeywordGroupUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>[]
+          }
+          upsert: {
+            args: Prisma.KeywordGroupUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupPayload>
+          }
+          aggregate: {
+            args: Prisma.KeywordGroupAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKeywordGroup>
+          }
+          groupBy: {
+            args: Prisma.KeywordGroupGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KeywordGroupGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KeywordGroupCountArgs<ExtArgs>
+            result: $Utils.Optional<KeywordGroupCountAggregateOutputType> | number
+          }
+        }
+      }
+      KeywordGroupKeyword: {
+        payload: Prisma.$KeywordGroupKeywordPayload<ExtArgs>
+        fields: Prisma.KeywordGroupKeywordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KeywordGroupKeywordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KeywordGroupKeywordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>
+          }
+          findFirst: {
+            args: Prisma.KeywordGroupKeywordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KeywordGroupKeywordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>
+          }
+          findMany: {
+            args: Prisma.KeywordGroupKeywordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>[]
+          }
+          create: {
+            args: Prisma.KeywordGroupKeywordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>
+          }
+          createMany: {
+            args: Prisma.KeywordGroupKeywordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.KeywordGroupKeywordCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>[]
+          }
+          delete: {
+            args: Prisma.KeywordGroupKeywordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>
+          }
+          update: {
+            args: Prisma.KeywordGroupKeywordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>
+          }
+          deleteMany: {
+            args: Prisma.KeywordGroupKeywordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KeywordGroupKeywordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.KeywordGroupKeywordUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>[]
+          }
+          upsert: {
+            args: Prisma.KeywordGroupKeywordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KeywordGroupKeywordPayload>
+          }
+          aggregate: {
+            args: Prisma.KeywordGroupKeywordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKeywordGroupKeyword>
+          }
+          groupBy: {
+            args: Prisma.KeywordGroupKeywordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KeywordGroupKeywordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KeywordGroupKeywordCountArgs<ExtArgs>
+            result: $Utils.Optional<KeywordGroupKeywordCountAggregateOutputType> | number
           }
         }
       }
@@ -1588,6 +1768,8 @@ export namespace Prisma {
     file?: FileOmit
     folder?: FolderOmit
     keyword?: KeywordOmit
+    keywordGroup?: KeywordGroupOmit
+    keywordGroupKeyword?: KeywordGroupKeywordOmit
     permission?: PermissionOmit
     role?: RoleOmit
     userRole?: UserRoleOmit
@@ -1818,10 +2000,12 @@ export namespace Prisma {
 
   export type KeywordCountOutputType = {
     files: number
+    groupLinks: number
   }
 
   export type KeywordCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     files?: boolean | KeywordCountOutputTypeCountFilesArgs
+    groupLinks?: boolean | KeywordCountOutputTypeCountGroupLinksArgs
   }
 
   // Custom InputTypes
@@ -1840,6 +2024,44 @@ export namespace Prisma {
    */
   export type KeywordCountOutputTypeCountFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FileWhereInput
+  }
+
+  /**
+   * KeywordCountOutputType without action
+   */
+  export type KeywordCountOutputTypeCountGroupLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KeywordGroupKeywordWhereInput
+  }
+
+
+  /**
+   * Count Type KeywordGroupCountOutputType
+   */
+
+  export type KeywordGroupCountOutputType = {
+    keywords: number
+  }
+
+  export type KeywordGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    keywords?: boolean | KeywordGroupCountOutputTypeCountKeywordsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * KeywordGroupCountOutputType without action
+   */
+  export type KeywordGroupCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupCountOutputType
+     */
+    select?: KeywordGroupCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * KeywordGroupCountOutputType without action
+   */
+  export type KeywordGroupCountOutputTypeCountKeywordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KeywordGroupKeywordWhereInput
   }
 
 
@@ -5578,6 +5800,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     files?: boolean | Keyword$filesArgs<ExtArgs>
+    groupLinks?: boolean | Keyword$groupLinksArgs<ExtArgs>
     _count?: boolean | KeywordCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["keyword"]>
 
@@ -5599,6 +5822,7 @@ export namespace Prisma {
   export type KeywordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name", ExtArgs["result"]["keyword"]>
   export type KeywordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     files?: boolean | Keyword$filesArgs<ExtArgs>
+    groupLinks?: boolean | Keyword$groupLinksArgs<ExtArgs>
     _count?: boolean | KeywordCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type KeywordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -5608,6 +5832,7 @@ export namespace Prisma {
     name: "Keyword"
     objects: {
       files: Prisma.$FilePayload<ExtArgs>[]
+      groupLinks: Prisma.$KeywordGroupKeywordPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6007,6 +6232,7 @@ export namespace Prisma {
   export interface Prisma__KeywordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     files<T extends Keyword$filesArgs<ExtArgs> = {}>(args?: Subset<T, Keyword$filesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    groupLinks<T extends Keyword$groupLinksArgs<ExtArgs> = {}>(args?: Subset<T, Keyword$groupLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6450,6 +6676,30 @@ export namespace Prisma {
   }
 
   /**
+   * Keyword.groupLinks
+   */
+  export type Keyword$groupLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    where?: KeywordGroupKeywordWhereInput
+    orderBy?: KeywordGroupKeywordOrderByWithRelationInput | KeywordGroupKeywordOrderByWithRelationInput[]
+    cursor?: KeywordGroupKeywordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KeywordGroupKeywordScalarFieldEnum | KeywordGroupKeywordScalarFieldEnum[]
+  }
+
+  /**
    * Keyword without action
    */
   export type KeywordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6465,6 +6715,2202 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: KeywordInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model KeywordGroup
+   */
+
+  export type AggregateKeywordGroup = {
+    _count: KeywordGroupCountAggregateOutputType | null
+    _min: KeywordGroupMinAggregateOutputType | null
+    _max: KeywordGroupMaxAggregateOutputType | null
+  }
+
+  export type KeywordGroupMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    description: string | null
+    slug: string | null
+    createdAt: Date | null
+    isActive: boolean | null
+  }
+
+  export type KeywordGroupMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    description: string | null
+    slug: string | null
+    createdAt: Date | null
+    isActive: boolean | null
+  }
+
+  export type KeywordGroupCountAggregateOutputType = {
+    id: number
+    name: number
+    description: number
+    slug: number
+    createdAt: number
+    isActive: number
+    _all: number
+  }
+
+
+  export type KeywordGroupMinAggregateInputType = {
+    id?: true
+    name?: true
+    description?: true
+    slug?: true
+    createdAt?: true
+    isActive?: true
+  }
+
+  export type KeywordGroupMaxAggregateInputType = {
+    id?: true
+    name?: true
+    description?: true
+    slug?: true
+    createdAt?: true
+    isActive?: true
+  }
+
+  export type KeywordGroupCountAggregateInputType = {
+    id?: true
+    name?: true
+    description?: true
+    slug?: true
+    createdAt?: true
+    isActive?: true
+    _all?: true
+  }
+
+  export type KeywordGroupAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KeywordGroup to aggregate.
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroups to fetch.
+     */
+    orderBy?: KeywordGroupOrderByWithRelationInput | KeywordGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KeywordGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned KeywordGroups
+    **/
+    _count?: true | KeywordGroupCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KeywordGroupMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KeywordGroupMaxAggregateInputType
+  }
+
+  export type GetKeywordGroupAggregateType<T extends KeywordGroupAggregateArgs> = {
+        [P in keyof T & keyof AggregateKeywordGroup]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKeywordGroup[P]>
+      : GetScalarType<T[P], AggregateKeywordGroup[P]>
+  }
+
+
+
+
+  export type KeywordGroupGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KeywordGroupWhereInput
+    orderBy?: KeywordGroupOrderByWithAggregationInput | KeywordGroupOrderByWithAggregationInput[]
+    by: KeywordGroupScalarFieldEnum[] | KeywordGroupScalarFieldEnum
+    having?: KeywordGroupScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KeywordGroupCountAggregateInputType | true
+    _min?: KeywordGroupMinAggregateInputType
+    _max?: KeywordGroupMaxAggregateInputType
+  }
+
+  export type KeywordGroupGroupByOutputType = {
+    id: string
+    name: string
+    description: string | null
+    slug: string
+    createdAt: Date
+    isActive: boolean
+    _count: KeywordGroupCountAggregateOutputType | null
+    _min: KeywordGroupMinAggregateOutputType | null
+    _max: KeywordGroupMaxAggregateOutputType | null
+  }
+
+  type GetKeywordGroupGroupByPayload<T extends KeywordGroupGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KeywordGroupGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KeywordGroupGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KeywordGroupGroupByOutputType[P]>
+            : GetScalarType<T[P], KeywordGroupGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KeywordGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    slug?: boolean
+    createdAt?: boolean
+    isActive?: boolean
+    keywords?: boolean | KeywordGroup$keywordsArgs<ExtArgs>
+    _count?: boolean | KeywordGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["keywordGroup"]>
+
+  export type KeywordGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    slug?: boolean
+    createdAt?: boolean
+    isActive?: boolean
+  }, ExtArgs["result"]["keywordGroup"]>
+
+  export type KeywordGroupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    slug?: boolean
+    createdAt?: boolean
+    isActive?: boolean
+  }, ExtArgs["result"]["keywordGroup"]>
+
+  export type KeywordGroupSelectScalar = {
+    id?: boolean
+    name?: boolean
+    description?: boolean
+    slug?: boolean
+    createdAt?: boolean
+    isActive?: boolean
+  }
+
+  export type KeywordGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "slug" | "createdAt" | "isActive", ExtArgs["result"]["keywordGroup"]>
+  export type KeywordGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    keywords?: boolean | KeywordGroup$keywordsArgs<ExtArgs>
+    _count?: boolean | KeywordGroupCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type KeywordGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type KeywordGroupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $KeywordGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KeywordGroup"
+    objects: {
+      keywords: Prisma.$KeywordGroupKeywordPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      description: string | null
+      slug: string
+      createdAt: Date
+      isActive: boolean
+    }, ExtArgs["result"]["keywordGroup"]>
+    composites: {}
+  }
+
+  type KeywordGroupGetPayload<S extends boolean | null | undefined | KeywordGroupDefaultArgs> = $Result.GetResult<Prisma.$KeywordGroupPayload, S>
+
+  type KeywordGroupCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KeywordGroupFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KeywordGroupCountAggregateInputType | true
+    }
+
+  export interface KeywordGroupDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KeywordGroup'], meta: { name: 'KeywordGroup' } }
+    /**
+     * Find zero or one KeywordGroup that matches the filter.
+     * @param {KeywordGroupFindUniqueArgs} args - Arguments to find a KeywordGroup
+     * @example
+     * // Get one KeywordGroup
+     * const keywordGroup = await prisma.keywordGroup.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KeywordGroupFindUniqueArgs>(args: SelectSubset<T, KeywordGroupFindUniqueArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KeywordGroup that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KeywordGroupFindUniqueOrThrowArgs} args - Arguments to find a KeywordGroup
+     * @example
+     * // Get one KeywordGroup
+     * const keywordGroup = await prisma.keywordGroup.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KeywordGroupFindUniqueOrThrowArgs>(args: SelectSubset<T, KeywordGroupFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KeywordGroup that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupFindFirstArgs} args - Arguments to find a KeywordGroup
+     * @example
+     * // Get one KeywordGroup
+     * const keywordGroup = await prisma.keywordGroup.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KeywordGroupFindFirstArgs>(args?: SelectSubset<T, KeywordGroupFindFirstArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KeywordGroup that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupFindFirstOrThrowArgs} args - Arguments to find a KeywordGroup
+     * @example
+     * // Get one KeywordGroup
+     * const keywordGroup = await prisma.keywordGroup.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KeywordGroupFindFirstOrThrowArgs>(args?: SelectSubset<T, KeywordGroupFindFirstOrThrowArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KeywordGroups that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KeywordGroups
+     * const keywordGroups = await prisma.keywordGroup.findMany()
+     * 
+     * // Get first 10 KeywordGroups
+     * const keywordGroups = await prisma.keywordGroup.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const keywordGroupWithIdOnly = await prisma.keywordGroup.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends KeywordGroupFindManyArgs>(args?: SelectSubset<T, KeywordGroupFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KeywordGroup.
+     * @param {KeywordGroupCreateArgs} args - Arguments to create a KeywordGroup.
+     * @example
+     * // Create one KeywordGroup
+     * const KeywordGroup = await prisma.keywordGroup.create({
+     *   data: {
+     *     // ... data to create a KeywordGroup
+     *   }
+     * })
+     * 
+     */
+    create<T extends KeywordGroupCreateArgs>(args: SelectSubset<T, KeywordGroupCreateArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KeywordGroups.
+     * @param {KeywordGroupCreateManyArgs} args - Arguments to create many KeywordGroups.
+     * @example
+     * // Create many KeywordGroups
+     * const keywordGroup = await prisma.keywordGroup.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KeywordGroupCreateManyArgs>(args?: SelectSubset<T, KeywordGroupCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many KeywordGroups and returns the data saved in the database.
+     * @param {KeywordGroupCreateManyAndReturnArgs} args - Arguments to create many KeywordGroups.
+     * @example
+     * // Create many KeywordGroups
+     * const keywordGroup = await prisma.keywordGroup.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many KeywordGroups and only return the `id`
+     * const keywordGroupWithIdOnly = await prisma.keywordGroup.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends KeywordGroupCreateManyAndReturnArgs>(args?: SelectSubset<T, KeywordGroupCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a KeywordGroup.
+     * @param {KeywordGroupDeleteArgs} args - Arguments to delete one KeywordGroup.
+     * @example
+     * // Delete one KeywordGroup
+     * const KeywordGroup = await prisma.keywordGroup.delete({
+     *   where: {
+     *     // ... filter to delete one KeywordGroup
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KeywordGroupDeleteArgs>(args: SelectSubset<T, KeywordGroupDeleteArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KeywordGroup.
+     * @param {KeywordGroupUpdateArgs} args - Arguments to update one KeywordGroup.
+     * @example
+     * // Update one KeywordGroup
+     * const keywordGroup = await prisma.keywordGroup.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KeywordGroupUpdateArgs>(args: SelectSubset<T, KeywordGroupUpdateArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KeywordGroups.
+     * @param {KeywordGroupDeleteManyArgs} args - Arguments to filter KeywordGroups to delete.
+     * @example
+     * // Delete a few KeywordGroups
+     * const { count } = await prisma.keywordGroup.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KeywordGroupDeleteManyArgs>(args?: SelectSubset<T, KeywordGroupDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KeywordGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KeywordGroups
+     * const keywordGroup = await prisma.keywordGroup.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KeywordGroupUpdateManyArgs>(args: SelectSubset<T, KeywordGroupUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KeywordGroups and returns the data updated in the database.
+     * @param {KeywordGroupUpdateManyAndReturnArgs} args - Arguments to update many KeywordGroups.
+     * @example
+     * // Update many KeywordGroups
+     * const keywordGroup = await prisma.keywordGroup.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more KeywordGroups and only return the `id`
+     * const keywordGroupWithIdOnly = await prisma.keywordGroup.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends KeywordGroupUpdateManyAndReturnArgs>(args: SelectSubset<T, KeywordGroupUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one KeywordGroup.
+     * @param {KeywordGroupUpsertArgs} args - Arguments to update or create a KeywordGroup.
+     * @example
+     * // Update or create a KeywordGroup
+     * const keywordGroup = await prisma.keywordGroup.upsert({
+     *   create: {
+     *     // ... data to create a KeywordGroup
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KeywordGroup we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KeywordGroupUpsertArgs>(args: SelectSubset<T, KeywordGroupUpsertArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KeywordGroups.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupCountArgs} args - Arguments to filter KeywordGroups to count.
+     * @example
+     * // Count the number of KeywordGroups
+     * const count = await prisma.keywordGroup.count({
+     *   where: {
+     *     // ... the filter for the KeywordGroups we want to count
+     *   }
+     * })
+    **/
+    count<T extends KeywordGroupCountArgs>(
+      args?: Subset<T, KeywordGroupCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KeywordGroupCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KeywordGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KeywordGroupAggregateArgs>(args: Subset<T, KeywordGroupAggregateArgs>): Prisma.PrismaPromise<GetKeywordGroupAggregateType<T>>
+
+    /**
+     * Group by KeywordGroup.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KeywordGroupGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KeywordGroupGroupByArgs['orderBy'] }
+        : { orderBy?: KeywordGroupGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KeywordGroupGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKeywordGroupGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KeywordGroup model
+   */
+  readonly fields: KeywordGroupFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KeywordGroup.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KeywordGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    keywords<T extends KeywordGroup$keywordsArgs<ExtArgs> = {}>(args?: Subset<T, KeywordGroup$keywordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KeywordGroup model
+   */
+  interface KeywordGroupFieldRefs {
+    readonly id: FieldRef<"KeywordGroup", 'String'>
+    readonly name: FieldRef<"KeywordGroup", 'String'>
+    readonly description: FieldRef<"KeywordGroup", 'String'>
+    readonly slug: FieldRef<"KeywordGroup", 'String'>
+    readonly createdAt: FieldRef<"KeywordGroup", 'DateTime'>
+    readonly isActive: FieldRef<"KeywordGroup", 'Boolean'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * KeywordGroup findUnique
+   */
+  export type KeywordGroupFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroup to fetch.
+     */
+    where: KeywordGroupWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroup findUniqueOrThrow
+   */
+  export type KeywordGroupFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroup to fetch.
+     */
+    where: KeywordGroupWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroup findFirst
+   */
+  export type KeywordGroupFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroup to fetch.
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroups to fetch.
+     */
+    orderBy?: KeywordGroupOrderByWithRelationInput | KeywordGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KeywordGroups.
+     */
+    cursor?: KeywordGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KeywordGroups.
+     */
+    distinct?: KeywordGroupScalarFieldEnum | KeywordGroupScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroup findFirstOrThrow
+   */
+  export type KeywordGroupFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroup to fetch.
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroups to fetch.
+     */
+    orderBy?: KeywordGroupOrderByWithRelationInput | KeywordGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KeywordGroups.
+     */
+    cursor?: KeywordGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroups.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KeywordGroups.
+     */
+    distinct?: KeywordGroupScalarFieldEnum | KeywordGroupScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroup findMany
+   */
+  export type KeywordGroupFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroups to fetch.
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroups to fetch.
+     */
+    orderBy?: KeywordGroupOrderByWithRelationInput | KeywordGroupOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing KeywordGroups.
+     */
+    cursor?: KeywordGroupWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroups from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroups.
+     */
+    skip?: number
+    distinct?: KeywordGroupScalarFieldEnum | KeywordGroupScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroup create
+   */
+  export type KeywordGroupCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to create a KeywordGroup.
+     */
+    data: XOR<KeywordGroupCreateInput, KeywordGroupUncheckedCreateInput>
+  }
+
+  /**
+   * KeywordGroup createMany
+   */
+  export type KeywordGroupCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KeywordGroups.
+     */
+    data: KeywordGroupCreateManyInput | KeywordGroupCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KeywordGroup createManyAndReturn
+   */
+  export type KeywordGroupCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * The data used to create many KeywordGroups.
+     */
+    data: KeywordGroupCreateManyInput | KeywordGroupCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KeywordGroup update
+   */
+  export type KeywordGroupUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * The data needed to update a KeywordGroup.
+     */
+    data: XOR<KeywordGroupUpdateInput, KeywordGroupUncheckedUpdateInput>
+    /**
+     * Choose, which KeywordGroup to update.
+     */
+    where: KeywordGroupWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroup updateMany
+   */
+  export type KeywordGroupUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KeywordGroups.
+     */
+    data: XOR<KeywordGroupUpdateManyMutationInput, KeywordGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which KeywordGroups to update
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * Limit how many KeywordGroups to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KeywordGroup updateManyAndReturn
+   */
+  export type KeywordGroupUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * The data used to update KeywordGroups.
+     */
+    data: XOR<KeywordGroupUpdateManyMutationInput, KeywordGroupUncheckedUpdateManyInput>
+    /**
+     * Filter which KeywordGroups to update
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * Limit how many KeywordGroups to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KeywordGroup upsert
+   */
+  export type KeywordGroupUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * The filter to search for the KeywordGroup to update in case it exists.
+     */
+    where: KeywordGroupWhereUniqueInput
+    /**
+     * In case the KeywordGroup found by the `where` argument doesn't exist, create a new KeywordGroup with this data.
+     */
+    create: XOR<KeywordGroupCreateInput, KeywordGroupUncheckedCreateInput>
+    /**
+     * In case the KeywordGroup was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KeywordGroupUpdateInput, KeywordGroupUncheckedUpdateInput>
+  }
+
+  /**
+   * KeywordGroup delete
+   */
+  export type KeywordGroupDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    /**
+     * Filter which KeywordGroup to delete.
+     */
+    where: KeywordGroupWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroup deleteMany
+   */
+  export type KeywordGroupDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KeywordGroups to delete
+     */
+    where?: KeywordGroupWhereInput
+    /**
+     * Limit how many KeywordGroups to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KeywordGroup.keywords
+   */
+  export type KeywordGroup$keywordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    where?: KeywordGroupKeywordWhereInput
+    orderBy?: KeywordGroupKeywordOrderByWithRelationInput | KeywordGroupKeywordOrderByWithRelationInput[]
+    cursor?: KeywordGroupKeywordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KeywordGroupKeywordScalarFieldEnum | KeywordGroupKeywordScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroup without action
+   */
+  export type KeywordGroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model KeywordGroupKeyword
+   */
+
+  export type AggregateKeywordGroupKeyword = {
+    _count: KeywordGroupKeywordCountAggregateOutputType | null
+    _avg: KeywordGroupKeywordAvgAggregateOutputType | null
+    _sum: KeywordGroupKeywordSumAggregateOutputType | null
+    _min: KeywordGroupKeywordMinAggregateOutputType | null
+    _max: KeywordGroupKeywordMaxAggregateOutputType | null
+  }
+
+  export type KeywordGroupKeywordAvgAggregateOutputType = {
+    priority: number | null
+  }
+
+  export type KeywordGroupKeywordSumAggregateOutputType = {
+    priority: number | null
+  }
+
+  export type KeywordGroupKeywordMinAggregateOutputType = {
+    id: string | null
+    keywordId: string | null
+    groupId: string | null
+    priority: number | null
+    note: string | null
+    createdAt: Date | null
+  }
+
+  export type KeywordGroupKeywordMaxAggregateOutputType = {
+    id: string | null
+    keywordId: string | null
+    groupId: string | null
+    priority: number | null
+    note: string | null
+    createdAt: Date | null
+  }
+
+  export type KeywordGroupKeywordCountAggregateOutputType = {
+    id: number
+    keywordId: number
+    groupId: number
+    priority: number
+    note: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type KeywordGroupKeywordAvgAggregateInputType = {
+    priority?: true
+  }
+
+  export type KeywordGroupKeywordSumAggregateInputType = {
+    priority?: true
+  }
+
+  export type KeywordGroupKeywordMinAggregateInputType = {
+    id?: true
+    keywordId?: true
+    groupId?: true
+    priority?: true
+    note?: true
+    createdAt?: true
+  }
+
+  export type KeywordGroupKeywordMaxAggregateInputType = {
+    id?: true
+    keywordId?: true
+    groupId?: true
+    priority?: true
+    note?: true
+    createdAt?: true
+  }
+
+  export type KeywordGroupKeywordCountAggregateInputType = {
+    id?: true
+    keywordId?: true
+    groupId?: true
+    priority?: true
+    note?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type KeywordGroupKeywordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KeywordGroupKeyword to aggregate.
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroupKeywords to fetch.
+     */
+    orderBy?: KeywordGroupKeywordOrderByWithRelationInput | KeywordGroupKeywordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KeywordGroupKeywordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroupKeywords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroupKeywords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned KeywordGroupKeywords
+    **/
+    _count?: true | KeywordGroupKeywordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: KeywordGroupKeywordAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: KeywordGroupKeywordSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KeywordGroupKeywordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KeywordGroupKeywordMaxAggregateInputType
+  }
+
+  export type GetKeywordGroupKeywordAggregateType<T extends KeywordGroupKeywordAggregateArgs> = {
+        [P in keyof T & keyof AggregateKeywordGroupKeyword]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKeywordGroupKeyword[P]>
+      : GetScalarType<T[P], AggregateKeywordGroupKeyword[P]>
+  }
+
+
+
+
+  export type KeywordGroupKeywordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KeywordGroupKeywordWhereInput
+    orderBy?: KeywordGroupKeywordOrderByWithAggregationInput | KeywordGroupKeywordOrderByWithAggregationInput[]
+    by: KeywordGroupKeywordScalarFieldEnum[] | KeywordGroupKeywordScalarFieldEnum
+    having?: KeywordGroupKeywordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KeywordGroupKeywordCountAggregateInputType | true
+    _avg?: KeywordGroupKeywordAvgAggregateInputType
+    _sum?: KeywordGroupKeywordSumAggregateInputType
+    _min?: KeywordGroupKeywordMinAggregateInputType
+    _max?: KeywordGroupKeywordMaxAggregateInputType
+  }
+
+  export type KeywordGroupKeywordGroupByOutputType = {
+    id: string
+    keywordId: string
+    groupId: string
+    priority: number | null
+    note: string | null
+    createdAt: Date
+    _count: KeywordGroupKeywordCountAggregateOutputType | null
+    _avg: KeywordGroupKeywordAvgAggregateOutputType | null
+    _sum: KeywordGroupKeywordSumAggregateOutputType | null
+    _min: KeywordGroupKeywordMinAggregateOutputType | null
+    _max: KeywordGroupKeywordMaxAggregateOutputType | null
+  }
+
+  type GetKeywordGroupKeywordGroupByPayload<T extends KeywordGroupKeywordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KeywordGroupKeywordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KeywordGroupKeywordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KeywordGroupKeywordGroupByOutputType[P]>
+            : GetScalarType<T[P], KeywordGroupKeywordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KeywordGroupKeywordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    keywordId?: boolean
+    groupId?: boolean
+    priority?: boolean
+    note?: boolean
+    createdAt?: boolean
+    keyword?: boolean | KeywordDefaultArgs<ExtArgs>
+    group?: boolean | KeywordGroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["keywordGroupKeyword"]>
+
+  export type KeywordGroupKeywordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    keywordId?: boolean
+    groupId?: boolean
+    priority?: boolean
+    note?: boolean
+    createdAt?: boolean
+    keyword?: boolean | KeywordDefaultArgs<ExtArgs>
+    group?: boolean | KeywordGroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["keywordGroupKeyword"]>
+
+  export type KeywordGroupKeywordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    keywordId?: boolean
+    groupId?: boolean
+    priority?: boolean
+    note?: boolean
+    createdAt?: boolean
+    keyword?: boolean | KeywordDefaultArgs<ExtArgs>
+    group?: boolean | KeywordGroupDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["keywordGroupKeyword"]>
+
+  export type KeywordGroupKeywordSelectScalar = {
+    id?: boolean
+    keywordId?: boolean
+    groupId?: boolean
+    priority?: boolean
+    note?: boolean
+    createdAt?: boolean
+  }
+
+  export type KeywordGroupKeywordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "keywordId" | "groupId" | "priority" | "note" | "createdAt", ExtArgs["result"]["keywordGroupKeyword"]>
+  export type KeywordGroupKeywordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    keyword?: boolean | KeywordDefaultArgs<ExtArgs>
+    group?: boolean | KeywordGroupDefaultArgs<ExtArgs>
+  }
+  export type KeywordGroupKeywordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    keyword?: boolean | KeywordDefaultArgs<ExtArgs>
+    group?: boolean | KeywordGroupDefaultArgs<ExtArgs>
+  }
+  export type KeywordGroupKeywordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    keyword?: boolean | KeywordDefaultArgs<ExtArgs>
+    group?: boolean | KeywordGroupDefaultArgs<ExtArgs>
+  }
+
+  export type $KeywordGroupKeywordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KeywordGroupKeyword"
+    objects: {
+      keyword: Prisma.$KeywordPayload<ExtArgs>
+      group: Prisma.$KeywordGroupPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      keywordId: string
+      groupId: string
+      priority: number | null
+      note: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["keywordGroupKeyword"]>
+    composites: {}
+  }
+
+  type KeywordGroupKeywordGetPayload<S extends boolean | null | undefined | KeywordGroupKeywordDefaultArgs> = $Result.GetResult<Prisma.$KeywordGroupKeywordPayload, S>
+
+  type KeywordGroupKeywordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KeywordGroupKeywordFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KeywordGroupKeywordCountAggregateInputType | true
+    }
+
+  export interface KeywordGroupKeywordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KeywordGroupKeyword'], meta: { name: 'KeywordGroupKeyword' } }
+    /**
+     * Find zero or one KeywordGroupKeyword that matches the filter.
+     * @param {KeywordGroupKeywordFindUniqueArgs} args - Arguments to find a KeywordGroupKeyword
+     * @example
+     * // Get one KeywordGroupKeyword
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KeywordGroupKeywordFindUniqueArgs>(args: SelectSubset<T, KeywordGroupKeywordFindUniqueArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KeywordGroupKeyword that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KeywordGroupKeywordFindUniqueOrThrowArgs} args - Arguments to find a KeywordGroupKeyword
+     * @example
+     * // Get one KeywordGroupKeyword
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KeywordGroupKeywordFindUniqueOrThrowArgs>(args: SelectSubset<T, KeywordGroupKeywordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KeywordGroupKeyword that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordFindFirstArgs} args - Arguments to find a KeywordGroupKeyword
+     * @example
+     * // Get one KeywordGroupKeyword
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KeywordGroupKeywordFindFirstArgs>(args?: SelectSubset<T, KeywordGroupKeywordFindFirstArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KeywordGroupKeyword that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordFindFirstOrThrowArgs} args - Arguments to find a KeywordGroupKeyword
+     * @example
+     * // Get one KeywordGroupKeyword
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KeywordGroupKeywordFindFirstOrThrowArgs>(args?: SelectSubset<T, KeywordGroupKeywordFindFirstOrThrowArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KeywordGroupKeywords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KeywordGroupKeywords
+     * const keywordGroupKeywords = await prisma.keywordGroupKeyword.findMany()
+     * 
+     * // Get first 10 KeywordGroupKeywords
+     * const keywordGroupKeywords = await prisma.keywordGroupKeyword.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const keywordGroupKeywordWithIdOnly = await prisma.keywordGroupKeyword.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends KeywordGroupKeywordFindManyArgs>(args?: SelectSubset<T, KeywordGroupKeywordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KeywordGroupKeyword.
+     * @param {KeywordGroupKeywordCreateArgs} args - Arguments to create a KeywordGroupKeyword.
+     * @example
+     * // Create one KeywordGroupKeyword
+     * const KeywordGroupKeyword = await prisma.keywordGroupKeyword.create({
+     *   data: {
+     *     // ... data to create a KeywordGroupKeyword
+     *   }
+     * })
+     * 
+     */
+    create<T extends KeywordGroupKeywordCreateArgs>(args: SelectSubset<T, KeywordGroupKeywordCreateArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KeywordGroupKeywords.
+     * @param {KeywordGroupKeywordCreateManyArgs} args - Arguments to create many KeywordGroupKeywords.
+     * @example
+     * // Create many KeywordGroupKeywords
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KeywordGroupKeywordCreateManyArgs>(args?: SelectSubset<T, KeywordGroupKeywordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many KeywordGroupKeywords and returns the data saved in the database.
+     * @param {KeywordGroupKeywordCreateManyAndReturnArgs} args - Arguments to create many KeywordGroupKeywords.
+     * @example
+     * // Create many KeywordGroupKeywords
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many KeywordGroupKeywords and only return the `id`
+     * const keywordGroupKeywordWithIdOnly = await prisma.keywordGroupKeyword.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends KeywordGroupKeywordCreateManyAndReturnArgs>(args?: SelectSubset<T, KeywordGroupKeywordCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a KeywordGroupKeyword.
+     * @param {KeywordGroupKeywordDeleteArgs} args - Arguments to delete one KeywordGroupKeyword.
+     * @example
+     * // Delete one KeywordGroupKeyword
+     * const KeywordGroupKeyword = await prisma.keywordGroupKeyword.delete({
+     *   where: {
+     *     // ... filter to delete one KeywordGroupKeyword
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KeywordGroupKeywordDeleteArgs>(args: SelectSubset<T, KeywordGroupKeywordDeleteArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KeywordGroupKeyword.
+     * @param {KeywordGroupKeywordUpdateArgs} args - Arguments to update one KeywordGroupKeyword.
+     * @example
+     * // Update one KeywordGroupKeyword
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KeywordGroupKeywordUpdateArgs>(args: SelectSubset<T, KeywordGroupKeywordUpdateArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KeywordGroupKeywords.
+     * @param {KeywordGroupKeywordDeleteManyArgs} args - Arguments to filter KeywordGroupKeywords to delete.
+     * @example
+     * // Delete a few KeywordGroupKeywords
+     * const { count } = await prisma.keywordGroupKeyword.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KeywordGroupKeywordDeleteManyArgs>(args?: SelectSubset<T, KeywordGroupKeywordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KeywordGroupKeywords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KeywordGroupKeywords
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KeywordGroupKeywordUpdateManyArgs>(args: SelectSubset<T, KeywordGroupKeywordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KeywordGroupKeywords and returns the data updated in the database.
+     * @param {KeywordGroupKeywordUpdateManyAndReturnArgs} args - Arguments to update many KeywordGroupKeywords.
+     * @example
+     * // Update many KeywordGroupKeywords
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more KeywordGroupKeywords and only return the `id`
+     * const keywordGroupKeywordWithIdOnly = await prisma.keywordGroupKeyword.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends KeywordGroupKeywordUpdateManyAndReturnArgs>(args: SelectSubset<T, KeywordGroupKeywordUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one KeywordGroupKeyword.
+     * @param {KeywordGroupKeywordUpsertArgs} args - Arguments to update or create a KeywordGroupKeyword.
+     * @example
+     * // Update or create a KeywordGroupKeyword
+     * const keywordGroupKeyword = await prisma.keywordGroupKeyword.upsert({
+     *   create: {
+     *     // ... data to create a KeywordGroupKeyword
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KeywordGroupKeyword we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KeywordGroupKeywordUpsertArgs>(args: SelectSubset<T, KeywordGroupKeywordUpsertArgs<ExtArgs>>): Prisma__KeywordGroupKeywordClient<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KeywordGroupKeywords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordCountArgs} args - Arguments to filter KeywordGroupKeywords to count.
+     * @example
+     * // Count the number of KeywordGroupKeywords
+     * const count = await prisma.keywordGroupKeyword.count({
+     *   where: {
+     *     // ... the filter for the KeywordGroupKeywords we want to count
+     *   }
+     * })
+    **/
+    count<T extends KeywordGroupKeywordCountArgs>(
+      args?: Subset<T, KeywordGroupKeywordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KeywordGroupKeywordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KeywordGroupKeyword.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KeywordGroupKeywordAggregateArgs>(args: Subset<T, KeywordGroupKeywordAggregateArgs>): Prisma.PrismaPromise<GetKeywordGroupKeywordAggregateType<T>>
+
+    /**
+     * Group by KeywordGroupKeyword.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KeywordGroupKeywordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KeywordGroupKeywordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KeywordGroupKeywordGroupByArgs['orderBy'] }
+        : { orderBy?: KeywordGroupKeywordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KeywordGroupKeywordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKeywordGroupKeywordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KeywordGroupKeyword model
+   */
+  readonly fields: KeywordGroupKeywordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KeywordGroupKeyword.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KeywordGroupKeywordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    keyword<T extends KeywordDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KeywordDefaultArgs<ExtArgs>>): Prisma__KeywordClient<$Result.GetResult<Prisma.$KeywordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    group<T extends KeywordGroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KeywordGroupDefaultArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KeywordGroupKeyword model
+   */
+  interface KeywordGroupKeywordFieldRefs {
+    readonly id: FieldRef<"KeywordGroupKeyword", 'String'>
+    readonly keywordId: FieldRef<"KeywordGroupKeyword", 'String'>
+    readonly groupId: FieldRef<"KeywordGroupKeyword", 'String'>
+    readonly priority: FieldRef<"KeywordGroupKeyword", 'Int'>
+    readonly note: FieldRef<"KeywordGroupKeyword", 'String'>
+    readonly createdAt: FieldRef<"KeywordGroupKeyword", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * KeywordGroupKeyword findUnique
+   */
+  export type KeywordGroupKeywordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroupKeyword to fetch.
+     */
+    where: KeywordGroupKeywordWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroupKeyword findUniqueOrThrow
+   */
+  export type KeywordGroupKeywordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroupKeyword to fetch.
+     */
+    where: KeywordGroupKeywordWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroupKeyword findFirst
+   */
+  export type KeywordGroupKeywordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroupKeyword to fetch.
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroupKeywords to fetch.
+     */
+    orderBy?: KeywordGroupKeywordOrderByWithRelationInput | KeywordGroupKeywordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KeywordGroupKeywords.
+     */
+    cursor?: KeywordGroupKeywordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroupKeywords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroupKeywords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KeywordGroupKeywords.
+     */
+    distinct?: KeywordGroupKeywordScalarFieldEnum | KeywordGroupKeywordScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroupKeyword findFirstOrThrow
+   */
+  export type KeywordGroupKeywordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroupKeyword to fetch.
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroupKeywords to fetch.
+     */
+    orderBy?: KeywordGroupKeywordOrderByWithRelationInput | KeywordGroupKeywordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KeywordGroupKeywords.
+     */
+    cursor?: KeywordGroupKeywordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroupKeywords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroupKeywords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KeywordGroupKeywords.
+     */
+    distinct?: KeywordGroupKeywordScalarFieldEnum | KeywordGroupKeywordScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroupKeyword findMany
+   */
+  export type KeywordGroupKeywordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * Filter, which KeywordGroupKeywords to fetch.
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KeywordGroupKeywords to fetch.
+     */
+    orderBy?: KeywordGroupKeywordOrderByWithRelationInput | KeywordGroupKeywordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing KeywordGroupKeywords.
+     */
+    cursor?: KeywordGroupKeywordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KeywordGroupKeywords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KeywordGroupKeywords.
+     */
+    skip?: number
+    distinct?: KeywordGroupKeywordScalarFieldEnum | KeywordGroupKeywordScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroupKeyword create
+   */
+  export type KeywordGroupKeywordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * The data needed to create a KeywordGroupKeyword.
+     */
+    data: XOR<KeywordGroupKeywordCreateInput, KeywordGroupKeywordUncheckedCreateInput>
+  }
+
+  /**
+   * KeywordGroupKeyword createMany
+   */
+  export type KeywordGroupKeywordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KeywordGroupKeywords.
+     */
+    data: KeywordGroupKeywordCreateManyInput | KeywordGroupKeywordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KeywordGroupKeyword createManyAndReturn
+   */
+  export type KeywordGroupKeywordCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * The data used to create many KeywordGroupKeywords.
+     */
+    data: KeywordGroupKeywordCreateManyInput | KeywordGroupKeywordCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KeywordGroupKeyword update
+   */
+  export type KeywordGroupKeywordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * The data needed to update a KeywordGroupKeyword.
+     */
+    data: XOR<KeywordGroupKeywordUpdateInput, KeywordGroupKeywordUncheckedUpdateInput>
+    /**
+     * Choose, which KeywordGroupKeyword to update.
+     */
+    where: KeywordGroupKeywordWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroupKeyword updateMany
+   */
+  export type KeywordGroupKeywordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KeywordGroupKeywords.
+     */
+    data: XOR<KeywordGroupKeywordUpdateManyMutationInput, KeywordGroupKeywordUncheckedUpdateManyInput>
+    /**
+     * Filter which KeywordGroupKeywords to update
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * Limit how many KeywordGroupKeywords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KeywordGroupKeyword updateManyAndReturn
+   */
+  export type KeywordGroupKeywordUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * The data used to update KeywordGroupKeywords.
+     */
+    data: XOR<KeywordGroupKeywordUpdateManyMutationInput, KeywordGroupKeywordUncheckedUpdateManyInput>
+    /**
+     * Filter which KeywordGroupKeywords to update
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * Limit how many KeywordGroupKeywords to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * KeywordGroupKeyword upsert
+   */
+  export type KeywordGroupKeywordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * The filter to search for the KeywordGroupKeyword to update in case it exists.
+     */
+    where: KeywordGroupKeywordWhereUniqueInput
+    /**
+     * In case the KeywordGroupKeyword found by the `where` argument doesn't exist, create a new KeywordGroupKeyword with this data.
+     */
+    create: XOR<KeywordGroupKeywordCreateInput, KeywordGroupKeywordUncheckedCreateInput>
+    /**
+     * In case the KeywordGroupKeyword was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KeywordGroupKeywordUpdateInput, KeywordGroupKeywordUncheckedUpdateInput>
+  }
+
+  /**
+   * KeywordGroupKeyword delete
+   */
+  export type KeywordGroupKeywordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
+    /**
+     * Filter which KeywordGroupKeyword to delete.
+     */
+    where: KeywordGroupKeywordWhereUniqueInput
+  }
+
+  /**
+   * KeywordGroupKeyword deleteMany
+   */
+  export type KeywordGroupKeywordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KeywordGroupKeywords to delete
+     */
+    where?: KeywordGroupKeywordWhereInput
+    /**
+     * Limit how many KeywordGroupKeywords to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KeywordGroupKeyword without action
+   */
+  export type KeywordGroupKeywordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroupKeyword
+     */
+    select?: KeywordGroupKeywordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroupKeyword
+     */
+    omit?: KeywordGroupKeywordOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupKeywordInclude<ExtArgs> | null
   }
 
 
@@ -13070,6 +15516,30 @@ export namespace Prisma {
   export type KeywordScalarFieldEnum = (typeof KeywordScalarFieldEnum)[keyof typeof KeywordScalarFieldEnum]
 
 
+  export const KeywordGroupScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    description: 'description',
+    slug: 'slug',
+    createdAt: 'createdAt',
+    isActive: 'isActive'
+  };
+
+  export type KeywordGroupScalarFieldEnum = (typeof KeywordGroupScalarFieldEnum)[keyof typeof KeywordGroupScalarFieldEnum]
+
+
+  export const KeywordGroupKeywordScalarFieldEnum: {
+    id: 'id',
+    keywordId: 'keywordId',
+    groupId: 'groupId',
+    priority: 'priority',
+    note: 'note',
+    createdAt: 'createdAt'
+  };
+
+  export type KeywordGroupKeywordScalarFieldEnum = (typeof KeywordGroupKeywordScalarFieldEnum)[keyof typeof KeywordGroupKeywordScalarFieldEnum]
+
+
   export const PermissionScalarFieldEnum: {
     id: 'id',
     key: 'key',
@@ -13183,6 +15653,13 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -13429,12 +15906,14 @@ export namespace Prisma {
     id?: StringFilter<"Keyword"> | string
     name?: StringFilter<"Keyword"> | string
     files?: FileListRelationFilter
+    groupLinks?: KeywordGroupKeywordListRelationFilter
   }
 
   export type KeywordOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
     files?: FileOrderByRelationAggregateInput
+    groupLinks?: KeywordGroupKeywordOrderByRelationAggregateInput
   }
 
   export type KeywordWhereUniqueInput = Prisma.AtLeast<{
@@ -13444,6 +15923,7 @@ export namespace Prisma {
     OR?: KeywordWhereInput[]
     NOT?: KeywordWhereInput | KeywordWhereInput[]
     files?: FileListRelationFilter
+    groupLinks?: KeywordGroupKeywordListRelationFilter
   }, "id" | "name">
 
   export type KeywordOrderByWithAggregationInput = {
@@ -13460,6 +15940,132 @@ export namespace Prisma {
     NOT?: KeywordScalarWhereWithAggregatesInput | KeywordScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Keyword"> | string
     name?: StringWithAggregatesFilter<"Keyword"> | string
+  }
+
+  export type KeywordGroupWhereInput = {
+    AND?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
+    OR?: KeywordGroupWhereInput[]
+    NOT?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
+    id?: StringFilter<"KeywordGroup"> | string
+    name?: StringFilter<"KeywordGroup"> | string
+    description?: StringNullableFilter<"KeywordGroup"> | string | null
+    slug?: StringFilter<"KeywordGroup"> | string
+    createdAt?: DateTimeFilter<"KeywordGroup"> | Date | string
+    isActive?: BoolFilter<"KeywordGroup"> | boolean
+    keywords?: KeywordGroupKeywordListRelationFilter
+  }
+
+  export type KeywordGroupOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    slug?: SortOrder
+    createdAt?: SortOrder
+    isActive?: SortOrder
+    keywords?: KeywordGroupKeywordOrderByRelationAggregateInput
+  }
+
+  export type KeywordGroupWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    name?: string
+    slug?: string
+    AND?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
+    OR?: KeywordGroupWhereInput[]
+    NOT?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
+    description?: StringNullableFilter<"KeywordGroup"> | string | null
+    createdAt?: DateTimeFilter<"KeywordGroup"> | Date | string
+    isActive?: BoolFilter<"KeywordGroup"> | boolean
+    keywords?: KeywordGroupKeywordListRelationFilter
+  }, "id" | "slug" | "name">
+
+  export type KeywordGroupOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    slug?: SortOrder
+    createdAt?: SortOrder
+    isActive?: SortOrder
+    _count?: KeywordGroupCountOrderByAggregateInput
+    _max?: KeywordGroupMaxOrderByAggregateInput
+    _min?: KeywordGroupMinOrderByAggregateInput
+  }
+
+  export type KeywordGroupScalarWhereWithAggregatesInput = {
+    AND?: KeywordGroupScalarWhereWithAggregatesInput | KeywordGroupScalarWhereWithAggregatesInput[]
+    OR?: KeywordGroupScalarWhereWithAggregatesInput[]
+    NOT?: KeywordGroupScalarWhereWithAggregatesInput | KeywordGroupScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"KeywordGroup"> | string
+    name?: StringWithAggregatesFilter<"KeywordGroup"> | string
+    description?: StringNullableWithAggregatesFilter<"KeywordGroup"> | string | null
+    slug?: StringWithAggregatesFilter<"KeywordGroup"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"KeywordGroup"> | Date | string
+    isActive?: BoolWithAggregatesFilter<"KeywordGroup"> | boolean
+  }
+
+  export type KeywordGroupKeywordWhereInput = {
+    AND?: KeywordGroupKeywordWhereInput | KeywordGroupKeywordWhereInput[]
+    OR?: KeywordGroupKeywordWhereInput[]
+    NOT?: KeywordGroupKeywordWhereInput | KeywordGroupKeywordWhereInput[]
+    id?: StringFilter<"KeywordGroupKeyword"> | string
+    keywordId?: StringFilter<"KeywordGroupKeyword"> | string
+    groupId?: StringFilter<"KeywordGroupKeyword"> | string
+    priority?: IntNullableFilter<"KeywordGroupKeyword"> | number | null
+    note?: StringNullableFilter<"KeywordGroupKeyword"> | string | null
+    createdAt?: DateTimeFilter<"KeywordGroupKeyword"> | Date | string
+    keyword?: XOR<KeywordScalarRelationFilter, KeywordWhereInput>
+    group?: XOR<KeywordGroupScalarRelationFilter, KeywordGroupWhereInput>
+  }
+
+  export type KeywordGroupKeywordOrderByWithRelationInput = {
+    id?: SortOrder
+    keywordId?: SortOrder
+    groupId?: SortOrder
+    priority?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    keyword?: KeywordOrderByWithRelationInput
+    group?: KeywordGroupOrderByWithRelationInput
+  }
+
+  export type KeywordGroupKeywordWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    keywordId_groupId?: KeywordGroupKeywordKeywordIdGroupIdCompoundUniqueInput
+    AND?: KeywordGroupKeywordWhereInput | KeywordGroupKeywordWhereInput[]
+    OR?: KeywordGroupKeywordWhereInput[]
+    NOT?: KeywordGroupKeywordWhereInput | KeywordGroupKeywordWhereInput[]
+    keywordId?: StringFilter<"KeywordGroupKeyword"> | string
+    groupId?: StringFilter<"KeywordGroupKeyword"> | string
+    priority?: IntNullableFilter<"KeywordGroupKeyword"> | number | null
+    note?: StringNullableFilter<"KeywordGroupKeyword"> | string | null
+    createdAt?: DateTimeFilter<"KeywordGroupKeyword"> | Date | string
+    keyword?: XOR<KeywordScalarRelationFilter, KeywordWhereInput>
+    group?: XOR<KeywordGroupScalarRelationFilter, KeywordGroupWhereInput>
+  }, "id" | "keywordId_groupId">
+
+  export type KeywordGroupKeywordOrderByWithAggregationInput = {
+    id?: SortOrder
+    keywordId?: SortOrder
+    groupId?: SortOrder
+    priority?: SortOrderInput | SortOrder
+    note?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: KeywordGroupKeywordCountOrderByAggregateInput
+    _avg?: KeywordGroupKeywordAvgOrderByAggregateInput
+    _max?: KeywordGroupKeywordMaxOrderByAggregateInput
+    _min?: KeywordGroupKeywordMinOrderByAggregateInput
+    _sum?: KeywordGroupKeywordSumOrderByAggregateInput
+  }
+
+  export type KeywordGroupKeywordScalarWhereWithAggregatesInput = {
+    AND?: KeywordGroupKeywordScalarWhereWithAggregatesInput | KeywordGroupKeywordScalarWhereWithAggregatesInput[]
+    OR?: KeywordGroupKeywordScalarWhereWithAggregatesInput[]
+    NOT?: KeywordGroupKeywordScalarWhereWithAggregatesInput | KeywordGroupKeywordScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"KeywordGroupKeyword"> | string
+    keywordId?: StringWithAggregatesFilter<"KeywordGroupKeyword"> | string
+    groupId?: StringWithAggregatesFilter<"KeywordGroupKeyword"> | string
+    priority?: IntNullableWithAggregatesFilter<"KeywordGroupKeyword"> | number | null
+    note?: StringNullableWithAggregatesFilter<"KeywordGroupKeyword"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"KeywordGroupKeyword"> | Date | string
   }
 
   export type PermissionWhereInput = {
@@ -14011,24 +16617,28 @@ export namespace Prisma {
     id?: string
     name: string
     files?: FileCreateNestedManyWithoutKeywordsInput
+    groupLinks?: KeywordGroupKeywordCreateNestedManyWithoutKeywordInput
   }
 
   export type KeywordUncheckedCreateInput = {
     id?: string
     name: string
     files?: FileUncheckedCreateNestedManyWithoutKeywordsInput
+    groupLinks?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutKeywordInput
   }
 
   export type KeywordUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     files?: FileUpdateManyWithoutKeywordsNestedInput
+    groupLinks?: KeywordGroupKeywordUpdateManyWithoutKeywordNestedInput
   }
 
   export type KeywordUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     files?: FileUncheckedUpdateManyWithoutKeywordsNestedInput
+    groupLinks?: KeywordGroupKeywordUncheckedUpdateManyWithoutKeywordNestedInput
   }
 
   export type KeywordCreateManyInput = {
@@ -14044,6 +16654,134 @@ export namespace Prisma {
   export type KeywordUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type KeywordGroupCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    slug: string
+    createdAt?: Date | string
+    isActive?: boolean
+    keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
+  }
+
+  export type KeywordGroupUncheckedCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    slug: string
+    createdAt?: Date | string
+    isActive?: boolean
+    keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type KeywordGroupUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    slug?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
+  }
+
+  export type KeywordGroupUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    slug?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type KeywordGroupCreateManyInput = {
+    id?: string
+    name: string
+    description?: string | null
+    slug: string
+    createdAt?: Date | string
+    isActive?: boolean
+  }
+
+  export type KeywordGroupUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    slug?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type KeywordGroupUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    slug?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type KeywordGroupKeywordCreateInput = {
+    id?: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+    keyword: KeywordCreateNestedOneWithoutGroupLinksInput
+    group: KeywordGroupCreateNestedOneWithoutKeywordsInput
+  }
+
+  export type KeywordGroupKeywordUncheckedCreateInput = {
+    id?: string
+    keywordId: string
+    groupId: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type KeywordGroupKeywordUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    keyword?: KeywordUpdateOneRequiredWithoutGroupLinksNestedInput
+    group?: KeywordGroupUpdateOneRequiredWithoutKeywordsNestedInput
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    keywordId?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupKeywordCreateManyInput = {
+    id?: string
+    keywordId: string
+    groupId: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type KeywordGroupKeywordUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    keywordId?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PermissionCreateInput = {
@@ -14627,6 +17365,16 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type KeywordGroupKeywordListRelationFilter = {
+    every?: KeywordGroupKeywordWhereInput
+    some?: KeywordGroupKeywordWhereInput
+    none?: KeywordGroupKeywordWhereInput
+  }
+
+  export type KeywordGroupKeywordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type KeywordCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -14640,6 +17388,123 @@ export namespace Prisma {
   export type KeywordMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type KeywordGroupCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    slug?: SortOrder
+    createdAt?: SortOrder
+    isActive?: SortOrder
+  }
+
+  export type KeywordGroupMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    slug?: SortOrder
+    createdAt?: SortOrder
+    isActive?: SortOrder
+  }
+
+  export type KeywordGroupMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    slug?: SortOrder
+    createdAt?: SortOrder
+    isActive?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type KeywordScalarRelationFilter = {
+    is?: KeywordWhereInput
+    isNot?: KeywordWhereInput
+  }
+
+  export type KeywordGroupScalarRelationFilter = {
+    is?: KeywordGroupWhereInput
+    isNot?: KeywordGroupWhereInput
+  }
+
+  export type KeywordGroupKeywordKeywordIdGroupIdCompoundUniqueInput = {
+    keywordId: string
+    groupId: string
+  }
+
+  export type KeywordGroupKeywordCountOrderByAggregateInput = {
+    id?: SortOrder
+    keywordId?: SortOrder
+    groupId?: SortOrder
+    priority?: SortOrder
+    note?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KeywordGroupKeywordAvgOrderByAggregateInput = {
+    priority?: SortOrder
+  }
+
+  export type KeywordGroupKeywordMaxOrderByAggregateInput = {
+    id?: SortOrder
+    keywordId?: SortOrder
+    groupId?: SortOrder
+    priority?: SortOrder
+    note?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KeywordGroupKeywordMinOrderByAggregateInput = {
+    id?: SortOrder
+    keywordId?: SortOrder
+    groupId?: SortOrder
+    priority?: SortOrder
+    note?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KeywordGroupKeywordSumOrderByAggregateInput = {
+    priority?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -15212,10 +18077,24 @@ export namespace Prisma {
     connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
   }
 
+  export type KeywordGroupKeywordCreateNestedManyWithoutKeywordInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutKeywordInput, KeywordGroupKeywordUncheckedCreateWithoutKeywordInput> | KeywordGroupKeywordCreateWithoutKeywordInput[] | KeywordGroupKeywordUncheckedCreateWithoutKeywordInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutKeywordInput | KeywordGroupKeywordCreateOrConnectWithoutKeywordInput[]
+    createMany?: KeywordGroupKeywordCreateManyKeywordInputEnvelope
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+  }
+
   export type FileUncheckedCreateNestedManyWithoutKeywordsInput = {
     create?: XOR<FileCreateWithoutKeywordsInput, FileUncheckedCreateWithoutKeywordsInput> | FileCreateWithoutKeywordsInput[] | FileUncheckedCreateWithoutKeywordsInput[]
     connectOrCreate?: FileCreateOrConnectWithoutKeywordsInput | FileCreateOrConnectWithoutKeywordsInput[]
     connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+  }
+
+  export type KeywordGroupKeywordUncheckedCreateNestedManyWithoutKeywordInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutKeywordInput, KeywordGroupKeywordUncheckedCreateWithoutKeywordInput> | KeywordGroupKeywordCreateWithoutKeywordInput[] | KeywordGroupKeywordUncheckedCreateWithoutKeywordInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutKeywordInput | KeywordGroupKeywordCreateOrConnectWithoutKeywordInput[]
+    createMany?: KeywordGroupKeywordCreateManyKeywordInputEnvelope
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
   }
 
   export type FileUpdateManyWithoutKeywordsNestedInput = {
@@ -15231,6 +18110,20 @@ export namespace Prisma {
     deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
   }
 
+  export type KeywordGroupKeywordUpdateManyWithoutKeywordNestedInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutKeywordInput, KeywordGroupKeywordUncheckedCreateWithoutKeywordInput> | KeywordGroupKeywordCreateWithoutKeywordInput[] | KeywordGroupKeywordUncheckedCreateWithoutKeywordInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutKeywordInput | KeywordGroupKeywordCreateOrConnectWithoutKeywordInput[]
+    upsert?: KeywordGroupKeywordUpsertWithWhereUniqueWithoutKeywordInput | KeywordGroupKeywordUpsertWithWhereUniqueWithoutKeywordInput[]
+    createMany?: KeywordGroupKeywordCreateManyKeywordInputEnvelope
+    set?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    disconnect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    delete?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    update?: KeywordGroupKeywordUpdateWithWhereUniqueWithoutKeywordInput | KeywordGroupKeywordUpdateWithWhereUniqueWithoutKeywordInput[]
+    updateMany?: KeywordGroupKeywordUpdateManyWithWhereWithoutKeywordInput | KeywordGroupKeywordUpdateManyWithWhereWithoutKeywordInput[]
+    deleteMany?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+  }
+
   export type FileUncheckedUpdateManyWithoutKeywordsNestedInput = {
     create?: XOR<FileCreateWithoutKeywordsInput, FileUncheckedCreateWithoutKeywordsInput> | FileCreateWithoutKeywordsInput[] | FileUncheckedCreateWithoutKeywordsInput[]
     connectOrCreate?: FileCreateOrConnectWithoutKeywordsInput | FileCreateOrConnectWithoutKeywordsInput[]
@@ -15242,6 +18135,102 @@ export namespace Prisma {
     update?: FileUpdateWithWhereUniqueWithoutKeywordsInput | FileUpdateWithWhereUniqueWithoutKeywordsInput[]
     updateMany?: FileUpdateManyWithWhereWithoutKeywordsInput | FileUpdateManyWithWhereWithoutKeywordsInput[]
     deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateManyWithoutKeywordNestedInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutKeywordInput, KeywordGroupKeywordUncheckedCreateWithoutKeywordInput> | KeywordGroupKeywordCreateWithoutKeywordInput[] | KeywordGroupKeywordUncheckedCreateWithoutKeywordInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutKeywordInput | KeywordGroupKeywordCreateOrConnectWithoutKeywordInput[]
+    upsert?: KeywordGroupKeywordUpsertWithWhereUniqueWithoutKeywordInput | KeywordGroupKeywordUpsertWithWhereUniqueWithoutKeywordInput[]
+    createMany?: KeywordGroupKeywordCreateManyKeywordInputEnvelope
+    set?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    disconnect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    delete?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    update?: KeywordGroupKeywordUpdateWithWhereUniqueWithoutKeywordInput | KeywordGroupKeywordUpdateWithWhereUniqueWithoutKeywordInput[]
+    updateMany?: KeywordGroupKeywordUpdateManyWithWhereWithoutKeywordInput | KeywordGroupKeywordUpdateManyWithWhereWithoutKeywordInput[]
+    deleteMany?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+  }
+
+  export type KeywordGroupKeywordCreateNestedManyWithoutGroupInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput> | KeywordGroupKeywordCreateWithoutGroupInput[] | KeywordGroupKeywordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutGroupInput | KeywordGroupKeywordCreateOrConnectWithoutGroupInput[]
+    createMany?: KeywordGroupKeywordCreateManyGroupInputEnvelope
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+  }
+
+  export type KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput> | KeywordGroupKeywordCreateWithoutGroupInput[] | KeywordGroupKeywordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutGroupInput | KeywordGroupKeywordCreateOrConnectWithoutGroupInput[]
+    createMany?: KeywordGroupKeywordCreateManyGroupInputEnvelope
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type KeywordGroupKeywordUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput> | KeywordGroupKeywordCreateWithoutGroupInput[] | KeywordGroupKeywordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutGroupInput | KeywordGroupKeywordCreateOrConnectWithoutGroupInput[]
+    upsert?: KeywordGroupKeywordUpsertWithWhereUniqueWithoutGroupInput | KeywordGroupKeywordUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: KeywordGroupKeywordCreateManyGroupInputEnvelope
+    set?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    disconnect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    delete?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    update?: KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput | KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput | KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput> | KeywordGroupKeywordCreateWithoutGroupInput[] | KeywordGroupKeywordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutGroupInput | KeywordGroupKeywordCreateOrConnectWithoutGroupInput[]
+    upsert?: KeywordGroupKeywordUpsertWithWhereUniqueWithoutGroupInput | KeywordGroupKeywordUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: KeywordGroupKeywordCreateManyGroupInputEnvelope
+    set?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    disconnect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    delete?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
+    update?: KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput | KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput | KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+  }
+
+  export type KeywordCreateNestedOneWithoutGroupLinksInput = {
+    create?: XOR<KeywordCreateWithoutGroupLinksInput, KeywordUncheckedCreateWithoutGroupLinksInput>
+    connectOrCreate?: KeywordCreateOrConnectWithoutGroupLinksInput
+    connect?: KeywordWhereUniqueInput
+  }
+
+  export type KeywordGroupCreateNestedOneWithoutKeywordsInput = {
+    create?: XOR<KeywordGroupCreateWithoutKeywordsInput, KeywordGroupUncheckedCreateWithoutKeywordsInput>
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutKeywordsInput
+    connect?: KeywordGroupWhereUniqueInput
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type KeywordUpdateOneRequiredWithoutGroupLinksNestedInput = {
+    create?: XOR<KeywordCreateWithoutGroupLinksInput, KeywordUncheckedCreateWithoutGroupLinksInput>
+    connectOrCreate?: KeywordCreateOrConnectWithoutGroupLinksInput
+    upsert?: KeywordUpsertWithoutGroupLinksInput
+    connect?: KeywordWhereUniqueInput
+    update?: XOR<XOR<KeywordUpdateToOneWithWhereWithoutGroupLinksInput, KeywordUpdateWithoutGroupLinksInput>, KeywordUncheckedUpdateWithoutGroupLinksInput>
+  }
+
+  export type KeywordGroupUpdateOneRequiredWithoutKeywordsNestedInput = {
+    create?: XOR<KeywordGroupCreateWithoutKeywordsInput, KeywordGroupUncheckedCreateWithoutKeywordsInput>
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutKeywordsInput
+    upsert?: KeywordGroupUpsertWithoutKeywordsInput
+    connect?: KeywordGroupWhereUniqueInput
+    update?: XOR<XOR<KeywordGroupUpdateToOneWithWhereWithoutKeywordsInput, KeywordGroupUpdateWithoutKeywordsInput>, KeywordGroupUncheckedUpdateWithoutKeywordsInput>
   }
 
   export type RolePermissionCreateNestedManyWithoutPermissionInput = {
@@ -15714,6 +18703,46 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -15957,11 +18986,13 @@ export namespace Prisma {
   export type KeywordCreateWithoutFilesInput = {
     id?: string
     name: string
+    groupLinks?: KeywordGroupKeywordCreateNestedManyWithoutKeywordInput
   }
 
   export type KeywordUncheckedCreateWithoutFilesInput = {
     id?: string
     name: string
+    groupLinks?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutKeywordInput
   }
 
   export type KeywordCreateOrConnectWithoutFilesInput = {
@@ -16218,6 +19249,32 @@ export namespace Prisma {
     create: XOR<FileCreateWithoutKeywordsInput, FileUncheckedCreateWithoutKeywordsInput>
   }
 
+  export type KeywordGroupKeywordCreateWithoutKeywordInput = {
+    id?: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+    group: KeywordGroupCreateNestedOneWithoutKeywordsInput
+  }
+
+  export type KeywordGroupKeywordUncheckedCreateWithoutKeywordInput = {
+    id?: string
+    groupId: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type KeywordGroupKeywordCreateOrConnectWithoutKeywordInput = {
+    where: KeywordGroupKeywordWhereUniqueInput
+    create: XOR<KeywordGroupKeywordCreateWithoutKeywordInput, KeywordGroupKeywordUncheckedCreateWithoutKeywordInput>
+  }
+
+  export type KeywordGroupKeywordCreateManyKeywordInputEnvelope = {
+    data: KeywordGroupKeywordCreateManyKeywordInput | KeywordGroupKeywordCreateManyKeywordInput[]
+    skipDuplicates?: boolean
+  }
+
   export type FileUpsertWithWhereUniqueWithoutKeywordsInput = {
     where: FileWhereUniqueInput
     update: XOR<FileUpdateWithoutKeywordsInput, FileUncheckedUpdateWithoutKeywordsInput>
@@ -16232,6 +19289,168 @@ export namespace Prisma {
   export type FileUpdateManyWithWhereWithoutKeywordsInput = {
     where: FileScalarWhereInput
     data: XOR<FileUpdateManyMutationInput, FileUncheckedUpdateManyWithoutKeywordsInput>
+  }
+
+  export type KeywordGroupKeywordUpsertWithWhereUniqueWithoutKeywordInput = {
+    where: KeywordGroupKeywordWhereUniqueInput
+    update: XOR<KeywordGroupKeywordUpdateWithoutKeywordInput, KeywordGroupKeywordUncheckedUpdateWithoutKeywordInput>
+    create: XOR<KeywordGroupKeywordCreateWithoutKeywordInput, KeywordGroupKeywordUncheckedCreateWithoutKeywordInput>
+  }
+
+  export type KeywordGroupKeywordUpdateWithWhereUniqueWithoutKeywordInput = {
+    where: KeywordGroupKeywordWhereUniqueInput
+    data: XOR<KeywordGroupKeywordUpdateWithoutKeywordInput, KeywordGroupKeywordUncheckedUpdateWithoutKeywordInput>
+  }
+
+  export type KeywordGroupKeywordUpdateManyWithWhereWithoutKeywordInput = {
+    where: KeywordGroupKeywordScalarWhereInput
+    data: XOR<KeywordGroupKeywordUpdateManyMutationInput, KeywordGroupKeywordUncheckedUpdateManyWithoutKeywordInput>
+  }
+
+  export type KeywordGroupKeywordScalarWhereInput = {
+    AND?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+    OR?: KeywordGroupKeywordScalarWhereInput[]
+    NOT?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+    id?: StringFilter<"KeywordGroupKeyword"> | string
+    keywordId?: StringFilter<"KeywordGroupKeyword"> | string
+    groupId?: StringFilter<"KeywordGroupKeyword"> | string
+    priority?: IntNullableFilter<"KeywordGroupKeyword"> | number | null
+    note?: StringNullableFilter<"KeywordGroupKeyword"> | string | null
+    createdAt?: DateTimeFilter<"KeywordGroupKeyword"> | Date | string
+  }
+
+  export type KeywordGroupKeywordCreateWithoutGroupInput = {
+    id?: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+    keyword: KeywordCreateNestedOneWithoutGroupLinksInput
+  }
+
+  export type KeywordGroupKeywordUncheckedCreateWithoutGroupInput = {
+    id?: string
+    keywordId: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type KeywordGroupKeywordCreateOrConnectWithoutGroupInput = {
+    where: KeywordGroupKeywordWhereUniqueInput
+    create: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput>
+  }
+
+  export type KeywordGroupKeywordCreateManyGroupInputEnvelope = {
+    data: KeywordGroupKeywordCreateManyGroupInput | KeywordGroupKeywordCreateManyGroupInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type KeywordGroupKeywordUpsertWithWhereUniqueWithoutGroupInput = {
+    where: KeywordGroupKeywordWhereUniqueInput
+    update: XOR<KeywordGroupKeywordUpdateWithoutGroupInput, KeywordGroupKeywordUncheckedUpdateWithoutGroupInput>
+    create: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput>
+  }
+
+  export type KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput = {
+    where: KeywordGroupKeywordWhereUniqueInput
+    data: XOR<KeywordGroupKeywordUpdateWithoutGroupInput, KeywordGroupKeywordUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput = {
+    where: KeywordGroupKeywordScalarWhereInput
+    data: XOR<KeywordGroupKeywordUpdateManyMutationInput, KeywordGroupKeywordUncheckedUpdateManyWithoutGroupInput>
+  }
+
+  export type KeywordCreateWithoutGroupLinksInput = {
+    id?: string
+    name: string
+    files?: FileCreateNestedManyWithoutKeywordsInput
+  }
+
+  export type KeywordUncheckedCreateWithoutGroupLinksInput = {
+    id?: string
+    name: string
+    files?: FileUncheckedCreateNestedManyWithoutKeywordsInput
+  }
+
+  export type KeywordCreateOrConnectWithoutGroupLinksInput = {
+    where: KeywordWhereUniqueInput
+    create: XOR<KeywordCreateWithoutGroupLinksInput, KeywordUncheckedCreateWithoutGroupLinksInput>
+  }
+
+  export type KeywordGroupCreateWithoutKeywordsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    slug: string
+    createdAt?: Date | string
+    isActive?: boolean
+  }
+
+  export type KeywordGroupUncheckedCreateWithoutKeywordsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    slug: string
+    createdAt?: Date | string
+    isActive?: boolean
+  }
+
+  export type KeywordGroupCreateOrConnectWithoutKeywordsInput = {
+    where: KeywordGroupWhereUniqueInput
+    create: XOR<KeywordGroupCreateWithoutKeywordsInput, KeywordGroupUncheckedCreateWithoutKeywordsInput>
+  }
+
+  export type KeywordUpsertWithoutGroupLinksInput = {
+    update: XOR<KeywordUpdateWithoutGroupLinksInput, KeywordUncheckedUpdateWithoutGroupLinksInput>
+    create: XOR<KeywordCreateWithoutGroupLinksInput, KeywordUncheckedCreateWithoutGroupLinksInput>
+    where?: KeywordWhereInput
+  }
+
+  export type KeywordUpdateToOneWithWhereWithoutGroupLinksInput = {
+    where?: KeywordWhereInput
+    data: XOR<KeywordUpdateWithoutGroupLinksInput, KeywordUncheckedUpdateWithoutGroupLinksInput>
+  }
+
+  export type KeywordUpdateWithoutGroupLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    files?: FileUpdateManyWithoutKeywordsNestedInput
+  }
+
+  export type KeywordUncheckedUpdateWithoutGroupLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    files?: FileUncheckedUpdateManyWithoutKeywordsNestedInput
+  }
+
+  export type KeywordGroupUpsertWithoutKeywordsInput = {
+    update: XOR<KeywordGroupUpdateWithoutKeywordsInput, KeywordGroupUncheckedUpdateWithoutKeywordsInput>
+    create: XOR<KeywordGroupCreateWithoutKeywordsInput, KeywordGroupUncheckedCreateWithoutKeywordsInput>
+    where?: KeywordGroupWhereInput
+  }
+
+  export type KeywordGroupUpdateToOneWithWhereWithoutKeywordsInput = {
+    where?: KeywordGroupWhereInput
+    data: XOR<KeywordGroupUpdateWithoutKeywordsInput, KeywordGroupUncheckedUpdateWithoutKeywordsInput>
+  }
+
+  export type KeywordGroupUpdateWithoutKeywordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    slug?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type KeywordGroupUncheckedUpdateWithoutKeywordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    slug?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -16913,11 +20132,13 @@ export namespace Prisma {
   export type KeywordUpdateWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    groupLinks?: KeywordGroupKeywordUpdateManyWithoutKeywordNestedInput
   }
 
   export type KeywordUncheckedUpdateWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    groupLinks?: KeywordGroupKeywordUncheckedUpdateManyWithoutKeywordNestedInput
   }
 
   export type KeywordUncheckedUpdateManyWithoutFilesInput = {
@@ -16999,6 +20220,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type KeywordGroupKeywordCreateManyKeywordInput = {
+    id?: string
+    groupId: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+  }
+
   export type FileUpdateWithoutKeywordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -17030,6 +20259,62 @@ export namespace Prisma {
     commentaire?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupKeywordUpdateWithoutKeywordInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: KeywordGroupUpdateOneRequiredWithoutKeywordsNestedInput
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateWithoutKeywordInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateManyWithoutKeywordInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupKeywordCreateManyGroupInput = {
+    id?: string
+    keywordId: string
+    priority?: number | null
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type KeywordGroupKeywordUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    keyword?: KeywordUpdateOneRequiredWithoutGroupLinksNestedInput
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    keywordId?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupKeywordUncheckedUpdateManyWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    keywordId?: StringFieldUpdateOperationsInput | string
+    priority?: NullableIntFieldUpdateOperationsInput | number | null
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RolePermissionCreateManyPermissionInput = {

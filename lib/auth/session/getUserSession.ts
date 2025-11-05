@@ -3,25 +3,40 @@ import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 import { UserWithRolesAndPermissions } from "@/types/authorization";
 import { ROLES } from "@/lib/constants/roles";
-import { RoleValue } from "../../constants/roles";
 
-const JWT_SECRET = (process.env.JWT_SECRET as string) || "your-jwt-secret";
+const JWT_SECRET = process.env.JWT_SECRET || "your-jwt-secret";
 
 export async function getSessionUser(): Promise<UserWithRolesAndPermissions | null> {
-
-  const token = (await cookies()).get("auth_token")?.value;
-  if (!token) return null;
-
   try {
+    // 🧩 Get token from cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+
+    // 🔒 Defensive check before verifying
+    if (!token || typeof token !== "string" || !token.includes(".")) {
+      console.warn("Invalid or missing auth_token:", token);
+      return null;
+    }
+
+    // 🔐 Verify JWT
     const decoded = jwt.verify(token, JWT_SECRET) as {
       userId?: string;
       isViewer?: boolean;
     };
 
-    if (decoded.isViewer) {
-      const viewerRole = await prisma.role.findFirst();
+    if (typeof decoded !== "object" || !decoded) {
+      console.warn("Decoded token is invalid:", decoded);
+      return null;
+    }
 
-      if (!viewerRole) return null;
+    // 👤 Handle guest/viewer user
+    if (decoded.isViewer) {
+      const viewerRole = await prisma.role.findFirst({});
+
+      if (!viewerRole) {
+        console.warn("Viewer role not found in database");
+        return null;
+      }
 
       return {
         id: "guest",
@@ -38,8 +53,13 @@ export async function getSessionUser(): Promise<UserWithRolesAndPermissions | nu
       } as UserWithRolesAndPermissions;
     }
 
-    if (!decoded.userId) return null;
+    // 🧭 Validate userId presence
+    if (!decoded.userId) {
+      console.warn("Token does not contain userId");
+      return null;
+    }
 
+    // 🧱 Fetch user with roles and permissions
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       include: {
@@ -59,9 +79,21 @@ export async function getSessionUser(): Promise<UserWithRolesAndPermissions | nu
       },
     });
 
+    if (!user) {
+      console.warn("No user found for id:", decoded.userId);
+      return null;
+    }
+
     return user as UserWithRolesAndPermissions;
   } catch (err) {
-    console.error("JWT verification failed:", err);
+    // 🩹 Catch specific JWT errors
+    if (err instanceof jwt.TokenExpiredError) {
+      console.warn("JWT expired");
+    } else if (err instanceof jwt.JsonWebTokenError) {
+      console.warn("Invalid JWT:", err.message);
+    } else {
+      console.error("Unexpected error verifying JWT:", err);
+    }
     return null;
   }
 }

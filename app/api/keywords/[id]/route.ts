@@ -10,15 +10,15 @@ export async function PUT(
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILTERS_UPDATE);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
         { status: response.status }
       );
     }
-    const { name } = await req.json();
+
     const { id } = params;
+    const { name, groupIds } = await req.json();
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
@@ -27,23 +27,36 @@ export async function PUT(
       );
     }
 
-    const keyword = await prisma.keyword.update({
-      where: { id },
-      data: {
-        name: name.trim(),
-      },
-      include: {
-        _count: {
-          select: {
-            files: true,
-          },
+    const keyword = await prisma.$transaction(async (tx) => {
+      const updatedKeyword = await tx.keyword.update({
+        where: { id },
+        data: { name: name.trim() },
+      });
+
+      if (Array.isArray(groupIds)) {
+        await tx.keywordGroupKeyword.deleteMany({ where: { keywordId: id } });
+        if (groupIds.length > 0) {
+          await tx.keywordGroupKeyword.createMany({
+            data: groupIds.map((groupId: string) => ({
+              keywordId: id,
+              groupId,
+            })),
+          });
+        }
+      }
+
+      return tx.keyword.findUnique({
+        where: { id },
+        include: {
+          groupLinks: { include: { group: true } },
+          _count: { select: { files: true } },
         },
-      },
+      });
     });
 
     return NextResponse.json(keyword);
   } catch (error: any) {
-    console.error("Error updating keyword:", error);
+    console.error("Erreur lors de la mise à jour du mot-clé:", error);
     if (error.code === "P2002") {
       return NextResponse.json(
         { error: "Le mot-clé existe déjà" },
@@ -69,7 +82,6 @@ export async function DELETE(
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILTERS_DELETE);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
@@ -79,13 +91,11 @@ export async function DELETE(
 
     const { id } = params;
 
-    await prisma.keyword.delete({
-      where: { id },
-    });
+    await prisma.keyword.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Error deleting keyword:", error);
+    console.error("Erreur lors de la suppression du mot-clé:", error);
     if (error.code === "P2025") {
       return NextResponse.json(
         { error: "Mot-clé introuvable" },

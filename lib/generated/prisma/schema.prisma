@@ -63,8 +63,43 @@ model Keyword {
   files File[]
   // @@fulltext([name]) // Optional if Postgres 12+
 
+  groupLinks KeywordGroupKeyword[]
+
   @@unique([name])
   @@index([name])
+}
+
+model KeywordGroup {
+  id          String                @id @default(cuid())
+  name        String
+  description String?
+  slug        String                @unique
+  keywords    KeywordGroupKeyword[] // join relation
+  createdAt   DateTime              @default(now())
+  isActive    Boolean               @default(true)
+
+  @@unique([name])
+  @@index([name])
+  @@index([slug])
+}
+
+model KeywordGroupKeyword {
+  id        String @id @default(cuid())
+  keywordId String
+  groupId   String
+
+  // relations
+  keyword Keyword      @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+  group   KeywordGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  // optional metadata for the association (useful for ordering/priority within a group)
+  priority  Int?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([keywordId, groupId])
+  @@index([keywordId])
+  @@index([groupId])
 }
 
 model Permission {

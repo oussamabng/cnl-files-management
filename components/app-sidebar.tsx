@@ -9,6 +9,7 @@ import {
   Folder,
   UsersIcon,
   Crown,
+  ListCollapse,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -103,6 +104,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
       title: "Gestion des filtres",
       url: "/dashboard/filters",
       icon: Filter,
+    },
+    permissions.includes(PERMISSIONS.FILTERS_VIEW) && {
+      title: "Gestion des groupes",
+      url: "/dashboard/groups",
+      icon: ListCollapse,
     },
     permissions.includes(PERMISSIONS.FILES_VIEW) && {
       title: "Gestion des fichiers",

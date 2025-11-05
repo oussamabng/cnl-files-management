@@ -3,11 +3,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
+import { slugify } from "@/lib/utils"; // optional helper (you can inline if not present)
 
+// ✅ GET all keyword groups
 export async function GET() {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
@@ -15,23 +16,23 @@ export async function GET() {
       );
     }
 
-    const keywords = await prisma.keyword.findMany({
+    const groups = await prisma.keywordGroup.findMany({
+      where: { isActive: true },
       include: {
-        groupLinks: {
+        keywords: {
           include: {
-            group: true,
+            keyword: {
+              select: { id: true, name: true },
+            },
           },
-        },
-        _count: {
-          select: { files: true },
         },
       },
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json(keywords);
+    return NextResponse.json(groups);
   } catch (error) {
-    console.error("Erreur lors de la récupération des mots-clés:", error);
+    console.error("Error fetching keyword groups:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }
@@ -39,10 +40,10 @@ export async function GET() {
   }
 }
 
+// ✅ CREATE a new keyword group
 export async function POST(req: Request) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILTERS_CREATE);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
@@ -50,48 +51,49 @@ export async function POST(req: Request) {
       );
     }
 
-    const { name, groupIds } = await req.json();
+    const { name, description, keywordIds } = await req.json();
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
-        { error: "Le nom du mot-clé est requis" },
+        { error: "Le nom du groupe est requis" },
         { status: 400 }
       );
     }
 
-    const keyword = await prisma.$transaction(async (tx) => {
-      const createdKeyword = await tx.keyword.create({
-        data: { name: name.trim() },
-      });
+    const slug = slugify
+      ? slugify(name)
+      : name.toLowerCase().replace(/\s+/g, "-");
 
-      if (Array.isArray(groupIds) && groupIds.length > 0) {
-        await tx.keywordGroupKeyword.createMany({
-          data: groupIds.map((groupId: string) => ({
-            groupId,
-            keywordId: createdKeyword.id,
-          })),
-          skipDuplicates: true,
-        });
-      }
-
-      return tx.keyword.findUnique({
-        where: { id: createdKeyword.id },
-        include: {
-          groupLinks: { include: { group: true } },
-          _count: { select: { files: true } },
-        },
-      });
-    });
-
-    return NextResponse.json(keyword);
-  } catch (error: any) {
-    console.error("Erreur lors de la création du mot-clé:", error);
-    if (error.code === "P2002") {
+    const existing = await prisma.keywordGroup.findUnique({ where: { slug } });
+    if (existing) {
       return NextResponse.json(
-        { error: "Le mot-clé existe déjà" },
+        { error: "Un groupe avec ce nom existe déjà" },
         { status: 409 }
       );
     }
+
+    const group = await prisma.keywordGroup.create({
+      data: {
+        name: name.trim(),
+        description: description || null,
+        slug,
+        isActive: true,
+        keywords: {
+          create: (keywordIds || []).map((id: string) => ({
+            keyword: { connect: { id } },
+          })),
+        },
+      },
+      include: {
+        keywords: {
+          include: { keyword: { select: { id: true, name: true } } },
+        },
+      },
+    });
+
+    return NextResponse.json(group);
+  } catch (error: any) {
+    console.error("Error creating keyword group:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }

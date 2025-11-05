@@ -21,52 +21,57 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-interface Keyword {
+interface KeywordOrGroup {
   id: string;
   name: string;
+  type: "keyword" | "group";
 }
 
 interface KeywordMultiselectProps {
-  keywords: Keyword[];
-  selectedKeywords: string[];
+  items: KeywordOrGroup[];
+  selectedIds: string[];
   onSelectionChange: (selectedIds: string[]) => void;
   placeholder?: string;
   disabled?: boolean;
 }
 
 export function KeywordMultiselect({
-  keywords,
-  selectedKeywords,
+  items,
+  selectedIds,
   onSelectionChange,
-  placeholder = "Sélectionner des mots-clés...",
+  placeholder = "Sélectionner des mots-clés ou groupes...",
   disabled = false,
 }: KeywordMultiselectProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
-  const selectedKeywordNames = keywords
-    .filter((keyword) => selectedKeywords.includes(keyword.id))
-    .map((keyword) => keyword.name);
+  const selectedItemNames = items
+    .filter((item) => selectedIds.includes(item.id))
+    .map((item) => item.name);
 
-  const filteredKeywords = keywords.filter((keyword) =>
-    keyword.name.toLowerCase().includes(searchValue.toLowerCase())
+  const filteredItems = items.filter((item) =>
+    item.name.toLowerCase().includes(searchValue.toLowerCase())
   );
 
-  const toggleKeyword = (keywordId: string) => {
-    const newSelection = selectedKeywords.includes(keywordId)
-      ? selectedKeywords.filter((id) => id !== keywordId)
-      : [...selectedKeywords, keywordId];
+  const toggleItem = (itemId: string) => {
+    const newSelection = selectedIds.includes(itemId)
+      ? selectedIds.filter((id) => id !== itemId)
+      : [...selectedIds, itemId];
     onSelectionChange(newSelection);
   };
 
-  const removeKeyword = (keywordId: string) => {
-    onSelectionChange(selectedKeywords.filter((id) => id !== keywordId));
+  const removeItem = (itemId: string) => {
+    onSelectionChange(selectedIds.filter((id) => id !== itemId));
   };
 
   const removeAll = () => {
     onSelectionChange([]);
     setOpen(false);
   };
+
+  // Split items into groups and keywords
+  const groupsItems = filteredItems.filter((i) => i.type === "group");
+  const keywordsItems = filteredItems.filter((i) => i.type === "keyword");
 
   return (
     <div className="space-y-2">
@@ -80,57 +85,96 @@ export function KeywordMultiselect({
             disabled={disabled}
           >
             <div className="flex items-center gap-1 min-w-0 flex-1">
-              {selectedKeywords.length === 0 ? (
+              {selectedIds.length === 0 ? (
                 <span className="text-muted-foreground">{placeholder}</span>
               ) : (
                 <span className="truncate">
-                  {selectedKeywords.length} mot
-                  {selectedKeywords.length > 1 ? "s" : ""}-clé
-                  {selectedKeywords.length > 1 ? "s" : ""} sélectionné
-                  {selectedKeywords.length > 1 ? "s" : ""}
+                  {selectedIds.length} élément
+                  {selectedIds.length > 1 ? "s" : ""} sélectionné
                 </span>
               )}
             </div>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
+
         <PopoverContent className="w-full p-0" align="start" side="bottom">
           <Command>
             <div className="flex items-center border-b px-3">
               <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
               <CommandInput
-                placeholder="Rechercher des mots-clés..."
+                placeholder="Rechercher..."
                 value={searchValue}
                 onValueChange={setSearchValue}
                 className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
             <CommandList>
-              <CommandEmpty>Aucun mot-clé trouvé.</CommandEmpty>
-              <CommandGroup>
-                <ScrollArea className="h-60">
-                  {filteredKeywords.map((keyword) => (
-                    <CommandItem
-                      key={keyword.id}
-                      value={keyword.name}
-                      onSelect={() => toggleKeyword(keyword.id)}
-                      className="cursor-pointer"
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedKeywords.includes(keyword.id)
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {keyword.name}
-                    </CommandItem>
-                  ))}
-                </ScrollArea>
-              </CommandGroup>
+              <CommandEmpty>Aucun élément trouvé.</CommandEmpty>
+
+              {/* Groups */}
+              {groupsItems.length > 0 && (
+                <>
+                  <div className="px-3 py-1 text-xs font-semibold text-muted-foreground">
+                    Groupes
+                  </div>
+                  <CommandGroup>
+                    <ScrollArea className="max-h-48">
+                      {groupsItems.map((item) => (
+                        <CommandItem
+                          key={item.id}
+                          value={item.name}
+                          onSelect={() => toggleItem(item.id)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedIds.includes(item.id)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          <span className="font-semibold">{item.name}</span>
+                        </CommandItem>
+                      ))}
+                    </ScrollArea>
+                  </CommandGroup>
+                  <Separator />
+                </>
+              )}
+
+              {/* Keywords */}
+              {keywordsItems.length > 0 && (
+                <>
+                  <div className="px-3 py-1 text-xs font-semibold text-muted-foreground">
+                    Mots-clés
+                  </div>
+                  <CommandGroup>
+                    <ScrollArea className="max-h-48">
+                      {keywordsItems.map((item) => (
+                        <CommandItem
+                          key={item.id}
+                          value={item.name}
+                          onSelect={() => toggleItem(item.id)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedIds.includes(item.id)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          <span>{item.name}</span>
+                        </CommandItem>
+                      ))}
+                    </ScrollArea>
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
-            {selectedKeywords.length > 0 && (
+
+            {selectedIds.length > 0 && (
               <>
                 <Separator />
                 <div className="p-2 space-y-1">
@@ -150,24 +194,29 @@ export function KeywordMultiselect({
         </PopoverContent>
       </Popover>
 
-      {/* Selected Keywords Display */}
-      {selectedKeywords.length > 0 && (
+      {/* Selected Items Display */}
+      {selectedIds.length > 0 && (
         <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto p-2 border rounded-md bg-muted/30">
-          {selectedKeywordNames.map((name) => {
-            const keywordId = keywords.find((k) => k.name === name)?.id;
-            return keywordId ? (
-              <Badge key={keywordId} variant="secondary" className="text-xs">
+          {selectedItemNames.map((name) => {
+            const item = items.find((k) => k.name === name);
+            if (!item) return null;
+            return (
+              <Badge
+                key={item.id}
+                variant={item.type === "group" ? "secondary" : "outline"}
+                className="text-xs"
+              >
                 {name}
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeKeyword(keywordId)}
+                  onClick={() => removeItem(item.id)}
                   className="h-4 w-4 p-0 ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full"
                 >
                   <X className="h-3 w-3" />
                 </Button>
               </Badge>
-            ) : null;
+            );
           })}
         </div>
       )}

@@ -21,10 +21,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { FolderSelector } from "@/components/folder-selector";
 import { SimpleDatePicker } from "@/components/simple-date-picker";
 
+interface KeywordItem {
+  id: string;
+  name: string;
+}
+
+interface KeywordGroup {
+  id: string;
+  name: string;
+  keywords: KeywordItem[];
+}
+
 interface FileUploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  keywords: Array<{ id: string; name: string }>;
+  keywords: KeywordItem[];
   currentFolderId?: string | null;
   onSuccess: () => void;
 }
@@ -44,6 +55,8 @@ export function FileUploadDialog({
 }: FileUploadDialogProps) {
   const [files, setFiles] = useState<FileWithName[]>([]);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [keywordGroups, setKeywordGroups] = useState<KeywordGroup[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -52,25 +65,36 @@ export function FileUploadDialog({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (open && currentFolderId) {
-      setSelectedFolderId(currentFolderId);
-    }
+    if (open && currentFolderId) setSelectedFolderId(currentFolderId);
+    if (open) fetchKeywordGroups();
   }, [open, currentFolderId]);
+
+  const fetchKeywordGroups = async () => {
+    try {
+      const res = await fetch("/api/keyword-groups");
+      const json = await res.json();
+      if (!res.ok)
+        throw new Error(json?.message || "Erreur chargement groupes");
+      const normalized = (json || []).map((g: any) => ({
+        id: g.id,
+        name: g.name,
+        keywords: g.keywords || [],
+      }));
+      setKeywordGroups(normalized);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Erreur chargement groupes");
+    }
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => {
-      // Extract name and extension
       const extensionMatch = file.name.match(/(\.[^/.]+)$/);
       const extension = extensionMatch ? extensionMatch[1] : "";
       const nameWithoutExt = extension
         ? file.name.slice(0, -extension.length)
         : file.name;
-
-      return {
-        file,
-        nameWithoutExtension: nameWithoutExt,
-        extension,
-      };
+      return { file, nameWithoutExtension: nameWithoutExt, extension };
     });
     setFiles((prev) => [...prev, ...newFiles]);
   }, []);
@@ -80,25 +104,29 @@ export function FileUploadDialog({
     multiple: true,
   });
 
-  const removeFile = (index: number) => {
+  const removeFile = (index: number) =>
     setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
 
-  const updateFileName = (index: number, newName: string) => {
+  const updateFileName = (index: number, newName: string) =>
     setFiles((prev) =>
       prev.map((item, i) =>
         i === index ? { ...item, nameWithoutExtension: newName.trim() } : item
       )
     );
-  };
 
-  const toggleKeyword = (keywordId: string) => {
+  const toggleKeyword = (keywordId: string) =>
     setSelectedKeywords((prev) =>
       prev.includes(keywordId)
         ? prev.filter((id) => id !== keywordId)
         : [...prev, keywordId]
     );
-  };
+
+  const toggleGroup = (groupId: string) =>
+    setSelectedGroupIds((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId)
+        : [...prev, groupId]
+    );
 
   const handleUpload = async () => {
     if (files.length === 0) {
@@ -112,39 +140,27 @@ export function FileUploadDialog({
 
     try {
       const formData = new FormData();
-      console.log(formData);
-      
 
-      files.forEach((fileItem) => {
-        formData.append("files", fileItem.file);
-      });
+      files.forEach((fileItem) => formData.append("files", fileItem.file));
 
       const customNames = files.reduce((acc, fileItem, index) => {
-        // Combine name with extension
         acc[index] = fileItem.nameWithoutExtension + fileItem.extension;
         return acc;
       }, {} as Record<number, string>);
 
       formData.append("keywordIds", JSON.stringify(selectedKeywords));
+      formData.append("groupIds", JSON.stringify(selectedGroupIds));
       formData.append("customNames", JSON.stringify(customNames));
       formData.append("folderId", selectedFolderId || "");
 
-      if (dateTexte) {
-        formData.append("dateTexte", dateTexte.toISOString());
-      }
-
-      if (commentaire.trim()) {
+      if (dateTexte) formData.append("dateTexte", dateTexte.toISOString());
+      if (commentaire.trim())
         formData.append("commentaire", commentaire.trim());
-      }
-      console.log("uploading");
-      
 
       const response = await fetch("/api/files", {
         method: "POST",
         body: formData,
       });
-      const data = await response.json();
-
       if (response.ok) {
         onSuccess();
         handleClose();
@@ -152,7 +168,8 @@ export function FileUploadDialog({
         const data = await response.json();
         setError(data.error || "Échec du téléchargement");
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Une erreur s'est produite");
     } finally {
       setIsUploading(false);
@@ -163,6 +180,7 @@ export function FileUploadDialog({
   const handleClose = () => {
     setFiles([]);
     setSelectedKeywords([]);
+    setSelectedGroupIds([]);
     setSelectedFolderId(currentFolderId || null);
     setDateTexte(undefined);
     setCommentaire("");
@@ -176,12 +194,13 @@ export function FileUploadDialog({
         <DialogHeader>
           <DialogTitle>Télécharger des fichiers</DialogTitle>
           <DialogDescription>
-            Téléchargez un ou plusieurs fichiers et assignez-leur des mots-clés.
+            Téléchargez un ou plusieurs fichiers et assignez-leur des mots-clés
+            ou des groupes.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Upload Location */}
+          {/* Folder Selector */}
           <div className="space-y-3">
             <Label className="text-base font-medium">
               Emplacement de téléchargement
@@ -192,15 +211,9 @@ export function FileUploadDialog({
               placeholder="Choisir un dossier ou rester à la racine"
               disabled={isUploading}
             />
-            <p className="text-sm text-muted-foreground">
-              Les fichiers seront téléchargés dans{" "}
-              {selectedFolderId
-                ? "le dossier sélectionné"
-                : "le répertoire racine"}
-            </p>
           </div>
 
-          {/* File Drop Zone */}
+          {/* Dropzone */}
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
@@ -281,78 +294,78 @@ export function FileUploadDialog({
               Assigner des mots-clés (optionnel)
             </Label>
             {keywords.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                  {keywords.map((keyword) => (
-                    <div
-                      key={keyword.id}
-                      className="flex items-center space-x-2"
+              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
+                {keywords.map((keyword) => (
+                  <div key={keyword.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`upload-${keyword.id}`}
+                      checked={selectedKeywords.includes(keyword.id)}
+                      onCheckedChange={() => toggleKeyword(keyword.id)}
+                    />
+                    <Label
+                      htmlFor={`upload-${keyword.id}`}
+                      className="text-sm cursor-pointer"
                     >
-                      <Checkbox
-                        id={`upload-${keyword.id}`}
-                        checked={selectedKeywords.includes(keyword.id)}
-                        onCheckedChange={() => toggleKeyword(keyword.id)}
-                      />
-                      <Label
-                        htmlFor={`upload-${keyword.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {keyword.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-                {selectedKeywords.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {selectedKeywords.map((keywordId) => {
-                      const keyword = keywords.find((k) => k.id === keywordId);
-                      return keyword ? (
-                        <Badge key={keywordId} variant="secondary">
-                          {keyword.name}
-                        </Badge>
-                      ) : null;
-                    })}
+                      {keyword.name}
+                    </Label>
                   </div>
-                )}
-              </>
+                ))}
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Aucun mot-clé disponible. Les fichiers seront téléchargés sans
-                étiquettes.
+                Aucun mot-clé disponible
               </p>
             )}
           </div>
 
-          {/* Additional Fields */}
-          <div className="flex flex-col gap-4">
-            {/* Date Texte */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">
-                Date document (Optionnelle)
-              </Label>
+          {/* Keyword Groups Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">
+              Assigner des groupes de mots-clés (optionnel)
+            </Label>
+            {keywordGroups.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
+                {keywordGroups.map((group) => (
+                  <div key={group.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`group-${group.id}`}
+                      checked={selectedGroupIds.includes(group.id)}
+                      onCheckedChange={() => toggleGroup(group.id)}
+                    />
+                    <Label
+                      htmlFor={`group-${group.id}`}
+                      className="text-sm cursor-pointer"
+                    >
+                      {group.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Aucun groupe disponible
+              </p>
+            )}
+          </div>
+
+          {/* Date & Commentaire */}
+          <div className="grid grid-cols-1 gap-3">
+            <div className="space-y-1">
+              <Label>Date</Label>
               <SimpleDatePicker
                 selected={dateTexte}
                 onSelect={setDateTexte}
                 placeholder="Sélectionner une date"
+                className="w-full"
+                buttonClassName="w-full"
               />
             </div>
-
-            {/* Commentaire */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">
-                Commentaire (Optionnelle)
-              </Label>
+            <div className="space-y-1">
+              <Label>Commentaire</Label>
               <Textarea
                 value={commentaire}
                 onChange={(e) => setCommentaire(e.target.value)}
-                placeholder="Ajouter un commentaire..."
-                className="min-h-[80px] max-h-[200px] resize-none overflow-y-auto break-words"
-                style={{
-                  wordWrap: "break-word",
-                  overflowWrap: "break-word",
-                  whiteSpace: "pre-wrap",
-                }}
-                disabled={isLoading}
+                disabled={isUploading}
               />
             </div>
           </div>
@@ -365,20 +378,8 @@ export function FileUploadDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isUploading}
-          >
-            Annuler
-          </Button>
-          <Button
-            onClick={handleUpload}
-            disabled={isUploading || files.length === 0}
-          >
-            {isUploading
-              ? "Téléchargement..."
-              : `Télécharger ${files.length} fichier(s)`}
+          <Button onClick={handleUpload} disabled={isUploading || isLoading}>
+            {isUploading ? "Téléchargement..." : "Télécharger"}
           </Button>
         </DialogFooter>
       </DialogContent>

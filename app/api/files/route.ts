@@ -1,132 +1,107 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
-// Helper function to get all descendant folder IDs
+// Helper: recursively get child folders
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
   const children = await prisma.folder.findMany({
     where: { parentId: folderId },
     select: { id: true },
   });
 
-  let allDescendants = children.map((child) => child.id);
-
+  let all = children.map((c) => c.id);
   for (const child of children) {
-    const grandChildren = await getDescendantFolderIds(child.id);
-    allDescendants = [...allDescendants, ...grandChildren];
+    all = all.concat(await getDescendantFolderIds(child.id));
   }
-
-  return allDescendants;
+  return all;
 }
 
-// GET files with search and filter - Allow both admin and utilisateur
+// ================= GET =================
 export async function GET(req: Request) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
         { status: response.status }
       );
     }
-    // Both admin and utilisateur can read files
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
     const keywordIds =
       searchParams.get("keywords")?.split(",").filter(Boolean) || [];
-    const folderId = searchParams.get("folderId"); // Can be null, empty string, or actual ID
-    const filterMode = searchParams.get("mode") || "OR"; // AND or OR
+    const groupIds =
+      searchParams.get("groups")?.split(",").filter(Boolean) || [];
+    const folderId = searchParams.get("folderId");
+    const filterMode = searchParams.get("mode") || "OR";
     const sortBy = searchParams.get("sortBy") || "name";
     const sortOrder = searchParams.get("sortOrder") || "asc";
     const dateFrom = searchParams.get("dateFrom");
     const dateTo = searchParams.get("dateTo");
 
-    const whereClause: any = {};
+    const where: any = {};
 
-    // Add folder filter - search recursively in child folders
+    // Folder filter
     if (folderId && folderId !== "") {
-      // Get all descendant folder IDs
-      const descendantIds = await getDescendantFolderIds(folderId);
-      const allFolderIds = [folderId, ...descendantIds];
-
-      whereClause.folderId = {
-        in: allFolderIds,
-      };
+      const allFolders = [
+        folderId,
+        ...(await getDescendantFolderIds(folderId)),
+      ];
+      where.folderId = { in: allFolders };
     }
-    // If no folderId is provided, we search ALL files (don't add folder filter)
 
-    // Add name search
+    // Text search
     if (search) {
-      whereClause.name = {
-        contains: search,
-        mode: "insensitive",
+      where.name = { contains: search, mode: "insensitive" };
+    }
+
+    // Group filter (optional)
+    if (groupIds.length > 0) {
+      where.keywords = {
+        some: {
+          groupLinks: { some: { groupId: { in: groupIds } } },
+        },
       };
     }
 
-    // Add keyword filtering
+    // Keyword filter
     if (keywordIds.length > 0) {
       if (filterMode === "AND") {
-        // File must have ALL selected keywords
-        whereClause.AND = keywordIds.map((keywordId) => ({
-          keywords: {
-            some: {
-              id: keywordId,
-            },
-          },
+        where.AND = keywordIds.map((keywordId) => ({
+          keywords: { some: { id: keywordId } },
         }));
       } else {
-        // File must have ANY of the selected keywords
-        whereClause.keywords = {
-          some: {
-            id: {
-              in: keywordIds,
-            },
-          },
-        };
+        where.keywords = { some: { id: { in: keywordIds } } };
       }
     }
 
-    // Add date range filtering
+    // Date filter
     if (dateFrom || dateTo) {
-      whereClause.dateTexte = {};
-
-      if (dateFrom) {
-        whereClause.dateTexte.gte = new Date(dateFrom);
-      }
-
+      where.dateTexte = {};
+      if (dateFrom) where.dateTexte.gte = new Date(dateFrom);
       if (dateTo) {
-        // Add one day to include the end date
         const endDate = new Date(dateTo);
         endDate.setDate(endDate.getDate() + 1);
-        whereClause.dateTexte.lt = endDate;
+        where.dateTexte.lt = endDate;
       }
     }
 
     const files = await prisma.file.findMany({
-      where: whereClause,
+      where,
       include: {
         keywords: {
-          select: {
-            id: true,
-            name: true,
+          include: {
+            groupLinks: { include: { group: true } },
           },
         },
-        folder: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        folder: { select: { id: true, name: true } },
       },
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
+      orderBy: { [sortBy]: sortOrder },
     });
 
     return NextResponse.json(files);
@@ -142,18 +117,19 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_UPLOAD);
-
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
         { status: response.status }
       );
     }
+
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const keywordIds = JSON.parse(
       (formData.get("keywordIds") as string) || "[]"
     );
+    const groupIds = JSON.parse((formData.get("groupIds") as string) || "[]");
     const customNames = JSON.parse(
       (formData.get("customNames") as string) || "{}"
     );
@@ -168,25 +144,38 @@ export async function POST(req: Request) {
       );
     }
 
-    // Validate folder exists if folderId is provided
+    // Validate folder
     if (folderId) {
       const folder = await prisma.folder.findUnique({
         where: { id: folderId },
       });
-
-      if (!folder) {
+      if (!folder)
         return NextResponse.json(
           { error: "Dossier non trouvé" },
           { status: 404 }
         );
-      }
     }
 
-    // Create data directory if it doesn't exist
-    const dataDir = path.join(process.cwd(), "data", "uploads");
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    // Resolve keyword IDs
+    const existingKeywords = await prisma.keyword.findMany({
+      where: { id: { in: keywordIds } },
+      select: { id: true },
+    });
+    const existingKeywordIds = existingKeywords.map((k) => k.id);
+
+    if (groupIds.length > 0) {
+      const groupKeywords = await prisma.keywordGroupKeyword.findMany({
+        where: { groupId: { in: groupIds } },
+        select: { keywordId: true },
+      });
+      groupKeywords.forEach((k) => {
+        if (!existingKeywordIds.includes(k.keywordId))
+          existingKeywordIds.push(k.keywordId);
+      });
     }
+
+    const dataDir = path.join(process.cwd(), "data", "uploads");
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
     const uploadedFiles = [];
 
@@ -194,73 +183,44 @@ export async function POST(req: Request) {
       const file = files[i];
       const originalName = file.name;
       const customName = customNames[i] || originalName;
-
-      // Generate unique name if needed (check within the same folder)
       let finalName = customName;
       let counter = 1;
 
-      // Check database for existing names in the same folder
-      while (true) {
-        const existingFile = await prisma.file.findFirst({
-          where: {
-            name: finalName,
-            folderId: folderId,
-          },
-        });
-
-        if (!existingFile) break;
-
-        const nameWithoutExt = customName.replace(/\.[^/.]+$/, "");
-        const extension = customName.match(/\.[^/.]+$/)?.[0] || "";
-        finalName = `${nameWithoutExt}_${counter}${extension}`;
+      // Ensure unique name in DB + FS
+      while (
+        await prisma.file.findFirst({ where: { name: finalName, folderId } })
+      ) {
+        const base = customName.replace(/\.[^/.]+$/, "");
+        const ext = customName.match(/\.[^/.]+$/)?.[0] || "";
+        finalName = `${base}_${counter}${ext}`;
         counter++;
       }
 
-      // Also check filesystem for existing files
       let finalPath = path.join(dataDir, finalName);
       counter = 1;
       while (fs.existsSync(finalPath)) {
-        const nameWithoutExt = customName.replace(/\.[^/.]+$/, "");
-        const extension = customName.match(/\.[^/.]+$/)?.[0] || "";
-        const uniqueName = `${nameWithoutExt}_${counter}${extension}`;
-        finalPath = path.join(dataDir, uniqueName);
-        finalName = uniqueName;
+        const base = customName.replace(/\.[^/.]+$/, "");
+        const ext = customName.match(/\.[^/.]+$/)?.[0] || "";
+        finalName = `${base}_${counter}${ext}`;
+        finalPath = path.join(dataDir, finalName);
         counter++;
       }
 
-      // Save file to data/uploads directory
       const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+      fs.writeFileSync(finalPath, Buffer.from(bytes));
 
-      fs.writeFileSync(finalPath, buffer);
-
-      console.log(`Fichier sauvegardé: ${finalPath}`);
-
-      // Save file metadata to database
       const savedFile = await prisma.file.create({
         data: {
           name: finalName,
-          path: `/api/files/serve/${finalName}`, // API route to serve the file
-          folderId: folderId,
+          path: `/api/files/serve/${finalName}`,
+          folderId,
           dateTexte: dateTexte ? new Date(dateTexte) : null,
           commentaire: commentaire || null,
-          keywords: {
-            connect: keywordIds.map((id: string) => ({ id })),
-          },
+          keywords: { connect: existingKeywordIds.map((id) => ({ id })) },
         },
         include: {
-          keywords: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          folder: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
+          keywords: { include: { groupLinks: { include: { group: true } } } },
+          folder: { select: { id: true, name: true } },
         },
       });
 
