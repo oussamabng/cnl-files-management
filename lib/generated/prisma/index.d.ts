@@ -2040,10 +2040,12 @@ export namespace Prisma {
 
   export type KeywordGroupCountOutputType = {
     keywords: number
+    children: number
   }
 
   export type KeywordGroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     keywords?: boolean | KeywordGroupCountOutputTypeCountKeywordsArgs
+    children?: boolean | KeywordGroupCountOutputTypeCountChildrenArgs
   }
 
   // Custom InputTypes
@@ -2062,6 +2064,13 @@ export namespace Prisma {
    */
   export type KeywordGroupCountOutputTypeCountKeywordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: KeywordGroupKeywordWhereInput
+  }
+
+  /**
+   * KeywordGroupCountOutputType without action
+   */
+  export type KeywordGroupCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KeywordGroupWhereInput
   }
 
 
@@ -6731,28 +6740,22 @@ export namespace Prisma {
   export type KeywordGroupMinAggregateOutputType = {
     id: string | null
     name: string | null
-    description: string | null
     slug: string | null
-    createdAt: Date | null
-    isActive: boolean | null
+    parentId: string | null
   }
 
   export type KeywordGroupMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    description: string | null
     slug: string | null
-    createdAt: Date | null
-    isActive: boolean | null
+    parentId: string | null
   }
 
   export type KeywordGroupCountAggregateOutputType = {
     id: number
     name: number
-    description: number
     slug: number
-    createdAt: number
-    isActive: number
+    parentId: number
     _all: number
   }
 
@@ -6760,28 +6763,22 @@ export namespace Prisma {
   export type KeywordGroupMinAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     slug?: true
-    createdAt?: true
-    isActive?: true
+    parentId?: true
   }
 
   export type KeywordGroupMaxAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     slug?: true
-    createdAt?: true
-    isActive?: true
+    parentId?: true
   }
 
   export type KeywordGroupCountAggregateInputType = {
     id?: true
     name?: true
-    description?: true
     slug?: true
-    createdAt?: true
-    isActive?: true
+    parentId?: true
     _all?: true
   }
 
@@ -6860,10 +6857,8 @@ export namespace Prisma {
   export type KeywordGroupGroupByOutputType = {
     id: string
     name: string
-    description: string | null
     slug: string
-    createdAt: Date
-    isActive: boolean
+    parentId: string | null
     _count: KeywordGroupCountAggregateOutputType | null
     _min: KeywordGroupMinAggregateOutputType | null
     _max: KeywordGroupMaxAggregateOutputType | null
@@ -6886,61 +6881,63 @@ export namespace Prisma {
   export type KeywordGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    description?: boolean
     slug?: boolean
-    createdAt?: boolean
-    isActive?: boolean
+    parentId?: boolean
     keywords?: boolean | KeywordGroup$keywordsArgs<ExtArgs>
+    parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
+    children?: boolean | KeywordGroup$childrenArgs<ExtArgs>
     _count?: boolean | KeywordGroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["keywordGroup"]>
 
   export type KeywordGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    description?: boolean
     slug?: boolean
-    createdAt?: boolean
-    isActive?: boolean
+    parentId?: boolean
+    parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
   }, ExtArgs["result"]["keywordGroup"]>
 
   export type KeywordGroupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    description?: boolean
     slug?: boolean
-    createdAt?: boolean
-    isActive?: boolean
+    parentId?: boolean
+    parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
   }, ExtArgs["result"]["keywordGroup"]>
 
   export type KeywordGroupSelectScalar = {
     id?: boolean
     name?: boolean
-    description?: boolean
     slug?: boolean
-    createdAt?: boolean
-    isActive?: boolean
+    parentId?: boolean
   }
 
-  export type KeywordGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "slug" | "createdAt" | "isActive", ExtArgs["result"]["keywordGroup"]>
+  export type KeywordGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "parentId", ExtArgs["result"]["keywordGroup"]>
   export type KeywordGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     keywords?: boolean | KeywordGroup$keywordsArgs<ExtArgs>
+    parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
+    children?: boolean | KeywordGroup$childrenArgs<ExtArgs>
     _count?: boolean | KeywordGroupCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type KeywordGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type KeywordGroupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type KeywordGroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
+  }
+  export type KeywordGroupIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
+  }
 
   export type $KeywordGroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "KeywordGroup"
     objects: {
       keywords: Prisma.$KeywordGroupKeywordPayload<ExtArgs>[]
+      parent: Prisma.$KeywordGroupPayload<ExtArgs> | null
+      children: Prisma.$KeywordGroupPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      description: string | null
       slug: string
-      createdAt: Date
-      isActive: boolean
+      parentId: string | null
     }, ExtArgs["result"]["keywordGroup"]>
     composites: {}
   }
@@ -7336,6 +7333,8 @@ export namespace Prisma {
   export interface Prisma__KeywordGroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     keywords<T extends KeywordGroup$keywordsArgs<ExtArgs> = {}>(args?: Subset<T, KeywordGroup$keywordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupKeywordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    parent<T extends KeywordGroup$parentArgs<ExtArgs> = {}>(args?: Subset<T, KeywordGroup$parentArgs<ExtArgs>>): Prisma__KeywordGroupClient<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    children<T extends KeywordGroup$childrenArgs<ExtArgs> = {}>(args?: Subset<T, KeywordGroup$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7367,10 +7366,8 @@ export namespace Prisma {
   interface KeywordGroupFieldRefs {
     readonly id: FieldRef<"KeywordGroup", 'String'>
     readonly name: FieldRef<"KeywordGroup", 'String'>
-    readonly description: FieldRef<"KeywordGroup", 'String'>
     readonly slug: FieldRef<"KeywordGroup", 'String'>
-    readonly createdAt: FieldRef<"KeywordGroup", 'DateTime'>
-    readonly isActive: FieldRef<"KeywordGroup", 'Boolean'>
+    readonly parentId: FieldRef<"KeywordGroup", 'String'>
   }
     
 
@@ -7620,6 +7617,10 @@ export namespace Prisma {
      */
     data: KeywordGroupCreateManyInput | KeywordGroupCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7690,6 +7691,10 @@ export namespace Prisma {
      * Limit how many KeywordGroups to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7780,6 +7785,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: KeywordGroupKeywordScalarFieldEnum | KeywordGroupKeywordScalarFieldEnum[]
+  }
+
+  /**
+   * KeywordGroup.parent
+   */
+  export type KeywordGroup$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    where?: KeywordGroupWhereInput
+  }
+
+  /**
+   * KeywordGroup.children
+   */
+  export type KeywordGroup$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KeywordGroup
+     */
+    select?: KeywordGroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KeywordGroup
+     */
+    omit?: KeywordGroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KeywordGroupInclude<ExtArgs> | null
+    where?: KeywordGroupWhereInput
+    orderBy?: KeywordGroupOrderByWithRelationInput | KeywordGroupOrderByWithRelationInput[]
+    cursor?: KeywordGroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KeywordGroupScalarFieldEnum | KeywordGroupScalarFieldEnum[]
   }
 
   /**
@@ -15519,10 +15567,8 @@ export namespace Prisma {
   export const KeywordGroupScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    description: 'description',
     slug: 'slug',
-    createdAt: 'createdAt',
-    isActive: 'isActive'
+    parentId: 'parentId'
   };
 
   export type KeywordGroupScalarFieldEnum = (typeof KeywordGroupScalarFieldEnum)[keyof typeof KeywordGroupScalarFieldEnum]
@@ -15653,13 +15699,6 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -15948,43 +15987,42 @@ export namespace Prisma {
     NOT?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
     id?: StringFilter<"KeywordGroup"> | string
     name?: StringFilter<"KeywordGroup"> | string
-    description?: StringNullableFilter<"KeywordGroup"> | string | null
     slug?: StringFilter<"KeywordGroup"> | string
-    createdAt?: DateTimeFilter<"KeywordGroup"> | Date | string
-    isActive?: BoolFilter<"KeywordGroup"> | boolean
+    parentId?: StringNullableFilter<"KeywordGroup"> | string | null
     keywords?: KeywordGroupKeywordListRelationFilter
+    parent?: XOR<KeywordGroupNullableScalarRelationFilter, KeywordGroupWhereInput> | null
+    children?: KeywordGroupListRelationFilter
   }
 
   export type KeywordGroupOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrderInput | SortOrder
     slug?: SortOrder
-    createdAt?: SortOrder
-    isActive?: SortOrder
+    parentId?: SortOrderInput | SortOrder
     keywords?: KeywordGroupKeywordOrderByRelationAggregateInput
+    parent?: KeywordGroupOrderByWithRelationInput
+    children?: KeywordGroupOrderByRelationAggregateInput
   }
 
   export type KeywordGroupWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    name?: string
     slug?: string
+    name_parentId?: KeywordGroupNameParentIdCompoundUniqueInput
     AND?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
     OR?: KeywordGroupWhereInput[]
     NOT?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
-    description?: StringNullableFilter<"KeywordGroup"> | string | null
-    createdAt?: DateTimeFilter<"KeywordGroup"> | Date | string
-    isActive?: BoolFilter<"KeywordGroup"> | boolean
+    name?: StringFilter<"KeywordGroup"> | string
+    parentId?: StringNullableFilter<"KeywordGroup"> | string | null
     keywords?: KeywordGroupKeywordListRelationFilter
-  }, "id" | "slug" | "name">
+    parent?: XOR<KeywordGroupNullableScalarRelationFilter, KeywordGroupWhereInput> | null
+    children?: KeywordGroupListRelationFilter
+  }, "id" | "slug" | "name_parentId">
 
   export type KeywordGroupOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrderInput | SortOrder
     slug?: SortOrder
-    createdAt?: SortOrder
-    isActive?: SortOrder
+    parentId?: SortOrderInput | SortOrder
     _count?: KeywordGroupCountOrderByAggregateInput
     _max?: KeywordGroupMaxOrderByAggregateInput
     _min?: KeywordGroupMinOrderByAggregateInput
@@ -15996,10 +16034,8 @@ export namespace Prisma {
     NOT?: KeywordGroupScalarWhereWithAggregatesInput | KeywordGroupScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"KeywordGroup"> | string
     name?: StringWithAggregatesFilter<"KeywordGroup"> | string
-    description?: StringNullableWithAggregatesFilter<"KeywordGroup"> | string | null
     slug?: StringWithAggregatesFilter<"KeywordGroup"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"KeywordGroup"> | Date | string
-    isActive?: BoolWithAggregatesFilter<"KeywordGroup"> | boolean
+    parentId?: StringNullableWithAggregatesFilter<"KeywordGroup"> | string | null
   }
 
   export type KeywordGroupKeywordWhereInput = {
@@ -16659,68 +16695,57 @@ export namespace Prisma {
   export type KeywordGroupCreateInput = {
     id?: string
     name: string
-    description?: string | null
     slug: string
-    createdAt?: Date | string
-    isActive?: boolean
     keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
+    parent?: KeywordGroupCreateNestedOneWithoutChildrenInput
+    children?: KeywordGroupCreateNestedManyWithoutParentInput
   }
 
   export type KeywordGroupUncheckedCreateInput = {
     id?: string
     name: string
-    description?: string | null
     slug: string
-    createdAt?: Date | string
-    isActive?: boolean
+    parentId?: string | null
     keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
+    children?: KeywordGroupUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type KeywordGroupUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     slug?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
     keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
+    parent?: KeywordGroupUpdateOneWithoutChildrenNestedInput
+    children?: KeywordGroupUpdateManyWithoutParentNestedInput
   }
 
   export type KeywordGroupUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     slug?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
+    children?: KeywordGroupUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type KeywordGroupCreateManyInput = {
     id?: string
     name: string
-    description?: string | null
     slug: string
-    createdAt?: Date | string
-    isActive?: boolean
+    parentId?: string | null
   }
 
   export type KeywordGroupUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     slug?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type KeywordGroupUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     slug?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type KeywordGroupKeywordCreateInput = {
@@ -17390,44 +17415,45 @@ export namespace Prisma {
     name?: SortOrder
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+  export type KeywordGroupNullableScalarRelationFilter = {
+    is?: KeywordGroupWhereInput | null
+    isNot?: KeywordGroupWhereInput | null
+  }
+
+  export type KeywordGroupListRelationFilter = {
+    every?: KeywordGroupWhereInput
+    some?: KeywordGroupWhereInput
+    none?: KeywordGroupWhereInput
+  }
+
+  export type KeywordGroupOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KeywordGroupNameParentIdCompoundUniqueInput = {
+    name: string
+    parentId: string
   }
 
   export type KeywordGroupCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     slug?: SortOrder
-    createdAt?: SortOrder
-    isActive?: SortOrder
+    parentId?: SortOrder
   }
 
   export type KeywordGroupMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     slug?: SortOrder
-    createdAt?: SortOrder
-    isActive?: SortOrder
+    parentId?: SortOrder
   }
 
   export type KeywordGroupMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    description?: SortOrder
     slug?: SortOrder
-    createdAt?: SortOrder
-    isActive?: SortOrder
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
+    parentId?: SortOrder
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
@@ -18158,6 +18184,19 @@ export namespace Prisma {
     connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
   }
 
+  export type KeywordGroupCreateNestedOneWithoutChildrenInput = {
+    create?: XOR<KeywordGroupCreateWithoutChildrenInput, KeywordGroupUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutChildrenInput
+    connect?: KeywordGroupWhereUniqueInput
+  }
+
+  export type KeywordGroupCreateNestedManyWithoutParentInput = {
+    create?: XOR<KeywordGroupCreateWithoutParentInput, KeywordGroupUncheckedCreateWithoutParentInput> | KeywordGroupCreateWithoutParentInput[] | KeywordGroupUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutParentInput | KeywordGroupCreateOrConnectWithoutParentInput[]
+    createMany?: KeywordGroupCreateManyParentInputEnvelope
+    connect?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+  }
+
   export type KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput = {
     create?: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput> | KeywordGroupKeywordCreateWithoutGroupInput[] | KeywordGroupKeywordUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutGroupInput | KeywordGroupKeywordCreateOrConnectWithoutGroupInput[]
@@ -18165,8 +18204,11 @@ export namespace Prisma {
     connect?: KeywordGroupKeywordWhereUniqueInput | KeywordGroupKeywordWhereUniqueInput[]
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
+  export type KeywordGroupUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<KeywordGroupCreateWithoutParentInput, KeywordGroupUncheckedCreateWithoutParentInput> | KeywordGroupCreateWithoutParentInput[] | KeywordGroupUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutParentInput | KeywordGroupCreateOrConnectWithoutParentInput[]
+    createMany?: KeywordGroupCreateManyParentInputEnvelope
+    connect?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
   }
 
   export type KeywordGroupKeywordUpdateManyWithoutGroupNestedInput = {
@@ -18183,6 +18225,30 @@ export namespace Prisma {
     deleteMany?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
   }
 
+  export type KeywordGroupUpdateOneWithoutChildrenNestedInput = {
+    create?: XOR<KeywordGroupCreateWithoutChildrenInput, KeywordGroupUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutChildrenInput
+    upsert?: KeywordGroupUpsertWithoutChildrenInput
+    disconnect?: KeywordGroupWhereInput | boolean
+    delete?: KeywordGroupWhereInput | boolean
+    connect?: KeywordGroupWhereUniqueInput
+    update?: XOR<XOR<KeywordGroupUpdateToOneWithWhereWithoutChildrenInput, KeywordGroupUpdateWithoutChildrenInput>, KeywordGroupUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type KeywordGroupUpdateManyWithoutParentNestedInput = {
+    create?: XOR<KeywordGroupCreateWithoutParentInput, KeywordGroupUncheckedCreateWithoutParentInput> | KeywordGroupCreateWithoutParentInput[] | KeywordGroupUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutParentInput | KeywordGroupCreateOrConnectWithoutParentInput[]
+    upsert?: KeywordGroupUpsertWithWhereUniqueWithoutParentInput | KeywordGroupUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: KeywordGroupCreateManyParentInputEnvelope
+    set?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    disconnect?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    delete?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    connect?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    update?: KeywordGroupUpdateWithWhereUniqueWithoutParentInput | KeywordGroupUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: KeywordGroupUpdateManyWithWhereWithoutParentInput | KeywordGroupUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: KeywordGroupScalarWhereInput | KeywordGroupScalarWhereInput[]
+  }
+
   export type KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput = {
     create?: XOR<KeywordGroupKeywordCreateWithoutGroupInput, KeywordGroupKeywordUncheckedCreateWithoutGroupInput> | KeywordGroupKeywordCreateWithoutGroupInput[] | KeywordGroupKeywordUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: KeywordGroupKeywordCreateOrConnectWithoutGroupInput | KeywordGroupKeywordCreateOrConnectWithoutGroupInput[]
@@ -18195,6 +18261,20 @@ export namespace Prisma {
     update?: KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput | KeywordGroupKeywordUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput | KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: KeywordGroupKeywordScalarWhereInput | KeywordGroupKeywordScalarWhereInput[]
+  }
+
+  export type KeywordGroupUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<KeywordGroupCreateWithoutParentInput, KeywordGroupUncheckedCreateWithoutParentInput> | KeywordGroupCreateWithoutParentInput[] | KeywordGroupUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: KeywordGroupCreateOrConnectWithoutParentInput | KeywordGroupCreateOrConnectWithoutParentInput[]
+    upsert?: KeywordGroupUpsertWithWhereUniqueWithoutParentInput | KeywordGroupUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: KeywordGroupCreateManyParentInputEnvelope
+    set?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    disconnect?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    delete?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    connect?: KeywordGroupWhereUniqueInput | KeywordGroupWhereUniqueInput[]
+    update?: KeywordGroupUpdateWithWhereUniqueWithoutParentInput | KeywordGroupUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: KeywordGroupUpdateManyWithWhereWithoutParentInput | KeywordGroupUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: KeywordGroupScalarWhereInput | KeywordGroupScalarWhereInput[]
   }
 
   export type KeywordCreateNestedOneWithoutGroupLinksInput = {
@@ -18701,19 +18781,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -19345,6 +19412,53 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type KeywordGroupCreateWithoutChildrenInput = {
+    id?: string
+    name: string
+    slug: string
+    keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
+    parent?: KeywordGroupCreateNestedOneWithoutChildrenInput
+  }
+
+  export type KeywordGroupUncheckedCreateWithoutChildrenInput = {
+    id?: string
+    name: string
+    slug: string
+    parentId?: string | null
+    keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type KeywordGroupCreateOrConnectWithoutChildrenInput = {
+    where: KeywordGroupWhereUniqueInput
+    create: XOR<KeywordGroupCreateWithoutChildrenInput, KeywordGroupUncheckedCreateWithoutChildrenInput>
+  }
+
+  export type KeywordGroupCreateWithoutParentInput = {
+    id?: string
+    name: string
+    slug: string
+    keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
+    children?: KeywordGroupCreateNestedManyWithoutParentInput
+  }
+
+  export type KeywordGroupUncheckedCreateWithoutParentInput = {
+    id?: string
+    name: string
+    slug: string
+    keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
+    children?: KeywordGroupUncheckedCreateNestedManyWithoutParentInput
+  }
+
+  export type KeywordGroupCreateOrConnectWithoutParentInput = {
+    where: KeywordGroupWhereUniqueInput
+    create: XOR<KeywordGroupCreateWithoutParentInput, KeywordGroupUncheckedCreateWithoutParentInput>
+  }
+
+  export type KeywordGroupCreateManyParentInputEnvelope = {
+    data: KeywordGroupCreateManyParentInput | KeywordGroupCreateManyParentInput[]
+    skipDuplicates?: boolean
+  }
+
   export type KeywordGroupKeywordUpsertWithWhereUniqueWithoutGroupInput = {
     where: KeywordGroupKeywordWhereUniqueInput
     update: XOR<KeywordGroupKeywordUpdateWithoutGroupInput, KeywordGroupKeywordUncheckedUpdateWithoutGroupInput>
@@ -19359,6 +19473,59 @@ export namespace Prisma {
   export type KeywordGroupKeywordUpdateManyWithWhereWithoutGroupInput = {
     where: KeywordGroupKeywordScalarWhereInput
     data: XOR<KeywordGroupKeywordUpdateManyMutationInput, KeywordGroupKeywordUncheckedUpdateManyWithoutGroupInput>
+  }
+
+  export type KeywordGroupUpsertWithoutChildrenInput = {
+    update: XOR<KeywordGroupUpdateWithoutChildrenInput, KeywordGroupUncheckedUpdateWithoutChildrenInput>
+    create: XOR<KeywordGroupCreateWithoutChildrenInput, KeywordGroupUncheckedCreateWithoutChildrenInput>
+    where?: KeywordGroupWhereInput
+  }
+
+  export type KeywordGroupUpdateToOneWithWhereWithoutChildrenInput = {
+    where?: KeywordGroupWhereInput
+    data: XOR<KeywordGroupUpdateWithoutChildrenInput, KeywordGroupUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type KeywordGroupUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
+    parent?: KeywordGroupUpdateOneWithoutChildrenNestedInput
+  }
+
+  export type KeywordGroupUncheckedUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type KeywordGroupUpsertWithWhereUniqueWithoutParentInput = {
+    where: KeywordGroupWhereUniqueInput
+    update: XOR<KeywordGroupUpdateWithoutParentInput, KeywordGroupUncheckedUpdateWithoutParentInput>
+    create: XOR<KeywordGroupCreateWithoutParentInput, KeywordGroupUncheckedCreateWithoutParentInput>
+  }
+
+  export type KeywordGroupUpdateWithWhereUniqueWithoutParentInput = {
+    where: KeywordGroupWhereUniqueInput
+    data: XOR<KeywordGroupUpdateWithoutParentInput, KeywordGroupUncheckedUpdateWithoutParentInput>
+  }
+
+  export type KeywordGroupUpdateManyWithWhereWithoutParentInput = {
+    where: KeywordGroupScalarWhereInput
+    data: XOR<KeywordGroupUpdateManyMutationInput, KeywordGroupUncheckedUpdateManyWithoutParentInput>
+  }
+
+  export type KeywordGroupScalarWhereInput = {
+    AND?: KeywordGroupScalarWhereInput | KeywordGroupScalarWhereInput[]
+    OR?: KeywordGroupScalarWhereInput[]
+    NOT?: KeywordGroupScalarWhereInput | KeywordGroupScalarWhereInput[]
+    id?: StringFilter<"KeywordGroup"> | string
+    name?: StringFilter<"KeywordGroup"> | string
+    slug?: StringFilter<"KeywordGroup"> | string
+    parentId?: StringNullableFilter<"KeywordGroup"> | string | null
   }
 
   export type KeywordCreateWithoutGroupLinksInput = {
@@ -19381,19 +19548,17 @@ export namespace Prisma {
   export type KeywordGroupCreateWithoutKeywordsInput = {
     id?: string
     name: string
-    description?: string | null
     slug: string
-    createdAt?: Date | string
-    isActive?: boolean
+    parent?: KeywordGroupCreateNestedOneWithoutChildrenInput
+    children?: KeywordGroupCreateNestedManyWithoutParentInput
   }
 
   export type KeywordGroupUncheckedCreateWithoutKeywordsInput = {
     id?: string
     name: string
-    description?: string | null
     slug: string
-    createdAt?: Date | string
-    isActive?: boolean
+    parentId?: string | null
+    children?: KeywordGroupUncheckedCreateNestedManyWithoutParentInput
   }
 
   export type KeywordGroupCreateOrConnectWithoutKeywordsInput = {
@@ -19438,19 +19603,17 @@ export namespace Prisma {
   export type KeywordGroupUpdateWithoutKeywordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     slug?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
+    parent?: KeywordGroupUpdateOneWithoutChildrenNestedInput
+    children?: KeywordGroupUpdateManyWithoutParentNestedInput
   }
 
   export type KeywordGroupUncheckedUpdateWithoutKeywordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     slug?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    children?: KeywordGroupUncheckedUpdateManyWithoutParentNestedInput
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -20293,6 +20456,12 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type KeywordGroupCreateManyParentInput = {
+    id?: string
+    name: string
+    slug: string
+  }
+
   export type KeywordGroupKeywordUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     priority?: NullableIntFieldUpdateOperationsInput | number | null
@@ -20315,6 +20484,28 @@ export namespace Prisma {
     priority?: NullableIntFieldUpdateOperationsInput | number | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KeywordGroupUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
+    children?: KeywordGroupUpdateManyWithoutParentNestedInput
+  }
+
+  export type KeywordGroupUncheckedUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
+    children?: KeywordGroupUncheckedUpdateManyWithoutParentNestedInput
+  }
+
+  export type KeywordGroupUncheckedUpdateManyWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
   }
 
   export type RolePermissionCreateManyPermissionInput = {

@@ -5,18 +5,18 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { FiltersContent } from "@/components/filters-content";
-import { checkPermission } from "@/lib/auth/session/checkPermission";
-import { PERMISSIONS } from "@/lib/constants/permissions";
-import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
 import { KeywordGroupsContent } from "@/components/keyword-groups-content";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { checkPermission } from "@/lib/auth/session/checkPermission";
+import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
 
-export default async function FiltersPage() {
+export default async function GroupsPage() {
   const user = await checkPermission(PERMISSIONS.FILTERS_VIEW);
 
   if (!user) {
     redirect("/login");
   }
+
   const permissions = getUserPermissions(user);
 
   return (

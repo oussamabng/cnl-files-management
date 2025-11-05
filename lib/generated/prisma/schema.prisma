@@ -70,15 +70,16 @@ model Keyword {
 }
 
 model KeywordGroup {
-  id          String                @id @default(cuid())
-  name        String
-  description String?
-  slug        String                @unique
-  keywords    KeywordGroupKeyword[] // join relation
-  createdAt   DateTime              @default(now())
-  isActive    Boolean               @default(true)
+  id       String                @id @default(cuid())
+  name     String
+  slug     String                @unique
+  keywords KeywordGroupKeyword[] // join relation
 
-  @@unique([name])
+  parentId String? // optional parent
+  parent   KeywordGroup?  @relation("KeywordGroupHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children KeywordGroup[] @relation("KeywordGroupHierarchy")
+
+  @@unique([name, parentId])
   @@index([name])
   @@index([slug])
 }

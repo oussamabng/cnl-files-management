@@ -3,7 +3,33 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
-import { slugify } from '@/lib/utils';
+import { slugify } from "@/lib/utils";
+
+async function isCircularParent(
+  childId: string,
+  parentId: string | null
+): Promise<boolean> {
+  if (!parentId) return false;
+  if (childId === parentId) return true;
+
+  let currentParentId: string | null = parentId;
+
+  while (currentParentId) {
+    const parent: { parentId: string | null } | null =
+      await prisma.keywordGroup.findUnique({
+        where: { id: currentParentId },
+        select: { parentId: true },
+      });
+
+    if (!parent) break;
+
+    if (parent.parentId === childId) return true;
+
+    currentParentId = parent.parentId;
+  }
+
+  return false;
+}
 
 export async function PUT(
   req: Request,
@@ -19,20 +45,41 @@ export async function PUT(
     }
 
     const { id } = params;
-    const { name, description, keywordIds, isActive } = await req.json();
+    const { name, description, keywordIds, isActive, parentId } =
+      await req.json();
 
-    const slug = slugify ? slugify(name) : name?.toLowerCase()?.replace(/\s+/g, "-");
+    // Validate parentId
+    if (parentId) {
+      const parentGroup = await prisma.keywordGroup.findUnique({
+        where: { id: parentId },
+      });
+      if (!parentGroup) {
+        return NextResponse.json(
+          { error: "Le groupe parent n'existe pas" },
+          { status: 400 }
+        );
+      }
+      const circular = await isCircularParent(id, parentId);
+      if (circular) {
+        return NextResponse.json(
+          { error: "Un groupe ne peut pas devenir son propre ancêtre" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const slug = slugify
+      ? slugify(name)
+      : name?.toLowerCase()?.replace(/\s+/g, "-");
 
     const updated = await prisma.keywordGroup.update({
       where: { id },
       data: {
         name: name?.trim(),
-        description: description || null,
         slug: slug || undefined,
-        isActive: isActive ?? true,
-        // reset and reconnect keywords
+        parentId: parentId || null,
         keywords: {
-          deleteMany: {}, // clear existing associations
+          deleteMany: {}, // reset keywords
           create: (keywordIds || []).map((kid: string) => ({
             keyword: { connect: { id: kid } },
           })),
@@ -42,6 +89,7 @@ export async function PUT(
         keywords: {
           include: { keyword: { select: { id: true, name: true } } },
         },
+        children: true,
       },
     });
 
@@ -49,7 +97,10 @@ export async function PUT(
   } catch (error: any) {
     console.error("Error updating keyword group:", error);
     if (error.code === "P2025") {
-      return NextResponse.json({ error: "Groupe introuvable" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Groupe introuvable" },
+        { status: 404 }
+      );
     }
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
@@ -73,6 +124,17 @@ export async function DELETE(
 
     const { id } = params;
 
+    // Optionally: check if children exist before deletion
+    const group = await prisma.keywordGroup.findUnique({
+      where: { id },
+      select: { children: { select: { id: true } } },
+    });
+
+    if (group?.children?.length) {
+      // Either delete cascade (Prisma handles this if onDelete: Cascade) or prevent deletion
+      // return NextResponse.json({ error: "Impossible de supprimer un groupe avec des sous-groupes" }, { status: 400 });
+    }
+
     await prisma.keywordGroup.delete({
       where: { id },
     });
@@ -81,7 +143,10 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Error deleting keyword group:", error);
     if (error.code === "P2025") {
-      return NextResponse.json({ error: "Groupe introuvable" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Groupe introuvable" },
+        { status: 404 }
+      );
     }
     return NextResponse.json(
       { error: "Erreur interne du serveur" },

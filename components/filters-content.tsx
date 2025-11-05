@@ -53,11 +53,17 @@ import { Loading, TableLoading } from "@/components/ui/loading";
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 
 interface Keyword {
+  _count: any;
   id: string;
   name: string;
-  _count: {
-    files: number;
-  };
+  fileCount: number;
+  groupLinks?: {
+    group: {
+      id: string;
+      name: string;
+      
+    };
+  }[];
 }
 
 export function FiltersContent({
@@ -111,7 +117,36 @@ export function FiltersContent({
         );
       },
     },
-    ...(permissions.includes(PERMISSIONS.FILTERS_DELETE) || permissions.includes(PERMISSIONS.FILTERS_UPDATE)
+    {
+      id: "groupLinks",
+      header: "Groupes assignés",
+      cell: ({ row }) => {
+        const links = row.original.groupLinks || [];
+        const groupNames = links
+          .map((link: any) => link.group?.name)
+          .filter(Boolean);
+
+        if (groupNames.length === 0) {
+          return <span className="text-muted-foreground text-sm">Aucun</span>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {groupNames.map((name) => (
+              <span
+                key={name}
+                className="px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground text-xs font-medium"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        );
+      },
+    },
+
+    ...(permissions.includes(PERMISSIONS.FILTERS_DELETE) ||
+    permissions.includes(PERMISSIONS.FILTERS_UPDATE)
       ? [
           {
             id: "actions",

@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -35,6 +34,7 @@ const groupSchema = z.object({
     .min(1, "Le nom du groupe est requis")
     .max(100, "Nom trop long"),
   keywordIds: z.array(z.string()).optional(),
+  parentId: z.string().nullable().optional(),
 });
 
 type GroupFormValues = z.infer<typeof groupSchema>;
@@ -53,6 +53,7 @@ interface KeywordGroupFormProps {
     keywords?: KeywordItem[];
     isActive?: boolean;
   } | null;
+  parentId?: string | null; // NEW: parent id passed from parent
   onSuccess: () => void;
 }
 
@@ -60,6 +61,7 @@ export function KeywordGroupForm({
   open,
   onOpenChange,
   group = null,
+  parentId = null,
   onSuccess,
 }: KeywordGroupFormProps) {
   const [keywords, setKeywords] = useState<KeywordItem[]>([]);
@@ -107,6 +109,7 @@ export function KeywordGroupForm({
       const payload = {
         name: values.name.trim(),
         keywordIds: values.keywordIds || [],
+        parentId: parentId || null, // assign parent automatically
       };
       const url = group
         ? `/api/keyword-groups/${group.id}`
@@ -184,6 +187,7 @@ export function KeywordGroupForm({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Group Name */}
             <FormField
               control={form.control}
               name="name"
