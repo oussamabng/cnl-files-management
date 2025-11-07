@@ -12,8 +12,9 @@ import {
   ArrowLeft,
   Edit,
   FolderPlus,
-  Group,
+  Layers,
   MoreHorizontal,
+  Plus,
   Trash2,
 } from "lucide-react";
 import { Loading } from "./ui/loading";
@@ -32,8 +33,8 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
-import { DeleteFolderDialog } from "./delete-folder-dialog";
 import { GroupForm } from "./group-form";
+import { DeleteGroupDialog } from "./delete-group-dialog";
 
 interface GroupData {
   id: string;
@@ -41,8 +42,8 @@ interface GroupData {
   parentId: string | null;
   _count: {
     children: number;
-    files: number;
-    groups?: number; // Add Group count
+    groups: number;
+    keywords: number;
   };
 }
 
@@ -83,8 +84,7 @@ export function GroupBrowser({
         params.append("parentId", currentGroupId);
       }
 
-      //   const response = await fetch(`/api/groups?${params}`);
-      let response = null as any;
+      const response = await fetch(`/api/groups?${params}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -108,8 +108,7 @@ export function GroupBrowser({
     }
 
     try {
-      //   const response = await fetch(`/api/Groups/${currentGroupId}/path`);
-      let response = null as any;
+      const response = await fetch(`/api/groups/${currentGroupId}/path`);
       if (response.ok) {
         const data = await response.json();
         setBreadcrumbs(data);
@@ -178,23 +177,23 @@ export function GroupBrowser({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Explorateur de groupes</CardTitle>
-              <CardDescription>
-                {selectionMode
-                  ? "Sélectionnez un dossier pour vos fichiers"
-                  : "Naviguez dans votre structure de dossiers"}
-              </CardDescription>
-            </div>
-            {permissions.includes(PERMISSIONS.GROUPS_CREATE) &&
-              !selectionMode && (
-                <Button onClick={() => setShowCreateForm(true)}>
-                  <FolderPlus className="mr-2 h-4 w-4" />
-                  Nouveau dossier
-                </Button>
-              )}
+          <div>
+            <CardTitle>Explorateur de groupes</CardTitle>
+            <CardDescription>
+              {selectionMode
+                ? "Sélectionnez un groupe pour vos mot-clés"
+                : "Naviguez dans votre structure de groupes"}
+            </CardDescription>
           </div>
+          {permissions.includes(PERMISSIONS.FOLDERS_CREATE) &&
+            !selectionMode && (
+              <Button onClick={() => setShowCreateForm(true)}>
+                <div className="relative">
+                  <Plus className="h-8 w-8 " />
+                </div>{" "}
+                Nouveau groupe
+              </Button>
+            )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -276,19 +275,19 @@ export function GroupBrowser({
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Group className="h-8 w-8 text-blue-600 flex-shrink-0" />
+                  <Layers className="h-8 w-8 text-blue-600 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <h4 className="font-medium truncate">{group.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-xs">
-                        {group._count.files} fichier
-                        {group._count.files !== 1 ? "s" : ""}
+                        {group._count.keywords} mot-clé
+                        {group._count.keywords !== 1 ? "s" : ""}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         {group._count.children} dossier
                         {group._count.children !== 1 ? "s" : ""}
                       </Badge>
-                      {group._count.groups !== undefined &&
+                      {group._count.children !== undefined &&
                         group._count.groups > 0 && (
                           <Badge variant="secondary" className="text-xs">
                             +{group._count.groups} imbriqué
@@ -347,7 +346,7 @@ export function GroupBrowser({
         </div>
         {groups.length === 0 && !loading && (
           <div className="text-center py-8 text-muted-foreground">
-            <Group className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <Layers className="h-12 w-12 mx-auto mb-4 opacity-50" />
           </div>
         )}
       </CardContent>
@@ -367,10 +366,10 @@ export function GroupBrowser({
         onSuccess={handleSuccess}
       />
 
-      <DeleteFolderDialog
+      <DeleteGroupDialog
         open={!!deletingGroup}
         onOpenChange={(open) => !open && setDeletingGroup(null)}
-        folder={deletingGroup}
+        group={deletingGroup}
         onSuccess={handleSuccess}
       />
     </Card>

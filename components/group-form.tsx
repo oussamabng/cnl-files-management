@@ -64,21 +64,19 @@ export function GroupForm({
     setError("");
 
     try {
-      const url = group ? `/api/groups/${group.id}` : "/api/Groups";
+      const url = group ? `/api/groups/${group.id}` : "/api/groups";
       const method = group ? "PUT" : "POST";
 
-    //   const response = await fetch(url, {
-    //     method,
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({
-    //       ...values,
-    //       parentId: parentId || null,
-    //     }),
-    //   });
-
-    const response = null as any;
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...values,
+          parentId: parentId || null,
+        }),
+      });
 
       const data = await response.json();
 

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loading } from "@/components/ui/loading";
-import { Trash2, Folder } from "lucide-react";
+import { Trash2, Layers } from "lucide-react";
 
 interface DeleteFolderDialogProps {
   open: boolean;
@@ -22,12 +22,12 @@ interface DeleteFolderDialogProps {
   group: {
     id: string;
     name: string;
-    _count: { children: number; files: number };
+    _count: { children: number; keywords: number };
   } | null;
   onSuccess: () => void;
 }
 
-export function DeleteFolderDialog({
+export function DeleteGroupDialog({
   open,
   onOpenChange,
   group,
@@ -43,16 +43,16 @@ export function DeleteFolderDialog({
     setError("");
 
     try {
-    //   const response = await fetch(`/api/folders/${group.id}`, {
-    //     method: "DELETE",
-    //   });
-    let response = null as any;
+      const response = await fetch(`/api/groups/${group.id}`, {
+        method: "DELETE",
+      });
+
       if (response.ok) {
         onSuccess();
         onOpenChange(false);
       } else {
         const data = await response.json();
-        setError(data.error || "Échec de la suppression du dossier");
+        setError(data.error || "Échec de la suppression du groupe");
       }
     } catch {
       setError("Une erreur est survenue");
@@ -69,7 +69,7 @@ export function DeleteFolderDialog({
   };
 
   const hasContent =
-    group && (group._count.children > 0 || group._count.files > 0);
+    group && (group._count.children > 0 || group._count.keywords > 0);
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
@@ -81,14 +81,14 @@ export function DeleteFolderDialog({
             ) : (
               <Trash2 className="h-4 w-4 text-destructive" />
             )}
-            {isLoading ? "Suppression du dossier..." : "Supprimer le dossier"}
+            {isLoading ? "Suppression du groupe..." : "Supprimer le groupe"}
           </AlertDialogTitle>
 
           <AlertDialogDescription asChild>
             {isLoading ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Folder className="h-4 w-4 text-blue-600" />
+                  <Layers className="h-4 w-4 text-blue-600" />
                   <span>Suppression du group « {group?.name} »...</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -99,12 +99,12 @@ export function DeleteFolderDialog({
             ) : (
               <div className="space-y-2">
                 <p>
-                  Êtes-vous sûr de vouloir supprimer le group « {group?.name}{" "}
-                  » ?
+                  Êtes-vous sûr de vouloir supprimer le group « {group?.name} »
+                  ?
                 </p>
                 {hasContent && (
                   <p className="block mt-2 text-orange-600">
-                    Ce dossier contient {group._count.files} mot-clé(s) et{" "}
+                    Ce groupe contient {group._count.keywords} mot-clé(s) et{" "}
                     {group._count.children} sous-gorups(s). Veuillez d'abord
                     déplacer ou supprimer le contenu.
                   </p>

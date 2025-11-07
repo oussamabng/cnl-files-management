@@ -57,10 +57,30 @@ model Folder {
   @@index([parentId])
 }
 
+model Group {
+  id       String   @id @default(cuid())
+  name     String
+  parentId String?
+  parent   Group?   @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Group[]  @relation("GroupHierarchy")
+  keywords    Keyword[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, parentId])
+  @@index([name])
+  @@index([parentId])
+}
+
 model Keyword {
   id    String @id @default(cuid())
   name  String
   files File[]
+  groupId String?
+
+    group   Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
   // @@fulltext([name]) // Optional if Postgres 12+
 
   @@unique([name])
