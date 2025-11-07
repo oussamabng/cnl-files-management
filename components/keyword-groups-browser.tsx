@@ -30,6 +30,7 @@ import { Loading } from "@/components/ui/loading";
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 import { KeywordGroupForm } from "./keyword-group-form";
 import { DeleteDialog } from "./delete-dialog";
+import { AssignKeywordsDialog } from "./assign-keywords-dialog";
 
 interface Keyword {
   id: string;
@@ -64,6 +65,7 @@ export function KeywordGroupsBrowser({
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
 
   // Dialogs
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -227,12 +229,18 @@ export function KeywordGroupsBrowser({
             Naviguez dans les groupes parent/enfant et mots-clés assignés
           </CardDescription>
         </div>
-        {canCreate && (
-          <Button onClick={() => setShowCreateForm(true)}>
-            <FolderPlus className="mr-2 h-4 w-4" />
-            Nouveau groupe
+        <div className="flex gap-2">
+          {canCreate && (
+            <Button onClick={() => setShowCreateForm(true)}>
+              <FolderPlus className="mr-2 h-4 w-4" />
+              Nouveau groupe
+            </Button>
+          )}
+          <Button onClick={() => setShowAssignDialog(true)} variant="secondary">
+            <Tag className="mr-2 h-4 w-4" />
+            Assigner mot-clé
           </Button>
-        )}
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -242,7 +250,7 @@ export function KeywordGroupsBrowser({
           </Alert>
         )}
 
-        {/* Breadcrumbs */}
+        
         {breadcrumbs.length > 0 && (
           <div className="flex items-center gap-2">
             <Button
@@ -280,7 +288,7 @@ export function KeywordGroupsBrowser({
           </Button>
         )}
 
-        {/* Groups grid */}
+        
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {groups.map((group) => (
             <div
@@ -348,7 +356,7 @@ export function KeywordGroupsBrowser({
           ))}
         </div>
 
-        {/* Keywords grid */}
+        
         {keywords.length > 0 && (
           <div className="mt-6">
             <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
@@ -396,7 +404,17 @@ export function KeywordGroupsBrowser({
         )}
       </CardContent>
 
-      {/* Dialogs */}
+      <AssignKeywordsDialog
+        open={showAssignDialog}
+        onOpenChange={(open) => setShowAssignDialog(open)}
+        groupId={currentGroupId}
+        onSuccess={() => {
+          fetchKeywords();
+          fetchGroups(); // optional: update counts on groups
+        }}
+      />
+
+      
       <KeywordGroupForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}

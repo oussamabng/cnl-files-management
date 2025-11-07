@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function DELETE(
   req: Request,
   { params }: { params: { id: string; keywordId: string } }
 ) {
   try {
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_DELETE);
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
+    }
     const groupId = params.id;
     const keywordId = params.keywordId;
 

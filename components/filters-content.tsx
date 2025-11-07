@@ -400,7 +400,7 @@ export function FiltersContent({
             </TableBody>
           </Table>
         </div>
-        {/* Search Status */}
+        
         {searching && (
           <div className="flex items-center justify-center py-2">
             <Loading

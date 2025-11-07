@@ -83,7 +83,7 @@ export function EnhancedCalendar({
 
   return (
     <div className="space-y-4">
-      {/* Year and Month Selectors */}
+      
       <div className="flex items-center justify-between px-3">
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" onClick={goToPreviousYear}>
@@ -139,7 +139,7 @@ export function EnhancedCalendar({
         </Button>
       </div>
 
-      {/* Calendar */}
+      
       <Calendar
         mode="single"
         selected={selected}

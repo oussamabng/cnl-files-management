@@ -40,7 +40,7 @@ export function CommentDisplay({ commentaire, fileName }: CommentDisplayProps) {
 
   return (
     <div className="flex items-center gap-2 max-w-[200px]">
-      {/* Comment Preview Card */}
+      
       <div
         className={cn(
           "flex-1 p-2 rounded-lg border transition-all duration-200 cursor-pointer group",
@@ -61,7 +61,7 @@ export function CommentDisplay({ commentaire, fileName }: CommentDisplayProps) {
         </div>
       </div>
 
-      {/* View Button */}
+      
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild></DialogTrigger>
         <DialogContent className="sm:max-w-[600px]">
@@ -78,7 +78,7 @@ export function CommentDisplay({ commentaire, fileName }: CommentDisplayProps) {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Comment Content */}
+            
             <div className="relative">
               <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                 <div className="absolute top-2 right-2">
@@ -90,7 +90,7 @@ export function CommentDisplay({ commentaire, fileName }: CommentDisplayProps) {
               </div>
             </div>
 
-            {/* Quick Actions */}
+            
             <div className="flex items-center justify-between pt-2 border-t">
               <div className="text-xs text-muted-foreground">
                 Commentaire ajouté au fichier

@@ -78,15 +78,16 @@ import { KeywordMultiselect } from "@/components/keyword-multiselect";
 import { SimpleDateRangePicker } from "@/components/simple-date-range-picker";
 import { CommentDisplay } from "@/components/comment-display";
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
+import { KeywordGroup } from "@/lib/generated/prisma";
 
 interface FileData {
   id: string;
   name: string;
   path: string;
-  keywords: Array<{ id: string; name: string }>;
-  groups: Array<{ id: string; name: string }>; // new property
+  keywords: Array<any>;
+  groups: Array<{ id: string; name: string }>;
   folder?: { id: string; name: string } | null;
-  folderPath?: string;
+  folderPath?: string | null;
   dateTexte?: string | null;
   commentaire?: string | null;
 }
@@ -96,13 +97,19 @@ interface Keyword {
   name: string;
 }
 
+interface FilesContentProps {
+  permissions: PermissionValue[];
+  keywords: Keyword[];
+  groups: KeywordGroup[];
+}
+
 export function FilesContent({
   permissions,
-}: {
-  permissions: PermissionValue[];
-}) {
+  keywords,
+  groups,
+}: FilesContentProps) {
   const [files, setFiles] = useState<FileData[]>([]);
-  const [keywords, setKeywords] = useState<Keyword[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
@@ -114,18 +121,15 @@ export function FilesContent({
     pageSize: 5,
   });
 
-  // Filter states
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [selectedFolderName, setSelectedFolderName] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
-  const [groups, setGroups] = useState<Keyword[]>([]); // array of group objects
 
   const [filterMode, setFilterMode] = useState<"AND" | "OR">("OR");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  // Dialog states
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [editingFile, setEditingFile] = useState<FileData | null>(null);
   const [deletingFile, setDeletingFile] = useState<FileData | null>(null);
@@ -133,30 +137,27 @@ export function FilesContent({
 
   const [folderMap, setFolderMap] = useState<Map<string, string>>(new Map());
 
-  // Fetch folder hierarchy
   const fetchFolderPaths = async () => {
     try {
       const response = await fetch("/api/folders?includeHierarchy=true");
       if (response.ok) {
         const folders = await response.json();
         const pathMap = new Map<string, string>();
+        const calculateFolderPath = (folderId: string): string => {
+          const folder = folders.find((f: any) => f.id === folderId);
+          if (!folder) return "";
+          if (!folder.parentId) return folder.name;
+          const parentPath = calculateFolderPath(folder.parentId);
+          return `${parentPath} / ${folder.name}`;
+        };
         folders.forEach((folder: any) => {
-          const path = calculateFolderPath(folder.id, folders);
-          pathMap.set(folder.id, path);
+          pathMap.set(folder.id, calculateFolderPath(folder.id));
         });
         setFolderMap(pathMap);
       }
     } catch (err) {
       console.error("Échec de la récupération des chemins de dossiers:", err);
     }
-  };
-
-  const calculateFolderPath = (folderId: string, folders: any[]): string => {
-    const folder = folders.find((f) => f.id === folderId);
-    if (!folder) return "";
-    if (!folder.parentId) return folder.name;
-    const parentPath = calculateFolderPath(folder.parentId, folders);
-    return `${parentPath} / ${folder.name}`;
   };
 
   useEffect(() => {
@@ -196,10 +197,7 @@ export function FilesContent({
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 min-w-0 max-w-[200px] cursor-help">
                   <Folder className="h-3 w-3 text-blue-600 flex-shrink-0" />
-                  <span
-                    className="text-sm text-muted-foreground truncate"
-                    title={displayName}
-                  >
+                  <span className="text-sm text-muted-foreground truncate">
                     {displayName}
                   </span>
                 </div>
@@ -257,59 +255,52 @@ export function FilesContent({
       enableSorting: false,
     },
     {
-      accessorKey: "keywords",
-      header: "Groupes & Mots-clés",
+      accessorKey: "groups",
+      header: "Groupes",
       cell: ({ row }) => {
-        const groups = row.original.groups ?? []; // <-- default to []
-        const keywords = row.original.keywords ?? []; // <-- default to []
-        const combined = [
-          ...groups.map((g) => ({ ...g, type: "group" })),
-          ...keywords.map((k) => ({ ...k, type: "keyword" })),
-        ];
-
-        const maxVisible = 2;
-
-        if (combined.length === 0) {
-          return <span className="text-xs text-muted-foreground">Aucun</span>;
-        }
-
-        const visibleItems = combined.slice(0, maxVisible);
-        const remainingCount = combined.length - maxVisible;
-        const allNames = combined.map((item) => item.name).join(", ");
-
+        const groups = row.original.groups ?? [];
+        if (!groups.length)
+          return (
+            <span className="text-xs text-muted-foreground">Aucun groupe</span>
+          );
         return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex flex-wrap gap-1 cursor-help">
-                  {visibleItems.map((item) => (
-                    <Badge
-                      key={item.id}
-                      variant={item.type === "group" ? "secondary" : "outline"}
-                      className="text-xs"
-                    >
-                      {item.name}
-                    </Badge>
-                  ))}
-                  {remainingCount > 0 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{remainingCount}
-                    </Badge>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs">
-                <p className="break-words">
-                  <strong>Tous les groupes et mots-clés :</strong>
-                  <br />
-                  {allNames}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex flex-wrap gap-1">
+            {groups.map((g) => (
+              <Badge
+                key={g.id}
+                variant="secondary"
+                className="text-xs bg-blue-50 text-blue-800 border border-blue-200"
+              >
+                {g.name}
+              </Badge>
+            ))}
+          </div>
         );
       },
-      enableSorting: false,
+    },
+    {
+      accessorKey: "keywords",
+      header: "Mots-clés",
+      cell: ({ row }) => {
+        const keywords = row.original.keywords ?? [];
+        if (!keywords.length)
+          return (
+            <span className="text-xs text-muted-foreground">Aucun mot-clé</span>
+          );
+        return (
+          <div className="flex flex-wrap gap-1">
+            {keywords.map((k: any) => (
+              <Badge
+                key={k.id}
+                variant="outline"
+                className="text-xs border-gray-300 text-gray-700"
+              >
+                {k.name}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
     },
     ...(permissions.includes(PERMISSIONS.FILES_UPDATE) ||
     permissions.includes(PERMISSIONS.FILES_DELETE)
@@ -321,7 +312,6 @@ export function FilesContent({
             cell: ({ row }: { row: any }) => {
               const file = row.original;
               const isDeleting = deletingFileId === file.id;
-
               return (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -390,81 +380,73 @@ export function FilesContent({
       setError("");
 
       const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (selectedKeywords.length > 0) {
+      if (selectedKeywords.length > 0)
         params.append("keywords", selectedKeywords.join(","));
-      }
-      if (selectedGroups.length > 0) {
-        params.append("groups", selectedGroups.join(",")); // <-- added
-      }
-      if (selectedKeywords.length > 0 || selectedGroups.length > 0) {
-        params.append("mode", filterMode); // <-- ensure AND/OR mode is respected
-      }
-
-      // Only add folderId if a specific folder is selected
-      if (selectedFolderId) {
-        params.append("folderId", selectedFolderId);
-      }
-      // Add date range filters
-      if (dateRange?.from) {
+      if (selectedGroups.length > 0)
+        params.append("groups", selectedGroups.join(","));
+      if (selectedKeywords.length > 0 || selectedGroups.length > 0)
+        params.append("mode", filterMode);
+      if (selectedFolderId) params.append("folderId", selectedFolderId);
+      if (dateRange?.from)
         params.append("dateFrom", dateRange.from.toISOString());
-      }
-      if (dateRange?.to) {
-        params.append("dateTo", dateRange.to.toISOString());
-      }
+      if (dateRange?.to) params.append("dateTo", dateRange.to.toISOString());
       params.append("sortBy", "name");
       params.append("sortOrder", "asc");
 
-      const response = await fetch(`/api/files?${params}`);
-
+      const response = await fetch(`/api/files?${params.toString()}`);
       const data = await response.json();
-      console.log(data);
-      if (response.ok) {
-        // Add folder paths to files
-        const filesWithPaths = data.map((file: FileData) => ({
-          ...file,
-          folderPath: file.folder ? folderMap.get(file.folder.id) : null,
-        }));
-        setFiles(filesWithPaths);
-      } else {
+
+      if (!response.ok) {
         setError(data.message || "Échec du chargement des fichiers");
+        return;
       }
-    } catch {
+
+      const computed: FileData[] = (data.files || []).map((f: any) => {
+        const groupsMap = new Map<string, { id: string; name: string }>();
+        if (Array.isArray(f.keywords)) {
+          for (const kw of f.keywords) {
+            const groupLinks = kw.groupLinks ?? [];
+            if (Array.isArray(groupLinks)) {
+              for (const gl of groupLinks) {
+                const g = gl?.group;
+                if (g && g.id) {
+                  groupsMap.set(g.id, { id: g.id, name: g.name });
+                }
+              }
+            }
+          }
+        }
+
+        const groupsArr = Array.from(groupsMap.values());
+        return {
+          ...f,
+          groups: groupsArr,
+          folderPath: f.folder ? folderMap.get(f.folder.id) ?? null : null,
+        } as FileData;
+      });
+
+      setFiles(computed);
+    } catch (err) {
+      console.error(err);
       setError("Une erreur s'est produite");
     } finally {
       setSearching(false);
       setLoading(false);
     }
   }, [
-    searchTerm,
     selectedKeywords,
+    selectedGroups,
     filterMode,
     selectedFolderId,
     dateRange,
     folderMap,
   ]);
 
-  const fetchKeywordsAndGroups = async () => {
-    try {
-      const keywordRes = await fetch("/api/keywords");
-      const groupRes = await fetch("/api/keyword-groups");
-      if (keywordRes.ok) setKeywords(await keywordRes.json());
-      if (groupRes.ok) setGroups(await groupRes.json());
-    } catch (err) {
-      console.error("Échec de la récupération des mots-clés ou groupes:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchKeywordsAndGroups();
-  }, []);
-  // Debounced search effect
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    const id = setTimeout(() => {
       fetchFiles();
     }, 300);
-
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(id);
   }, [fetchFiles]);
 
   const clearAllFilters = () => {
@@ -473,26 +455,20 @@ export function FilesContent({
     setSelectedFolderId(null);
     setSelectedFolderName("");
     setDateRange(undefined);
+    setSelectedGroups([]);
   };
 
-  const removeSearchFilter = () => {
-    setSearchTerm("");
-  };
-
+  const removeSearchFilter = () => setSearchTerm("");
   const removeFolderFilter = () => {
     setSelectedFolderId(null);
     setSelectedFolderName("");
   };
-
-  const removeDateFilter = () => {
-    setDateRange(undefined);
-  };
+  const removeDateFilter = () => setDateRange(undefined);
 
   const handleFolderSelect = (folderId: string | null) => {
     setSelectedFolderId(folderId);
-    // Get folder path for display
     if (folderId && folderMap.has(folderId)) {
-      setSelectedFolderName(folderMap.get(folderId) || "Dossier sélectionné");
+      setSelectedFolderName(folderMap.get(folderId) || "");
     } else {
       setSelectedFolderName("");
     }
@@ -515,7 +491,11 @@ export function FilesContent({
     fetchFolderPaths();
   };
 
-  const hasActiveFilters = searchTerm || selectedFolderId || dateRange?.from;
+  const hasActiveFilters = !!(
+    searchTerm ||
+    selectedFolderId ||
+    dateRange?.from
+  );
 
   if (loading && files.length === 0) {
     return (
@@ -575,6 +555,7 @@ export function FilesContent({
             )}
           </div>
         </CardHeader>
+
         <CardContent className="space-y-4">
           {error && (
             <Alert variant="destructive">
@@ -582,9 +563,8 @@ export function FilesContent({
             </Alert>
           )}
 
-          {/* Search and Filters */}
+          {/* Filters */}
           <div className="grid gap-4 md:grid-cols-4">
-            {/* Search */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">
                 Rechercher des fichiers
@@ -600,7 +580,6 @@ export function FilesContent({
               </div>
             </div>
 
-            {/* Folder Filter */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Filtrer par dossier</Label>
               <FolderSelector
@@ -611,23 +590,20 @@ export function FilesContent({
               />
             </div>
 
-            {/* Date Range Filter */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Filtrer par date</Label>
               <SimpleDateRangePicker
-                //@ts-ignore
-                dateRange={dateRange}
+                dateRange={dateRange as any}
                 onDateRangeChange={setDateRange}
                 placeholder="Sélectionner une période..."
               />
             </div>
 
-            {/* Filter Mode */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Mode de filtrage</Label>
               <RadioGroup
                 value={filterMode}
-                onValueChange={(value: "AND" | "OR") => setFilterMode(value)}
+                onValueChange={(v: "AND" | "OR") => setFilterMode(v)}
                 className="flex space-x-4"
               >
                 <div className="flex items-center space-x-2">
@@ -728,12 +704,12 @@ export function FilesContent({
             </div>
           )}
 
-          {/* Keywords Filter */}
           <div className="space-y-2">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Filter className="h-4 w-4" />
               Mots-clés
             </Label>
+
             <KeywordMultiselect
               items={[
                 ...keywords.map((k) => ({ ...k, type: "keyword" as const })),
@@ -748,7 +724,6 @@ export function FilesContent({
                   newSelected.filter((id) => groups.some((g) => g.id === id))
                 );
               }}
-              placeholder="Sélectionner mots-clés et groupes..."
             />
           </div>
 
@@ -758,37 +733,33 @@ export function FilesContent({
           <div className="rounded-md border">
             <Table>
               <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
+                {table.getHeaderGroups().map((hg) => (
+                  <TableRow key={hg.id}>
+                    {hg.headers.map((h) => (
+                      <TableHead key={h.id}>
+                        {h.isPlaceholder
+                          ? null
+                          : flexRender(
+                              h.column.columnDef.header,
+                              h.getContext()
+                            )}
+                      </TableHead>
+                    ))}
                   </TableRow>
                 ))}
               </TableHeader>
               <TableBody>
                 {searching ? (
-                  Array.from({ length: pagination.pageSize }).map(
-                    (_, index) => (
-                      <TableRow key={index}>
-                        {columns.map((_, colIndex) => (
-                          <TableCell key={colIndex}>
-                            <div className="h-4 bg-muted animate-pulse rounded w-full" />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    )
-                  )
-                ) : table.getRowModel().rows?.length ? (
+                  Array.from({ length: pagination.pageSize }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      {columns.map((_, ci) => (
+                        <TableCell key={ci}>
+                          <div className="h-4 bg-muted animate-pulse rounded w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id}>
                       {row.getVisibleCells().map((cell) => (
@@ -828,7 +799,7 @@ export function FilesContent({
             </Table>
           </div>
 
-          {/* Search Status */}
+          {/* Search status / pagination omitted for brevity (kept above in your original) */}
           {searching && (
             <div className="flex items-center justify-center py-2">
               <Loading
@@ -839,15 +810,12 @@ export function FilesContent({
             </div>
           )}
 
-          {/* Pagination */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <p className="text-sm font-medium">Lignes par page</p>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
+                onValueChange={(v) => table.setPageSize(Number(v))}
               >
                 <SelectTrigger className="h-8 w-[70px]">
                   <SelectValue
@@ -855,14 +823,15 @@ export function FilesContent({
                   />
                 </SelectTrigger>
                 <SelectContent side="top">
-                  {[5, 10, 15].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
+                  {[5, 10, 15].map((ps) => (
+                    <SelectItem key={ps} value={`${ps}`}>
+                      {ps}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="flex items-center space-x-6 lg:space-x-8">
               <div className="text-sm text-muted-foreground">
                 Affichage de{" "}
@@ -877,6 +846,7 @@ export function FilesContent({
                 )}{" "}
                 sur {table.getFilteredRowModel().rows.length} fichier(s)
               </div>
+
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
@@ -893,17 +863,12 @@ export function FilesContent({
                     (_, i) => {
                       const pageIndex = table.getState().pagination.pageIndex;
                       const totalPages = table.getPageCount();
-
                       let startPage = Math.max(0, pageIndex - 2);
                       const endPage = Math.min(totalPages - 1, startPage + 4);
-
-                      if (endPage - startPage < 4) {
+                      if (endPage - startPage < 4)
                         startPage = Math.max(0, endPage - 4);
-                      }
-
                       const page = startPage + i;
                       if (page > endPage) return null;
-
                       return (
                         <Button
                           key={page}
@@ -933,7 +898,6 @@ export function FilesContent({
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
       <FileUploadDialog
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
@@ -950,7 +914,6 @@ export function FilesContent({
           keywords={keywords}
           onSuccess={handleSuccess}
         />
-
         <DeleteFileDialog
           open={!!deletingFile}
           onOpenChange={(open) => !open && handleDeleteCancel()}

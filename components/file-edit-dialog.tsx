@@ -1,10 +1,10 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,12 +24,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { FolderSelector } from "@/components/folder-selector";
 import { SimpleDatePicker } from "@/components/simple-date-picker";
+
+import {
+  useKeywordGroupSelection,
+  type KeywordGroup,
+  type KeywordItem,
+} from "@/hooks/useKeywordGroupSelection";
+import { KeywordGroupKeywordSelector } from "./keyword-group-keyword-selector";
 
 const fileSchema = z.object({
   nameWithoutExtension: z
@@ -39,17 +45,6 @@ const fileSchema = z.object({
 });
 
 type FileFormValues = z.infer<typeof fileSchema>;
-
-interface KeywordItem {
-  id: string;
-  name: string;
-}
-
-interface KeywordGroup {
-  id: string;
-  name: string;
-  keywords: KeywordItem[];
-}
 
 interface FileEditDialogProps {
   open: boolean;
@@ -73,9 +68,6 @@ export function FileEditDialog({
   keywords,
   onSuccess,
 }: FileEditDialogProps) {
-  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
-  const [keywordGroups, setKeywordGroups] = useState<KeywordGroup[]>([]);
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState("");
@@ -88,59 +80,75 @@ export function FileEditDialog({
     defaultValues: { nameWithoutExtension: "" },
   });
 
-  useEffect(() => {
-    if (open) fetchKeywordGroups();
-  }, [open]);
+  const {
+    groups: keywordGroups,
+    setGroups: setKeywordGroups,
+    selectedKeywordIds,
+    setSelectedKeywordIds,
+    toggleKeyword,
+    toggleGroup,
+    isKeywordDisabled,
+    isGroupFullySelected,
+    isGroupPartiallySelected,
+  } = useKeywordGroupSelection([]);
 
   useEffect(() => {
-    if (file) {
-      const extensionMatch = file.name.match(/(\.[^/.]+)$/);
-      const extension = extensionMatch ? extensionMatch[1] : "";
-      const nameWithoutExt = extension
-        ? file.name.slice(0, -extension.length)
-        : file.name;
+    if (!open) return;
 
-      setFileExtension(extension);
-      form.setValue("nameWithoutExtension", nameWithoutExt);
-      setSelectedKeywords(file.keywords.map((k) => k.id));
-      setSelectedFolderId(file.folder?.id || null);
-      setDateTexte(file.dateTexte ? new Date(file.dateTexte) : undefined);
-      setCommentaire(file.commentaire || "");
+    const fetchKeywordGroups = async () => {
+      try {
+        const res = await fetch("/api/keyword-groups/hierarchy");
+        const json = await res.json();
+        if (!res.ok)
+          throw new Error(json?.message || "Erreur chargement groupes");
+
+        const normalizeGroups = (groups: any[]): KeywordGroup[] =>
+          groups.map((g) => ({
+            id: g.id,
+            name: g.name,
+            keywords: g.keywords || [],
+            children: g.children ? normalizeGroups(g.children) : [],
+          }));
+
+        setKeywordGroups(normalizeGroups(json || []));
+      } catch (err: any) {
+        setError(err.message || "Erreur chargement groupes");
+      }
+    };
+
+    fetchKeywordGroups();
+  }, [open, setKeywordGroups]);
+
+  useEffect(() => {
+    if (!file || !keywordGroups.length) return;
+
+    const extensionMatch = file.name.match(/(\.[^/.]+)$/);
+    const extension = extensionMatch ? extensionMatch[1] : "";
+    const nameWithoutExt = extension
+      ? file.name.slice(0, -extension.length)
+      : file.name;
+
+    const keywordIds = file.keywords.map((k) => k.id);
+    setSelectedKeywordIds(keywordIds);
+
+    setFileExtension(extension);
+    form.setValue("nameWithoutExtension", nameWithoutExt);
+    setSelectedFolderId(file.folder?.id || null);
+    setDateTexte(file.dateTexte ? new Date(file.dateTexte) : undefined);
+    setCommentaire(file.commentaire || "");
+  }, [file, form, keywordGroups, setSelectedKeywordIds]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      form.reset();
+      setSelectedKeywordIds([]);
+      setSelectedFolderId(null);
+      setDateTexte(undefined);
+      setCommentaire("");
+      setError("");
+      setFileExtension("");
     }
-  }, [file, form]);
-
-  const fetchKeywordGroups = async () => {
-    try {
-      const res = await fetch("/api/keyword-groups");
-      const json = await res.json();
-      if (!res.ok)
-        throw new Error(json?.message || "Erreur chargement groupes");
-      const normalized = (json || []).map((g: any) => ({
-        id: g.id,
-        name: g.name,
-        keywords: g.keywords || [],
-      }));
-      setKeywordGroups(normalized);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Erreur chargement groupes");
-    }
-  };
-
-  const toggleKeyword = (keywordId: string) => {
-    setSelectedKeywords((prev) =>
-      prev.includes(keywordId)
-        ? prev.filter((id) => id !== keywordId)
-        : [...prev, keywordId]
-    );
-  };
-
-  const toggleGroup = (groupId: string) => {
-    setSelectedGroupIds((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
-    );
+    onOpenChange(newOpen);
   };
 
   const onSubmit = async (values: FileFormValues) => {
@@ -157,8 +165,7 @@ export function FileEditDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: finalName,
-          keywordIds: selectedKeywords,
-          groupIds: selectedGroupIds,
+          keywordIds: selectedKeywordIds,
           folderId: selectedFolderId,
           dateTexte: dateTexte ? dateTexte.toISOString() : null,
           commentaire: commentaire.trim() || null,
@@ -168,7 +175,7 @@ export function FileEditDialog({
       const data = await response.json();
       if (response.ok) {
         onSuccess();
-        onOpenChange(false);
+        handleOpenChange(false);
       } else {
         setError(data.message || "Une erreur s'est produite");
       }
@@ -177,20 +184,6 @@ export function FileEditDialog({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      form.reset();
-      setSelectedKeywords([]);
-      setSelectedGroupIds([]);
-      setSelectedFolderId(null);
-      setDateTexte(undefined);
-      setCommentaire("");
-      setError("");
-      setFileExtension("");
-    }
-    onOpenChange(newOpen);
   };
 
   return (
@@ -206,7 +199,6 @@ export function FileEditDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* File Name */}
             <FormField
               control={form.control}
               name="nameWithoutExtension"
@@ -233,7 +225,6 @@ export function FileEditDialog({
               )}
             />
 
-            {/* Folder Selector */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">
                 Emplacement du fichier
@@ -246,7 +237,6 @@ export function FileEditDialog({
               />
             </div>
 
-            {/* Date & Comment */}
             <div className="flex flex-col gap-4">
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Date document</Label>
@@ -273,92 +263,17 @@ export function FileEditDialog({
               </div>
             </div>
 
-            {/* Keywords */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Mots-clés</Label>
-              {keywords.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                  {keywords.map((keyword) => (
-                    <div
-                      key={keyword.id}
-                      className="flex items-center space-x-2"
-                    >
-                      <Checkbox
-                        id={`edit-${keyword.id}`}
-                        checked={selectedKeywords.includes(keyword.id)}
-                        onCheckedChange={() => toggleKeyword(keyword.id)}
-                        disabled={isLoading}
-                      />
-                      <Label
-                        htmlFor={`edit-${keyword.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {keyword.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucun mot-clé disponible.
-                </p>
-              )}
-              {selectedKeywords.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {selectedKeywords.map((keywordId) => {
-                    const keyword = keywords.find((k) => k.id === keywordId);
-                    return keyword ? (
-                      <Badge key={keywordId} variant="secondary">
-                        {keyword.name}
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Keyword Groups */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">
-                Groupes de mots-clés
-              </Label>
-              {keywordGroups.length > 0 ? (
-                <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                  {keywordGroups.map((group) => (
-                    <div key={group.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`group-${group.id}`}
-                        checked={selectedGroupIds.includes(group.id)}
-                        onCheckedChange={() => toggleGroup(group.id)}
-                        disabled={isLoading}
-                      />
-                      <Label
-                        htmlFor={`group-${group.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {group.name} ({group.keywords.length})
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucun groupe disponible
-                </p>
-              )}
-              {selectedGroupIds.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {selectedGroupIds.map((groupId) => {
-                    const group = keywordGroups.find((g) => g.id === groupId);
-                    return group ? (
-                      <Badge key={groupId} variant="secondary">
-                        {group.name}
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </div>
+            <KeywordGroupKeywordSelector
+              keywords={keywords}
+              groups={keywordGroups}
+              selectedKeywordIds={selectedKeywordIds}
+              selectedGroupIds={[]}
+              onKeywordToggle={toggleKeyword}
+              onGroupToggle={toggleGroup}
+              isKeywordDisabled={isKeywordDisabled}
+              isGroupFullySelected={isGroupFullySelected}
+              isGroupPartiallySelected={isGroupPartiallySelected}
+            />
 
             {error && (
               <Alert variant="destructive">
@@ -366,7 +281,7 @@ export function FileEditDialog({
               </Alert>
             )}
 
-            <DialogFooter>
+            <DialogFooter className="flex gap-2">
               <Button
                 type="button"
                 variant="outline"

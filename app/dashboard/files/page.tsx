@@ -9,6 +9,8 @@ import { FilesContent } from "@/components/files-content";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { checkPermission } from "@/lib/auth/session/checkPermission";
 import { getUserPermissions } from "@/lib/auth/client/getUserPermissions";
+import { getAllGroups } from "@/models/keywordGroup";
+import { getAllKeywords } from "@/models/keyword";
 
 export default async function FilesPage() {
   const user = await checkPermission(PERMISSIONS.FILES_VIEW);
@@ -18,6 +20,9 @@ export default async function FilesPage() {
   }
 
   const permissions = getUserPermissions(user);
+
+  const groups = await getAllGroups();
+  const keywords = await getAllKeywords();
 
   return (
     <>
@@ -32,7 +37,11 @@ export default async function FilesPage() {
       </header>
 
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <FilesContent permissions={permissions} />
+        <FilesContent
+          permissions={permissions}
+          keywords={keywords}
+          groups={groups}
+        />
       </div>
     </>
   );

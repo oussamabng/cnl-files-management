@@ -375,7 +375,7 @@ export function ChatWindow({
         )}
       </CardFooter>
 
-      {/* Message Delete Confirmation AlertDialog */}
+      
       <AlertDialog
         open={showDeleteMessageConfirm}
         onOpenChange={setShowDeleteMessageConfirm}

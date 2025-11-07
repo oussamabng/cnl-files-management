@@ -187,7 +187,7 @@ export function KeywordGroupForm({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Group Name */}
+            
             <FormField
               control={form.control}
               name="name"
@@ -206,8 +206,8 @@ export function KeywordGroupForm({
               )}
             />
 
-            {/* --- Keyword creation --- */}
-            <div className="flex flex-col gap-2">
+            
+            <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <FormLabel>Mots-clés assignés</FormLabel>
                 <Button
@@ -233,13 +233,12 @@ export function KeywordGroupForm({
               />
             </div>
 
-            {/* --- Keyword selection --- */}
             <FormField
               control={form.control}
               name="keywordIds"
               render={({ field }) => (
                 <div>
-                  <FormLabel>Mots-clés à attacher (optionnel)</FormLabel>
+                  <FormLabel className="my-3">Mots-clés à attacher (optionnel)</FormLabel>
                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md bg-muted/30">
                     {keywords.length === 0 && (
                       <div className="text-sm text-muted-foreground">

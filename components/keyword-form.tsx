@@ -158,7 +158,7 @@ export function KeywordForm({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Keyword Name */}
+            
             <FormField
               control={form.control}
               name="name"
@@ -177,7 +177,7 @@ export function KeywordForm({
               )}
             />
 
-            {/* Groups Multi-Select */}
+            
             <FormField
               control={form.control}
               name="groups"

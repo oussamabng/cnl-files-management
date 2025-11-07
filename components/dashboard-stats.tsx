@@ -96,7 +96,7 @@ export function DashboardStats() {
 
   return (
     <div className="space-y-6">
-      {/* Cartes de synthèse */}
+      
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -174,9 +174,9 @@ export function DashboardStats() {
         </Card>
       </div>
 
-      {/* Statistiques détaillées */}
+      
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Mots-clés les plus utilisés */}
+        
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        {/* Santé du système */}
+        
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

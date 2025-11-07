@@ -54,7 +54,7 @@ export function SimpleCalendar({
 
   return (
     <div className="space-y-4">
-      {/* Year Presets */}
+      
       <div className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">
           Accès rapide :
@@ -77,7 +77,7 @@ export function SimpleCalendar({
         </div>
       </div>
 
-      {/* Year Navigation */}
+      
       <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" onClick={goToPreviousYear}>
           <ChevronLeft className="h-4 w-4" />
@@ -95,7 +95,7 @@ export function SimpleCalendar({
         </Button>
       </div>
 
-      {/* Calendar */}
+      
       <Calendar
         mode="single"
         selected={selected}
@@ -107,7 +107,7 @@ export function SimpleCalendar({
         className="rounded-md border-0"
       />
 
-      {/* Quick Actions */}
+      
       <div className="flex gap-2">
         <Button
           variant="ghost"

@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
-import { slugify } from "@/lib/utils";
-
 async function isCircularParent(
   childId: string,
   parentId: string | null
@@ -68,15 +66,10 @@ export async function PUT(
       }
     }
 
-    const slug = slugify
-      ? slugify(name)
-      : name?.toLowerCase()?.replace(/\s+/g, "-");
-
     const updated = await prisma.keywordGroup.update({
       where: { id },
       data: {
         name: name?.trim(),
-        slug: slug || undefined,
         parentId: parentId || null,
         keywords: {
           deleteMany: {}, // reset keywords

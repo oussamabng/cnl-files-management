@@ -156,7 +156,7 @@ export function KeywordGroupsBrowser({
           </Alert>
         )}
 
-        {/* Breadcrumbs */}
+        
         {breadcrumbs.length > 0 && (
           <div className="flex items-center gap-2">
             <Button
@@ -185,7 +185,7 @@ export function KeywordGroupsBrowser({
           </div>
         )}
 
-        {/* Back button */}
+        
         {currentGroupId && (
           <Button variant="outline" size="sm" onClick={handleBackClick}>
             <ChevronLeft className="mr-2 h-4 w-4" />
@@ -193,7 +193,7 @@ export function KeywordGroupsBrowser({
           </Button>
         )}
 
-        {/* Groups grid */}
+        
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {groups.map((group) => (
             <div
@@ -272,7 +272,7 @@ export function KeywordGroupsBrowser({
         )}
       </CardContent>
 
-      {/* Dialogs */}
+      
       <KeywordGroupForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}

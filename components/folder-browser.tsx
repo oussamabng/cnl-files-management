@@ -240,7 +240,7 @@ export function FolderBrowser({
           </div>
         )}
 
-        {/* Back Button */}
+        
         {currentFolderId && (
           <Button variant="outline" size="sm" onClick={handleBackClick}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -248,7 +248,7 @@ export function FolderBrowser({
           </Button>
         )}
 
-        {/* Current Folder Selection */}
+        
         {selectionMode && (
           <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-center justify-between">
@@ -273,7 +273,7 @@ export function FolderBrowser({
           </div>
         )}
 
-        {/* Folders Grid */}
+        
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {folders.map((folder) => (
             <div
@@ -366,7 +366,7 @@ export function FolderBrowser({
         )}
       </CardContent>
 
-      {/* Dialogs */}
+      
       <FolderForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}

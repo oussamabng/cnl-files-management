@@ -5,8 +5,12 @@ import fs from "fs";
 import path from "path";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
+import {
+  collectGroupIds,
+  findGroupById,
+  getFullGroupHierarchy,
+} from "@/models/keywordGroup";
 
-// Helper: recursively get child folders
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
   const children = await prisma.folder.findMany({
     where: { parentId: folderId },
@@ -19,15 +23,13 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
   }
   return all;
 }
-
-// ================= GET =================
 export async function GET(req: Request) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
-    if (!response.success) {
+    const permission = await requireApiPermission(PERMISSIONS.FILES_VIEW);
+    if (!permission.success) {
       return NextResponse.json(
-        { error: response.error, message: response.message },
-        { status: response.status }
+        { error: permission.error, message: permission.message },
+        { status: permission.status }
       );
     }
 
@@ -40,14 +42,13 @@ export async function GET(req: Request) {
     const folderId = searchParams.get("folderId");
     const filterMode = searchParams.get("mode") || "OR";
     const sortBy = searchParams.get("sortBy") || "name";
-    const sortOrder = searchParams.get("sortOrder") || "asc";
+    const sortOrder = searchParams.get("sortOrder") === "desc" ? "desc" : "asc";
     const dateFrom = searchParams.get("dateFrom");
     const dateTo = searchParams.get("dateTo");
 
     const where: any = {};
 
-    // Folder filter
-    if (folderId && folderId !== "") {
+    if (folderId) {
       const allFolders = [
         folderId,
         ...(await getDescendantFolderIds(folderId)),
@@ -55,21 +56,30 @@ export async function GET(req: Request) {
       where.folderId = { in: allFolders };
     }
 
-    // Text search
     if (search) {
       where.name = { contains: search, mode: "insensitive" };
     }
 
-    // Group filter (optional)
+    let allGroupIds: string[] = [];
+
     if (groupIds.length > 0) {
-      where.keywords = {
-        some: {
-          groupLinks: { some: { groupId: { in: groupIds } } },
-        },
-      };
+      const fullGroups = await getFullGroupHierarchy();
+      let allGroupIds: string[] = [];
+
+      groupIds.forEach((id) => {
+        const group = findGroupById(fullGroups, id);
+        if (group) {
+          allGroupIds = allGroupIds.concat(collectGroupIds(group));
+        }
+      });
+
+      if (allGroupIds.length > 0) {
+        where.keywords = {
+          some: { groupLinks: { some: { groupId: { in: allGroupIds } } } },
+        };
+      }
     }
 
-    // Keyword filter
     if (keywordIds.length > 0) {
       if (filterMode === "AND") {
         where.AND = keywordIds.map((keywordId) => ({
@@ -80,14 +90,13 @@ export async function GET(req: Request) {
       }
     }
 
-    // Date filter
     if (dateFrom || dateTo) {
       where.dateTexte = {};
       if (dateFrom) where.dateTexte.gte = new Date(dateFrom);
       if (dateTo) {
-        const endDate = new Date(dateTo);
-        endDate.setDate(endDate.getDate() + 1);
-        where.dateTexte.lt = endDate;
+        const end = new Date(dateTo);
+        end.setDate(end.getDate() + 1);
+        where.dateTexte.lt = end;
       }
     }
 
@@ -95,18 +104,16 @@ export async function GET(req: Request) {
       where,
       include: {
         keywords: {
-          include: {
-            groupLinks: { include: { group: true } },
-          },
+          include: { groupLinks: { include: { group: true } } },
         },
         folder: { select: { id: true, name: true } },
       },
       orderBy: { [sortBy]: sortOrder },
     });
 
-    return NextResponse.json(files);
+    return NextResponse.json({ files });
   } catch (error) {
-    console.error("Erreur lors de la récupération des fichiers:", error);
+    console.error(error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }

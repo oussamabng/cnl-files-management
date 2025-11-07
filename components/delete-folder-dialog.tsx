@@ -99,7 +99,7 @@ export function DeleteFolderDialog({
             ) : (
               <div className="space-y-2">
                 {" "}
-                {/* Use a div here as the direct child */}
+                
                 <p>
                   Êtes-vous sûr de vouloir supprimer le dossier « {folder?.name}{" "}
                   » ?

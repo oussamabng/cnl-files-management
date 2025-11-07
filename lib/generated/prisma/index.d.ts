@@ -6740,21 +6740,18 @@ export namespace Prisma {
   export type KeywordGroupMinAggregateOutputType = {
     id: string | null
     name: string | null
-    slug: string | null
     parentId: string | null
   }
 
   export type KeywordGroupMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    slug: string | null
     parentId: string | null
   }
 
   export type KeywordGroupCountAggregateOutputType = {
     id: number
     name: number
-    slug: number
     parentId: number
     _all: number
   }
@@ -6763,21 +6760,18 @@ export namespace Prisma {
   export type KeywordGroupMinAggregateInputType = {
     id?: true
     name?: true
-    slug?: true
     parentId?: true
   }
 
   export type KeywordGroupMaxAggregateInputType = {
     id?: true
     name?: true
-    slug?: true
     parentId?: true
   }
 
   export type KeywordGroupCountAggregateInputType = {
     id?: true
     name?: true
-    slug?: true
     parentId?: true
     _all?: true
   }
@@ -6857,7 +6851,6 @@ export namespace Prisma {
   export type KeywordGroupGroupByOutputType = {
     id: string
     name: string
-    slug: string
     parentId: string | null
     _count: KeywordGroupCountAggregateOutputType | null
     _min: KeywordGroupMinAggregateOutputType | null
@@ -6881,7 +6874,6 @@ export namespace Prisma {
   export type KeywordGroupSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    slug?: boolean
     parentId?: boolean
     keywords?: boolean | KeywordGroup$keywordsArgs<ExtArgs>
     parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
@@ -6892,7 +6884,6 @@ export namespace Prisma {
   export type KeywordGroupSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    slug?: boolean
     parentId?: boolean
     parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
   }, ExtArgs["result"]["keywordGroup"]>
@@ -6900,7 +6891,6 @@ export namespace Prisma {
   export type KeywordGroupSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    slug?: boolean
     parentId?: boolean
     parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
   }, ExtArgs["result"]["keywordGroup"]>
@@ -6908,11 +6898,10 @@ export namespace Prisma {
   export type KeywordGroupSelectScalar = {
     id?: boolean
     name?: boolean
-    slug?: boolean
     parentId?: boolean
   }
 
-  export type KeywordGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "parentId", ExtArgs["result"]["keywordGroup"]>
+  export type KeywordGroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "parentId", ExtArgs["result"]["keywordGroup"]>
   export type KeywordGroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     keywords?: boolean | KeywordGroup$keywordsArgs<ExtArgs>
     parent?: boolean | KeywordGroup$parentArgs<ExtArgs>
@@ -6936,7 +6925,6 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      slug: string
       parentId: string | null
     }, ExtArgs["result"]["keywordGroup"]>
     composites: {}
@@ -7366,7 +7354,6 @@ export namespace Prisma {
   interface KeywordGroupFieldRefs {
     readonly id: FieldRef<"KeywordGroup", 'String'>
     readonly name: FieldRef<"KeywordGroup", 'String'>
-    readonly slug: FieldRef<"KeywordGroup", 'String'>
     readonly parentId: FieldRef<"KeywordGroup", 'String'>
   }
     
@@ -15567,7 +15554,6 @@ export namespace Prisma {
   export const KeywordGroupScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    slug: 'slug',
     parentId: 'parentId'
   };
 
@@ -15987,7 +15973,6 @@ export namespace Prisma {
     NOT?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
     id?: StringFilter<"KeywordGroup"> | string
     name?: StringFilter<"KeywordGroup"> | string
-    slug?: StringFilter<"KeywordGroup"> | string
     parentId?: StringNullableFilter<"KeywordGroup"> | string | null
     keywords?: KeywordGroupKeywordListRelationFilter
     parent?: XOR<KeywordGroupNullableScalarRelationFilter, KeywordGroupWhereInput> | null
@@ -15997,7 +15982,6 @@ export namespace Prisma {
   export type KeywordGroupOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    slug?: SortOrder
     parentId?: SortOrderInput | SortOrder
     keywords?: KeywordGroupKeywordOrderByRelationAggregateInput
     parent?: KeywordGroupOrderByWithRelationInput
@@ -16006,7 +15990,6 @@ export namespace Prisma {
 
   export type KeywordGroupWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    slug?: string
     name_parentId?: KeywordGroupNameParentIdCompoundUniqueInput
     AND?: KeywordGroupWhereInput | KeywordGroupWhereInput[]
     OR?: KeywordGroupWhereInput[]
@@ -16016,12 +15999,11 @@ export namespace Prisma {
     keywords?: KeywordGroupKeywordListRelationFilter
     parent?: XOR<KeywordGroupNullableScalarRelationFilter, KeywordGroupWhereInput> | null
     children?: KeywordGroupListRelationFilter
-  }, "id" | "slug" | "name_parentId">
+  }, "id" | "name_parentId">
 
   export type KeywordGroupOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    slug?: SortOrder
     parentId?: SortOrderInput | SortOrder
     _count?: KeywordGroupCountOrderByAggregateInput
     _max?: KeywordGroupMaxOrderByAggregateInput
@@ -16034,7 +16016,6 @@ export namespace Prisma {
     NOT?: KeywordGroupScalarWhereWithAggregatesInput | KeywordGroupScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"KeywordGroup"> | string
     name?: StringWithAggregatesFilter<"KeywordGroup"> | string
-    slug?: StringWithAggregatesFilter<"KeywordGroup"> | string
     parentId?: StringNullableWithAggregatesFilter<"KeywordGroup"> | string | null
   }
 
@@ -16695,7 +16676,6 @@ export namespace Prisma {
   export type KeywordGroupCreateInput = {
     id?: string
     name: string
-    slug: string
     keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
     parent?: KeywordGroupCreateNestedOneWithoutChildrenInput
     children?: KeywordGroupCreateNestedManyWithoutParentInput
@@ -16704,7 +16684,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedCreateInput = {
     id?: string
     name: string
-    slug: string
     parentId?: string | null
     keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
     children?: KeywordGroupUncheckedCreateNestedManyWithoutParentInput
@@ -16713,7 +16692,6 @@ export namespace Prisma {
   export type KeywordGroupUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
     parent?: KeywordGroupUpdateOneWithoutChildrenNestedInput
     children?: KeywordGroupUpdateManyWithoutParentNestedInput
@@ -16722,7 +16700,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
     children?: KeywordGroupUncheckedUpdateManyWithoutParentNestedInput
@@ -16731,20 +16708,17 @@ export namespace Prisma {
   export type KeywordGroupCreateManyInput = {
     id?: string
     name: string
-    slug: string
     parentId?: string | null
   }
 
   export type KeywordGroupUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
   }
 
   export type KeywordGroupUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
@@ -17438,21 +17412,18 @@ export namespace Prisma {
   export type KeywordGroupCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    slug?: SortOrder
     parentId?: SortOrder
   }
 
   export type KeywordGroupMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    slug?: SortOrder
     parentId?: SortOrder
   }
 
   export type KeywordGroupMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    slug?: SortOrder
     parentId?: SortOrder
   }
 
@@ -19415,7 +19386,6 @@ export namespace Prisma {
   export type KeywordGroupCreateWithoutChildrenInput = {
     id?: string
     name: string
-    slug: string
     keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
     parent?: KeywordGroupCreateNestedOneWithoutChildrenInput
   }
@@ -19423,7 +19393,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedCreateWithoutChildrenInput = {
     id?: string
     name: string
-    slug: string
     parentId?: string | null
     keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
   }
@@ -19436,7 +19405,6 @@ export namespace Prisma {
   export type KeywordGroupCreateWithoutParentInput = {
     id?: string
     name: string
-    slug: string
     keywords?: KeywordGroupKeywordCreateNestedManyWithoutGroupInput
     children?: KeywordGroupCreateNestedManyWithoutParentInput
   }
@@ -19444,7 +19412,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedCreateWithoutParentInput = {
     id?: string
     name: string
-    slug: string
     keywords?: KeywordGroupKeywordUncheckedCreateNestedManyWithoutGroupInput
     children?: KeywordGroupUncheckedCreateNestedManyWithoutParentInput
   }
@@ -19489,7 +19456,6 @@ export namespace Prisma {
   export type KeywordGroupUpdateWithoutChildrenInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
     parent?: KeywordGroupUpdateOneWithoutChildrenNestedInput
   }
@@ -19497,7 +19463,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedUpdateWithoutChildrenInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
   }
@@ -19524,7 +19489,6 @@ export namespace Prisma {
     NOT?: KeywordGroupScalarWhereInput | KeywordGroupScalarWhereInput[]
     id?: StringFilter<"KeywordGroup"> | string
     name?: StringFilter<"KeywordGroup"> | string
-    slug?: StringFilter<"KeywordGroup"> | string
     parentId?: StringNullableFilter<"KeywordGroup"> | string | null
   }
 
@@ -19548,7 +19512,6 @@ export namespace Prisma {
   export type KeywordGroupCreateWithoutKeywordsInput = {
     id?: string
     name: string
-    slug: string
     parent?: KeywordGroupCreateNestedOneWithoutChildrenInput
     children?: KeywordGroupCreateNestedManyWithoutParentInput
   }
@@ -19556,7 +19519,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedCreateWithoutKeywordsInput = {
     id?: string
     name: string
-    slug: string
     parentId?: string | null
     children?: KeywordGroupUncheckedCreateNestedManyWithoutParentInput
   }
@@ -19603,7 +19565,6 @@ export namespace Prisma {
   export type KeywordGroupUpdateWithoutKeywordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     parent?: KeywordGroupUpdateOneWithoutChildrenNestedInput
     children?: KeywordGroupUpdateManyWithoutParentNestedInput
   }
@@ -19611,7 +19572,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedUpdateWithoutKeywordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     children?: KeywordGroupUncheckedUpdateManyWithoutParentNestedInput
   }
@@ -20459,7 +20419,6 @@ export namespace Prisma {
   export type KeywordGroupCreateManyParentInput = {
     id?: string
     name: string
-    slug: string
   }
 
   export type KeywordGroupKeywordUpdateWithoutGroupInput = {
@@ -20489,7 +20448,6 @@ export namespace Prisma {
   export type KeywordGroupUpdateWithoutParentInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     keywords?: KeywordGroupKeywordUpdateManyWithoutGroupNestedInput
     children?: KeywordGroupUpdateManyWithoutParentNestedInput
   }
@@ -20497,7 +20455,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedUpdateWithoutParentInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
     keywords?: KeywordGroupKeywordUncheckedUpdateManyWithoutGroupNestedInput
     children?: KeywordGroupUncheckedUpdateManyWithoutParentNestedInput
   }
@@ -20505,7 +20462,6 @@ export namespace Prisma {
   export type KeywordGroupUncheckedUpdateManyWithoutParentInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    slug?: StringFieldUpdateOperationsInput | string
   }
 
   export type RolePermissionCreateManyPermissionInput = {

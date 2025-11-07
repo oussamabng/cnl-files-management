@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
-import { slugify } from "@/lib/utils";
 
 export async function GET(req: Request) {
   try {
@@ -72,18 +71,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    const slug = slugify
-      ? slugify(name)
-      : name.toLowerCase().replace(/\s+/g, "-");
-
-    const existing = await prisma.keywordGroup.findUnique({ where: { slug } });
-    if (existing) {
-      return NextResponse.json(
-        { error: "Un groupe avec ce nom existe déjà" },
-        { status: 409 }
-      );
-    }
     if (parentId) {
       const parentGroup = await prisma.keywordGroup.findUnique({
         where: { id: parentId },
@@ -99,7 +86,6 @@ export async function POST(req: Request) {
     const group = await prisma.keywordGroup.create({
       data: {
         name: name.trim(),
-        slug,
         parentId: parentId || null,
         keywords: {
           create: (keywordIds || []).map((id: string) => ({

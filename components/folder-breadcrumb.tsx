@@ -68,7 +68,7 @@ export function FolderBreadcrumb({
         className={`h-8 px-3 ${!currentFolderId ? "bg-muted" : ""}`}
       >
         <Home className="h-4 w-4 mr-1" />
-        Racine {/* changed from "Root" to "Racine" */}
+        Racine 
       </Button>
 
       {breadcrumbs.map((crumb, index) => (

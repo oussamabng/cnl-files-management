@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, File } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,24 +14,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { FolderSelector } from "@/components/folder-selector";
 import { SimpleDatePicker } from "@/components/simple-date-picker";
 
-interface KeywordItem {
-  id: string;
-  name: string;
-}
-
-interface KeywordGroup {
-  id: string;
-  name: string;
-  keywords: KeywordItem[];
-}
+import {
+  useKeywordGroupSelection,
+  type KeywordItem,
+  type KeywordGroup,
+} from "@/hooks/useKeywordGroupSelection";
+import { KeywordGroupKeywordSelector } from "@/components/keyword-group-keyword-selector";
 
 interface FileUploadDialogProps {
   open: boolean;
@@ -54,38 +49,54 @@ export function FileUploadDialog({
   onSuccess,
 }: FileUploadDialogProps) {
   const [files, setFiles] = useState<FileWithName[]>([]);
-  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
-  const [keywordGroups, setKeywordGroups] = useState<KeywordGroup[]>([]);
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(
+    currentFolderId || null
+  );
   const [dateTexte, setDateTexte] = useState<Date | undefined>(undefined);
   const [commentaire, setCommentaire] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (open && currentFolderId) setSelectedFolderId(currentFolderId);
-    if (open) fetchKeywordGroups();
-  }, [open, currentFolderId]);
+  const {
+    groups: keywordGroups,
+    setGroups: setKeywordGroups,
+    selectedKeywordIds,
+    setSelectedKeywordIds,
+    toggleKeyword,
+    isGroupFullySelected,
+    isGroupPartiallySelected,
+    isKeywordDisabled,
+  } = useKeywordGroupSelection([]);
 
-  const fetchKeywordGroups = async () => {
-    try {
-      const res = await fetch("/api/keyword-groups");
-      const json = await res.json();
-      if (!res.ok)
-        throw new Error(json?.message || "Erreur chargement groupes");
-      const normalized = (json || []).map((g: any) => ({
-        id: g.id,
-        name: g.name,
-        keywords: g.keywords || [],
-      }));
-      setKeywordGroups(normalized);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Erreur chargement groupes");
-    }
-  };
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchKeywordGroups = async () => {
+      try {
+        const res = await fetch("/api/keyword-groups/hierarchy");
+        const json = await res.json();
+        if (!res.ok)
+          throw new Error(json?.message || "Erreur chargement groupes");
+
+        const normalizeGroups = (arr: any[]): KeywordGroup[] =>
+          arr.map((g) => ({
+            id: g.id,
+            name: g.name,
+            keywords: g.keywords || [],
+            children: g.children ? normalizeGroups(g.children) : [],
+          }));
+
+        setKeywordGroups(normalizeGroups(json || []));
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Erreur chargement groupes");
+      }
+    };
+
+    fetchKeywordGroups();
+    setSelectedFolderId(currentFolderId || null);
+  }, [open, currentFolderId, setKeywordGroups]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => {
@@ -114,20 +125,6 @@ export function FileUploadDialog({
       )
     );
 
-  const toggleKeyword = (keywordId: string) =>
-    setSelectedKeywords((prev) =>
-      prev.includes(keywordId)
-        ? prev.filter((id) => id !== keywordId)
-        : [...prev, keywordId]
-    );
-
-  const toggleGroup = (groupId: string) =>
-    setSelectedGroupIds((prev) =>
-      prev.includes(groupId)
-        ? prev.filter((id) => id !== groupId)
-        : [...prev, groupId]
-    );
-
   const handleUpload = async () => {
     if (files.length === 0) {
       setError("Veuillez sélectionner au moins un fichier");
@@ -148,8 +145,7 @@ export function FileUploadDialog({
         return acc;
       }, {} as Record<number, string>);
 
-      formData.append("keywordIds", JSON.stringify(selectedKeywords));
-      formData.append("groupIds", JSON.stringify(selectedGroupIds));
+      formData.append("keywordIds", JSON.stringify(selectedKeywordIds));
       formData.append("customNames", JSON.stringify(customNames));
       formData.append("folderId", selectedFolderId || "");
 
@@ -161,6 +157,7 @@ export function FileUploadDialog({
         method: "POST",
         body: formData,
       });
+
       if (response.ok) {
         onSuccess();
         handleClose();
@@ -179,8 +176,7 @@ export function FileUploadDialog({
 
   const handleClose = () => {
     setFiles([]);
-    setSelectedKeywords([]);
-    setSelectedGroupIds([]);
+    setSelectedKeywordIds([]);
     setSelectedFolderId(currentFolderId || null);
     setDateTexte(undefined);
     setCommentaire("");
@@ -200,20 +196,13 @@ export function FileUploadDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Folder Selector */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">
-              Emplacement de téléchargement
-            </Label>
-            <FolderSelector
-              selectedFolderId={selectedFolderId}
-              onFolderSelect={setSelectedFolderId}
-              placeholder="Choisir un dossier ou rester à la racine"
-              disabled={isUploading}
-            />
-          </div>
+          <FolderSelector
+            selectedFolderId={selectedFolderId}
+            onFolderSelect={setSelectedFolderId}
+            placeholder="Choisir un dossier ou rester à la racine"
+            disabled={isUploading}
+          />
 
-          {/* Dropzone */}
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
@@ -227,148 +216,76 @@ export function FileUploadDialog({
             {isDragActive ? (
               <p>Déposez les fichiers ici...</p>
             ) : (
-              <div>
-                <p className="text-lg font-medium">
-                  Déposez des fichiers ici ou cliquez pour sélectionner
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Vous pouvez télécharger plusieurs fichiers à la fois
-                </p>
-              </div>
+              <p className="text-lg font-medium">
+                Déposez des fichiers ici ou cliquez pour sélectionner
+              </p>
             )}
           </div>
 
-          {/* Selected Files */}
           {files.length > 0 && (
-            <div className="space-y-3">
-              <Label className="text-base font-medium">
-                Fichiers sélectionnés ({files.length})
-              </Label>
-              <div className="max-h-40 overflow-y-auto space-y-2">
-                {files.map((fileItem, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30"
-                  >
-                    <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <div className="flex-1 space-y-2 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={fileItem.nameWithoutExtension}
-                          onChange={(e) =>
-                            updateFileName(index, e.target.value)
-                          }
-                          placeholder="Nom du fichier"
-                          className="h-8 flex-1"
-                        />
-                        {fileItem.extension && (
-                          <Badge
-                            variant="outline"
-                            className="font-mono text-xs flex-shrink-0"
-                          >
-                            {fileItem.extension}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        Original: {fileItem.file.name}
-                      </p>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {files.map((fileItem, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30"
+                >
+                  <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={fileItem.nameWithoutExtension}
+                        onChange={(e) => updateFileName(index, e.target.value)}
+                        placeholder="Nom du fichier"
+                        className="h-8 flex-1"
+                      />
+                      {fileItem.extension && (
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-xs flex-shrink-0"
+                        >
+                          {fileItem.extension}
+                        </Badge>
+                      )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(index)}
-                      className="h-8 w-8 p-0 flex-shrink-0"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <p className="text-xs text-muted-foreground truncate">
+                      Original: {fileItem.file.name}
+                    </p>
                   </div>
-                ))}
-              </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFile(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Keywords Selection */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">
-              Assigner des mots-clés (optionnel)
-            </Label>
-            {keywords.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                {keywords.map((keyword) => (
-                  <div key={keyword.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`upload-${keyword.id}`}
-                      checked={selectedKeywords.includes(keyword.id)}
-                      onCheckedChange={() => toggleKeyword(keyword.id)}
-                    />
-                    <Label
-                      htmlFor={`upload-${keyword.id}`}
-                      className="text-sm cursor-pointer"
-                    >
-                      {keyword.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Aucun mot-clé disponible
-              </p>
-            )}
-          </div>
+          <KeywordGroupKeywordSelector
+            groups={keywordGroups}
+            keywords={keywords}
+            selectedGroupIds={[]}
+            selectedKeywordIds={selectedKeywordIds}
+            onGroupToggle={() => {}}
+            onKeywordToggle={toggleKeyword}
+            isGroupFullySelected={isGroupFullySelected}
+            isGroupPartiallySelected={isGroupPartiallySelected}
+            isKeywordDisabled={isKeywordDisabled}
+          />
 
-          {/* Keyword Groups Selection */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">
-              Assigner des groupes de mots-clés (optionnel)
-            </Label>
-            {keywordGroups.length > 0 ? (
-              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                {keywordGroups.map((group) => (
-                  <div key={group.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`group-${group.id}`}
-                      checked={selectedGroupIds.includes(group.id)}
-                      onCheckedChange={() => toggleGroup(group.id)}
-                    />
-                    <Label
-                      htmlFor={`group-${group.id}`}
-                      className="text-sm cursor-pointer"
-                    >
-                      {group.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Aucun groupe disponible
-              </p>
-            )}
-          </div>
-
-          {/* Date & Commentaire */}
-          <div className="grid grid-cols-1 gap-3">
-            <div className="space-y-1">
-              <Label>Date</Label>
-              <SimpleDatePicker
-                selected={dateTexte}
-                onSelect={setDateTexte}
-                placeholder="Sélectionner une date"
-                className="w-full"
-                buttonClassName="w-full"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Commentaire</Label>
-              <Textarea
-                value={commentaire}
-                onChange={(e) => setCommentaire(e.target.value)}
-                disabled={isUploading}
-              />
-            </div>
-          </div>
+          <SimpleDatePicker
+            selected={dateTexte}
+            onSelect={setDateTexte}
+            placeholder="Sélectionner une date"
+            className="w-full"
+          />
+          <Textarea
+            value={commentaire}
+            onChange={(e) => setCommentaire(e.target.value)}
+            disabled={isUploading}
+          />
 
           {error && (
             <Alert variant="destructive">

@@ -61,7 +61,6 @@ model Keyword {
   id    String @id @default(cuid())
   name  String
   files File[]
-  // @@fulltext([name]) // Optional if Postgres 12+
 
   groupLinks KeywordGroupKeyword[]
 
@@ -72,7 +71,6 @@ model Keyword {
 model KeywordGroup {
   id       String                @id @default(cuid())
   name     String
-  slug     String                @unique
   keywords KeywordGroupKeyword[] // join relation
 
   parentId String? // optional parent
@@ -81,7 +79,6 @@ model KeywordGroup {
 
   @@unique([name, parentId])
   @@index([name])
-  @@index([slug])
 }
 
 model KeywordGroupKeyword {
