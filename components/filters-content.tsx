@@ -228,7 +228,7 @@ export function FiltersContent({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Gestion des filtres</CardTitle>
+              <CardTitle>Gestion des mot-clés</CardTitle>
               <CardDescription>
                 Gérer les mots-clés utilisés pour filtrer les fichiers
               </CardDescription>
