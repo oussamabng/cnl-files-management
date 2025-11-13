@@ -63,7 +63,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   useEffect(() => {
     const userRoles = user.userRoles.map((r) => r.role.name);
-    console.log(user.userRoles);
 
     setRoles(userRoles);
   }, [user]);

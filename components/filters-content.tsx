@@ -13,6 +13,7 @@ import {
   type ColumnFiltersState,
   type PaginationState,
   Row,
+  RowSelectionState,
 } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, Search, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,8 @@ import { KeywordForm } from "@/components/keyword-form";
 import { DeleteKeywordDialog } from "@/components/delete-keyword-dialog";
 import { Loading, TableLoading } from "@/components/ui/loading";
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
+import { Checkbox } from "./ui/checkbox";
+import { AssignGroupDialog } from "./assign-group-dialog";
 
 interface Keyword {
   id: string;
@@ -76,17 +79,37 @@ export function FiltersContent({
   const [deletingKeyword, setDeletingKeyword] = useState<Keyword | null>(null);
   const [deletingKeywordId, setDeletingKeywordId] = useState<string | null>(
     null
-  ); // Track which keyword is being deleted
+  );
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
   });
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [showBulkActionModal, setShowBulkActionModal] = useState(false);
 
-  // Check permissions
   const canUpdate = permissions.includes(PERMISSIONS.FILTERS_UPDATE);
   const canDelete = permissions.includes(PERMISSIONS.FILTERS_DELETE);
 
   const columns: ColumnDef<Keyword>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Sélectionner tous"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Sélectionner la ligne"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "name",
       header: "Nom du mot-clé",
@@ -111,7 +134,8 @@ export function FiltersContent({
         );
       },
     },
-    ...(permissions.includes(PERMISSIONS.FILTERS_DELETE) || permissions.includes(PERMISSIONS.FILTERS_UPDATE)
+    ...(permissions.includes(PERMISSIONS.FILTERS_DELETE) ||
+    permissions.includes(PERMISSIONS.FILTERS_UPDATE)
       ? [
           {
             id: "actions",
@@ -180,12 +204,28 @@ export function FiltersContent({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
+    getRowId: (row) => row.id,
+
     state: {
       sorting,
       columnFilters,
       pagination,
+      rowSelection,
     },
   });
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedCount = selectedRows.length;
+  const hasSelection = selectedCount > 0;
+
+  const getSelectedKeywords = (): Keyword[] => {
+    return selectedRows.map((row) => row.original);
+  };
+
+  const clearSelection = () => {
+    setRowSelection({});
+  };
 
   const fetchKeywords = async () => {
     try {
@@ -264,219 +304,240 @@ export function FiltersContent({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Gestion des filtres</CardTitle>
-            <CardDescription>
-              Gérer les mots-clés utilisés pour filtrer les fichiers
-            </CardDescription>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Gestion des filtres</CardTitle>
+              <CardDescription>
+                Gérer les mots-clés utilisés pour filtrer les fichiers
+              </CardDescription>
+            </div>
+            {permissions.includes(PERMISSIONS.FILTERS_CREATE) && (
+              <Button onClick={() => setShowCreateForm(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter un mot-clé
+              </Button>
+            )}
           </div>
-          {permissions.includes(PERMISSIONS.FILTERS_CREATE) && (
-            <Button onClick={() => setShowCreateForm(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter un mot-clé
-            </Button>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        <div className="flex items-center py-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Filtrer les mots-clés..."
-              value={
-                (table.getColumn("name")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) => {
-                setSearching(true);
-                table.getColumn("name")?.setFilterValue(event.target.value);
-                setTimeout(() => setSearching(false), 200); // Brief loading for filter
-              }}
-              className="pl-8"
-            />
+          <div className="flex items-center justify-between py-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Filtrer les mots-clés..."
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) => {
+                  setSearching(true);
+                  table.getColumn("name")?.setFilterValue(event.target.value);
+                  setTimeout(() => setSearching(false), 200);
+                }}
+                className="pl-8"
+              />
+            </div>
+            {hasSelection && (
+              <Button
+                variant={"secondary"}
+                className="cursor-pointer"
+                onClick={() => setShowBulkActionModal(true)}
+              >
+                Assigner au groupe
+              </Button>
+            )}
           </div>
-        </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {searching ? (
-                // Show loading skeleton during search
-                Array.from({ length: pagination.pageSize }).map((_, index) => (
-                  <TableRow key={index}>
-                    {columns.map((_, colIndex) => (
-                      <TableCell key={colIndex}>
-                        <div className="h-4 bg-muted animate-pulse rounded w-full" />
-                      </TableCell>
-                    ))}
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      );
+                    })}
                   </TableRow>
-                ))
-              ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Aucun mot-clé trouvé.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        {/* Search Status */}
-        {searching && (
-          <div className="flex items-center justify-center py-2">
-            <Loading
-              variant="spinner"
-              size="sm"
-              text="Filtrage des mots-clés..."
-            />
-          </div>
-        )}
-        <div className="flex items-center justify-between space-x-2 py-4">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Lignes par page</p>
-            <Select
-              value={`${table.getState().pagination.pageSize}`}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue
-                  placeholder={table.getState().pagination.pageSize}
-                />
-              </SelectTrigger>
-              <SelectContent side="top">
-                {[5, 10, 15].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center space-x-6 lg:space-x-8">
-            <div className="text-sm text-muted-foreground">
-              Affichage de{" "}
-              {table.getState().pagination.pageIndex *
-                table.getState().pagination.pageSize +
-                1}{" "}
-              à{" "}
-              {Math.min(
-                (table.getState().pagination.pageIndex + 1) *
-                  table.getState().pagination.pageSize,
-                table.getFilteredRowModel().rows.length
-              )}{" "}
-              sur {table.getFilteredRowModel().rows.length} mot(s)-clé(s)
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                Précédent
-              </Button>
-              <div className="flex items-center space-x-1">
-                {Array.from(
-                  { length: Math.min(5, table.getPageCount()) },
-                  (_, i) => {
-                    const pageIndex = table.getState().pagination.pageIndex;
-                    const totalPages = table.getPageCount();
-                    let startPage = Math.max(0, pageIndex - 2);
-                    const endPage = Math.min(totalPages - 1, startPage + 4);
-                    if (endPage - startPage < 4) {
-                      startPage = Math.max(0, endPage - 4);
-                    }
-                    const page = startPage + i;
-                    if (page > endPage) return null;
-                    return (
-                      <Button
-                        key={page}
-                        variant={page === pageIndex ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => table.setPageIndex(page)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {page + 1}
-                      </Button>
-                    );
-                  }
+              </TableHeader>
+              <TableBody>
+                {searching ? (
+                  // Show loading skeleton during search
+                  Array.from({ length: pagination.pageSize }).map(
+                    (_, index) => (
+                      <TableRow key={index}>
+                        {columns.map((_, colIndex) => (
+                          <TableCell key={colIndex}>
+                            <div className="h-4 bg-muted animate-pulse rounded w-full" />
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    )
+                  )
+                ) : table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      Aucun mot-clé trouvé.
+                    </TableCell>
+                  </TableRow>
                 )}
-              </div>
-              <Button
-                variant="outline"
+              </TableBody>
+            </Table>
+          </div>
+          {/* Search Status */}
+          {searching && (
+            <div className="flex items-center justify-center py-2">
+              <Loading
+                variant="spinner"
                 size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                text="Filtrage des mots-clés..."
+              />
+            </div>
+          )}
+          <div className="flex items-center justify-between space-x-2 py-4">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm font-medium">Lignes par page</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value) => {
+                  table.setPageSize(Number(value));
+                }}
               >
-                Suivant
-              </Button>
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                  />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[5, 10, 15].map((pageSize) => (
+                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-6 lg:space-x-8">
+              <div className="text-sm text-muted-foreground">
+                Affichage de{" "}
+                {table.getState().pagination.pageIndex *
+                  table.getState().pagination.pageSize +
+                  1}{" "}
+                à{" "}
+                {Math.min(
+                  (table.getState().pagination.pageIndex + 1) *
+                    table.getState().pagination.pageSize,
+                  table.getFilteredRowModel().rows.length
+                )}{" "}
+                sur {table.getFilteredRowModel().rows.length} mot(s)-clé(s)
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  Précédent
+                </Button>
+                <div className="flex items-center space-x-1">
+                  {Array.from(
+                    { length: Math.min(5, table.getPageCount()) },
+                    (_, i) => {
+                      const pageIndex = table.getState().pagination.pageIndex;
+                      const totalPages = table.getPageCount();
+                      let startPage = Math.max(0, pageIndex - 2);
+                      const endPage = Math.min(totalPages - 1, startPage + 4);
+                      if (endPage - startPage < 4) {
+                        startPage = Math.max(0, endPage - 4);
+                      }
+                      const page = startPage + i;
+                      if (page > endPage) return null;
+                      return (
+                        <Button
+                          key={page}
+                          variant={page === pageIndex ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => table.setPageIndex(page)}
+                          className="h-8 w-8 p-0"
+                        >
+                          {page + 1}
+                        </Button>
+                      );
+                    }
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  Suivant
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-      <KeywordForm
-        open={showCreateForm}
-        onOpenChange={setShowCreateForm}
-        onSuccess={handleSuccess}
-      />
-      <KeywordForm
-        open={!!editingKeyword}
-        onOpenChange={(open) => !open && setEditingKeyword(null)}
-        keyword={editingKeyword}
-        onSuccess={handleSuccess}
-      />
-      <DeleteKeywordDialog
-        open={!!deletingKeyword}
-        onOpenChange={(open) => !open && handleDeleteCancel()}
-        keyword={deletingKeyword}
-        onSuccess={handleSuccess}
-      />
-    </Card>
+        </CardContent>
+        <KeywordForm
+          open={showCreateForm}
+          onOpenChange={setShowCreateForm}
+          onSuccess={handleSuccess}
+        />
+        <KeywordForm
+          open={!!editingKeyword}
+          onOpenChange={(open) => !open && setEditingKeyword(null)}
+          keyword={editingKeyword}
+          onSuccess={handleSuccess}
+        />
+        <DeleteKeywordDialog
+          open={!!deletingKeyword}
+          onOpenChange={(open) => !open && handleDeleteCancel()}
+          keyword={deletingKeyword}
+          onSuccess={handleSuccess}
+        />
+      </Card>
+      {showBulkActionModal && (
+        <AssignGroupDialog
+          open={showBulkActionModal}
+          onOpenChange={setShowBulkActionModal}
+          onSuccess={handleSuccess}
+        />
+      )}
+    </>
   );
 }

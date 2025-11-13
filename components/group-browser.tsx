@@ -42,7 +42,7 @@ interface GroupData {
   parentId: string | null;
   _count: {
     children: number;
-    groups: number;
+    group: number;
     keywords: number;
   };
 }
@@ -288,10 +288,10 @@ export function GroupBrowser({
                         {group._count.children !== 1 ? "s" : ""}
                       </Badge>
                       {group._count.children !== undefined &&
-                        group._count.groups > 0 && (
+                        group._count.group > 0 && (
                           <Badge variant="secondary" className="text-xs">
-                            +{group._count.groups} imbriqué
-                            {group._count.groups !== 1 ? "s" : ""}
+                            +{group._count.group} imbriqué
+                            {group._count.group !== 1 ? "s" : ""}
                           </Badge>
                         )}
                     </div>

@@ -18,7 +18,7 @@ export async function GET(
       );
     }
     const { id } = params;
-    const folder = await prisma.group.findUnique({
+    const group = await prisma.group.findUnique({
       where: { id },
       include: {
         parent: {
@@ -60,14 +60,14 @@ export async function GET(
       },
     });
 
-    if (!folder) {
+    if (!group) {
       return NextResponse.json(
         { error: "Dossier introuvable" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(folder);
+    return NextResponse.json(group);
   } catch (error) {
     console.error("Error fetching folder:", error);
     return NextResponse.json(

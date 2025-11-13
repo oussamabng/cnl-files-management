@@ -56,11 +56,9 @@ export async function GET(req: Request) {
             },
           });
 
-
           const directChildren = await prisma.group.count({
             where: { parentId: group.id },
           });
-
 
           const totalGroups = descendantIds.length;
 
@@ -96,6 +94,8 @@ export async function GET(req: Request) {
         name: "asc",
       },
     });
+
+    console.log(groups);
 
     const groupsWithCounts = await Promise.all(
       groups.map(async (group) => {
