@@ -24,6 +24,7 @@ import {
   X,
   Home,
   Calendar,
+  Layers,
 } from "lucide-react";
 import { format, set } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -554,7 +555,6 @@ export function FilesContent({
     fetchGroups();
   }, []);
 
-  // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       fetchFiles();
@@ -612,7 +612,7 @@ export function FilesContent({
     fetchFolderPaths();
   };
 
-  const hasActiveFilters = searchTerm || selectedFolderId || dateRange?.from;
+  const hasActiveFilters = searchTerm || selectedFolderId || dateRange?.from || selectedGroupIds.length > 0 || selectedKeywords.length > 0;
 
   if (loading && files.length === 0) {
     return (
@@ -743,6 +743,36 @@ export function FilesContent({
             </div>
           </div>
 
+          {/* Keywords and Groups Filter */}
+          <div className="space-y-2 grid grid-cols-4 gap-4">
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                {/* <Filter className="h-4 w-4" /> */}
+                Filtrer par mots-clés
+              </Label>
+              <KeywordMultiselect
+                keywords={keywords}
+                selectedKeywords={selectedKeywords}
+                onSelectionChange={setSelectedKeywords}
+                placeholder="Sélectionner des mots-clés"
+                fullWidth={true}
+                showSelected={false}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                {/* <Filter className="h-4 w-4" /> */}
+                Filtrer par groupes
+              </Label>
+              <SelectGroup
+                selectedGroupIds={selectedGroupIds}
+                onGroupSelect={setSelectedGroupIds}
+                placeholder="Sélectionner des groupes"
+                showSelected={false}
+              />
+            </div>
+          </div>
+
           {/* Active Filters */}
           {hasActiveFilters && (
             <div className="space-y-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -821,37 +851,44 @@ export function FilesContent({
                     </Button>
                   </Badge>
                 )}
+
+                {selectedKeywords.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-white border-blue-300 text-blue-800"
+                  >
+                    <Filter className="h-3 w-3 mr-1" />
+                    Mots-clés : {selectedKeywords.length}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick= {() => setSelectedKeywords([])}
+                      className="h-4 w-4 p-0 ml-1 hover:bg-blue-200 rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                )}
+                {selectedGroupIds.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-white border-blue-300 text-blue-800"
+                  >
+                    <Layers className="h-3 w-3 mr-1" />
+                    Groupes : {selectedGroupIds.length}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick= {() => setSelectedGroupIds([])}
+                      className="h-4 w-4 p-0 ml-1 hover:bg-blue-200 rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                )}
               </div>
             </div>
           )}
-
-          {/* Keywords and Groups Filter */}
-          <div className="space-y-2 grid grid-cols-4 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                {/* <Filter className="h-4 w-4" /> */}
-                Filtrer par mots-clés
-              </Label>
-              <KeywordMultiselect
-                keywords={keywords}
-                selectedKeywords={selectedKeywords}
-                onSelectionChange={setSelectedKeywords}
-                placeholder="Sélectionner des mots-clés"
-                fullWidth={true}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                {/* <Filter className="h-4 w-4" /> */}
-                Filtrer par groupes
-              </Label>
-              <SelectGroup
-                selectedGroupIds={selectedGroupIds}
-                onGroupSelect={setSelectedGroupIds}
-                placeholder="Sélectionner des groupes"
-              />
-            </div>
-          </div>
           <Separator />
 
           {/* Files Table */}

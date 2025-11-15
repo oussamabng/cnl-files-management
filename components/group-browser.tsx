@@ -318,14 +318,14 @@ export function GroupBrowser({
                   Sélection actuelle :{" "}
                   {currentGroupId
                     ? breadcrumbs[breadcrumbs.length - 1]?.name || "Inconnu"
-                    : "Dossier racine"}
+                    : "Groupe racine"}
                 </p>
                 <p className="text-xs text-blue-600">
                   Les mot-clés seront regroupés dans ce groupe
                 </p>
               </div>
               <Button size="sm" onClick={() => onGroupSelect?.(currentGroupId)}>
-                Sélectionner ce dossier
+                Sélectionner ce groupe
               </Button>
             </div>
           </div>
@@ -362,7 +362,7 @@ export function GroupBrowser({
                         {group._count.keywords !== 1 ? "s" : ""}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {group._count.children} dossier
+                        {group._count.children} sous groupe
                         {group._count.children !== 1 ? "s" : ""}
                       </Badge>
                       {/* {group._count.children !== undefined &&

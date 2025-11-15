@@ -44,7 +44,7 @@ const AVAILABLE_PERMISSIONS: { id: string; name: string; category: string }[] =
     const categoryNameMap: Record<string, string> = {
       files: "Fichiers",
       folders: "Dossiers",
-      filters: "Filtres",
+      filters: "Filtres et Groupes",
       comments: "Commentaires",
       roles: "Rôles",
       users: "Utilisateurs",
@@ -80,21 +80,21 @@ function getPermissionLabel(permission: string): string {
     case PERMISSIONS.FOLDERS_DELETE:
       return "Supprimer les dossiers";
     case PERMISSIONS.FILTERS_VIEW:
-      return "Voir les filtres";
+      return "Voir filtres et groupes";
     case PERMISSIONS.FILTERS_CREATE:
-      return "Créer les filtres";
+      return "Créer filtres et groupes";
     case PERMISSIONS.FILTERS_UPDATE:
-      return "Modifier les filtres";
+      return "Modifier filtres et groupes";
     case PERMISSIONS.FILTERS_DELETE:
-      return "Supprimer les filtres";
-    case PERMISSIONS.GROUPS_VIEW:
-      return "Voir les groupes";
-    case PERMISSIONS.GROUPS_CREATE:
-      return "Créer les groupes";
-    case PERMISSIONS.GROUPS_UPDATE:
-      return "Modifier les groupes";
-    case PERMISSIONS.GROUPS_DELETE:
-      return "Supprimer les groupes";
+      return "Supprimer filtres et groupes";
+    // case PERMISSIONS.GROUPS_VIEW:
+    //   return "Voir les groupes";
+    // case PERMISSIONS.GROUPS_CREATE:
+    //   return "Créer les groupes";
+    // case PERMISSIONS.GROUPS_UPDATE:
+    //   return "Modifier les groupes";
+    // case PERMISSIONS.GROUPS_DELETE:
+    //   return "Supprimer les groupes";
     case PERMISSIONS.ROLES_VIEW:
       return "Voir les rôles";
     case PERMISSIONS.ROLES_CREATE:

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
-async function getDescendantGroupIds(groupId: string): Promise<string[]> {
+export async function getDescendantGroupIds(groupId: string): Promise<string[]> {
   const children = await prisma.group.findMany({
     where: { parentId: groupId },
     select: { id: true },

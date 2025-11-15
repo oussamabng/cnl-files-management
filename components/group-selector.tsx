@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  Check,
-  X,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Layers, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -38,6 +32,7 @@ interface SelectGroupProps {
   placeholder?: string;
   disabled?: boolean;
   showCounts?: boolean;
+  showSelected?: boolean;
 }
 
 export function SelectGroup({
@@ -46,6 +41,7 @@ export function SelectGroup({
   placeholder = "Sélectionner un groupe...",
   disabled = false,
   showCounts = true,
+  showSelected = true,
 }: SelectGroupProps) {
   const [groups, setGroups] = useState<GroupData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,16 +179,19 @@ export function SelectGroup({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 hover:bg-transparent"
+                className="flex items-center justify-center h-6 w-6 p-1 bg-gray-100 cursor-pointer rounded-xl transition-colors duration-150 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleExpanded(g.id);
                 }}
+                aria-label={
+                  expandedGroups.has(g.id) ? "Collapse group" : "Expand group"
+                }
               >
                 {expandedGroups.has(g.id) ? (
-                  <ChevronDown className="h-3 w-3" />
+                  <ChevronDown className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <ChevronRight className="h-3 w-3" />
+                  <ChevronRight className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                 )}
               </Button>
             ) : (
@@ -267,7 +266,7 @@ export function SelectGroup({
             </div>
           ) : (
             <>
-              {selectedGroupIds.length > 0 && (
+              {showSelected && selectedGroupIds.length > 0 && (
                 <>
                   <div className="px-2 py-2 flex flex-wrap gap-2 bg-blue-50 dark:bg-blue-950/30 border-b">
                     {selectedGroupIds.map((id) => (
@@ -312,7 +311,7 @@ export function SelectGroup({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {selectedGroupIds.length > 0 && (
+      {showSelected && selectedGroupIds.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedGroupIds.map((id) => (
             <Badge

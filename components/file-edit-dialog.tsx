@@ -236,6 +236,56 @@ export function FileEditDialog({
               </p>
             </div>
 
+            <div className="space-y-3">
+              <Label className="text-base font-medium">
+                Assigner des groupes (optionnel)
+              </Label>
+              {groups.length > 0 && (
+                <SelectGroup
+                  selectedGroupIds={selectedGroupIds}
+                  onGroupSelect={setSelectedGroupIds}
+                  placeholder="Sélectionner des groupes..."
+                  disabled={isLoading}
+                  showSelected={true}
+                />
+              )}
+            </div>
+            <div className="space-y-3">
+              <Label className="text-base font-medium">
+                Assigner des mots-clés (optionnel)
+              </Label>
+              {keywords.length > 0 ? (
+                <>
+                  <KeywordMultiselect
+                    keywords={keywords}
+                    fullWidth={true}
+                    selectedKeywords={selectedKeywords}
+                    onSelectionChange={setSelectedKeywords}
+                    placeholder="Sélectionner des mots-clés..."
+                    disabled={isLoading}
+                    showSelected={true}
+                  />
+
+                  {/* {selectedKeywords.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {selectedKeywords.map((keywordId) => {
+                                  const keyword = keywords.find((k) => k.id === keywordId);
+                                  return keyword ? (
+                                    <Badge key={keywordId} variant="secondary">
+                                      {keyword.name}
+                                    </Badge>
+                                  ) : null;
+                                })}
+                              </div>
+                            )} */}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Aucun mot-clé disponible. Les fichiers seront téléchargés sans
+                  étiquettes.
+                </p>
+              )}
+            </div>
             {/* Additional Fields */}
             <div className="flex flex-col gap-4">
               {/* Date Texte */}
@@ -264,55 +314,6 @@ export function FileEditDialog({
                   disabled={isLoading}
                 />
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-base font-medium">
-                Assigner des groupes (optionnel)
-              </Label>
-              {groups.length > 0 && (
-                <SelectGroup
-                  selectedGroupIds={selectedGroupIds}
-                  onGroupSelect={setSelectedGroupIds}
-                  placeholder="Sélectionner des groupes..."
-                  disabled={isLoading}
-                />
-              )}
-            </div>
-            <div className="space-y-3">
-              <Label className="text-base font-medium">
-                Assigner des mots-clés (optionnel)
-              </Label>
-              {keywords.length > 0 ? (
-                <>
-                  <KeywordMultiselect
-                    keywords={keywords}
-                    fullWidth={true}
-                    selectedKeywords={selectedKeywords}
-                    onSelectionChange={setSelectedKeywords}
-                    placeholder="Sélectionner des mots-clés..."
-                    disabled={isLoading}
-                  />
-
-                  {/* {selectedKeywords.length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {selectedKeywords.map((keywordId) => {
-                                  const keyword = keywords.find((k) => k.id === keywordId);
-                                  return keyword ? (
-                                    <Badge key={keywordId} variant="secondary">
-                                      {keyword.name}
-                                    </Badge>
-                                  ) : null;
-                                })}
-                              </div>
-                            )} */}
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucun mot-clé disponible. Les fichiers seront téléchargés sans
-                  étiquettes.
-                </p>
-              )}
             </div>
 
             {error && (

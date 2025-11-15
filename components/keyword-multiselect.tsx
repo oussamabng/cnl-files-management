@@ -33,6 +33,7 @@ interface KeywordMultiselectProps {
   placeholder?: string;
   disabled?: boolean;
   fullWidth?: boolean;
+  showSelected?: boolean;
 }
 
 export function KeywordMultiselect({
@@ -42,6 +43,7 @@ export function KeywordMultiselect({
   placeholder = "Sélectionner des mots-clés...",
   disabled = false,
   fullWidth = false,
+  showSelected,
 }: KeywordMultiselectProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -97,8 +99,8 @@ export function KeywordMultiselect({
             <div className="flex items-center gap-1 min-w-0 flex-1">
               {selectedKeywords.length === 0 ? (
                 <div className="flex flex-row items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">{placeholder}</span>
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{placeholder}</span>
                 </div>
               ) : (
                 <span className="truncate">
@@ -117,6 +119,8 @@ export function KeywordMultiselect({
           className="p-0"
           align="start"
           side="bottom"
+          sideOffset={0}
+          avoidCollisions={false}
           style={fullWidth ? { minWidth: "100%" } : { width: contentWidth }}
         >
           <Command>
@@ -171,7 +175,7 @@ export function KeywordMultiselect({
         </PopoverContent>
       </Popover>
 
-      {selectedKeywords.length > 0 && (
+      {showSelected && selectedKeywords.length > 0 && (
         <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto p-2 border rounded-md bg-muted/30">
           {selectedKeywordNames.map((name) => {
             const keywordId = keywords.find((k) => k.name === name)?.id;

@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
+import { getDescendantGroupIds } from "../groups/route";
 
 // Helper function to get all descendant folder IDs
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
@@ -93,20 +94,25 @@ export async function GET(req: Request) {
         };
       }
     }
-    if(groupIds.length > 0) {
-      if(filterMode === "AND") {
-        whereClause.AND = groupIds.map(groupId => ({
+    if (groupIds.length > 0) {
+      const allGroupIds: string[] = [];
+
+      for (const groupId of groupIds) {
+        const descendants = await getDescendantGroupIds(groupId);
+        allGroupIds.push(groupId, ...descendants);
+      }
+
+      if (filterMode === "AND") {
+        whereClause.AND = allGroupIds.map((id) => ({
           groups: {
-            some: {
-              id: groupId,
-            },
+            some: { id },
           },
         }));
       } else {
         whereClause.groups = {
           some: {
             id: {
-              in: groupIds,
+              in: allGroupIds,
             },
           },
         };
