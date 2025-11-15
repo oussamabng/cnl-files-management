@@ -361,10 +361,10 @@ export function GroupBrowser({
                         {group._count.keywords} mot-clé
                         {group._count.keywords !== 1 ? "s" : ""}
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
+                      {/* <Badge variant="outline" className="text-xs">
                         {group._count.children} sous groupe
                         {group._count.children !== 1 ? "s" : ""}
-                      </Badge>
+                      </Badge> */}
                       {/* {group._count.children !== undefined &&
                         group._count.group > 0 && (
                           <Badge variant="secondary" className="text-xs">
