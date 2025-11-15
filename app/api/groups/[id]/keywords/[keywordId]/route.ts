@@ -9,7 +9,7 @@ export async function DELETE(
   { params }: { params: { id: string; keywordId: string } }
 ) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.GROUPS_UPDATE);
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_DELETE);
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },

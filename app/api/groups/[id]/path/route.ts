@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.GROUPS_VIEW);
+    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
     if (error) return error;
 
     const { id } = params;

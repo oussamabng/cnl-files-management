@@ -58,7 +58,7 @@ interface GroupBrowserProps {
   permissions: PermissionValue[];
   currentGroupId: string | null;
   onGroupChange: (groupId: string | null) => void;
-  onGroupSelect?: (groupId: string | null) => void; // For group selection in upload
+  onGroupSelect?: (groupId: string | null) => void;
   selectionMode?: boolean;
 }
 
@@ -222,7 +222,7 @@ export function GroupBrowser({
                 Naviguez dans votre structure de groupes
               </CardDescription>
             </div>
-            {permissions.includes(PERMISSIONS.GROUPS_CREATE) && (
+            {permissions.includes(PERMISSIONS.FILTERS_CREATE) && (
               <Button disabled>
                 <Plus className="mr-2 h-4 w-4" />
                 Nouveau groupe
@@ -250,7 +250,7 @@ export function GroupBrowser({
                 : "Naviguez dans votre structure de groupes"}
             </CardDescription>
           </div>
-          {permissions.includes(PERMISSIONS.GROUPS_CREATE) &&
+          {permissions.includes(PERMISSIONS.FILTERS_CREATE) &&
             !selectionMode && (
               <Button onClick={() => setShowCreateForm(true)}>
                 <div className="relative">
@@ -376,8 +376,8 @@ export function GroupBrowser({
                   </div>
                 </div>
                 {!selectionMode &&
-                  (permissions.includes(PERMISSIONS.GROUPS_UPDATE) ||
-                    permissions.includes(PERMISSIONS.GROUPS_DELETE)) && (
+                  (permissions.includes(PERMISSIONS.FILTERS_UPDATE) ||
+                    permissions.includes(PERMISSIONS.FILTERS_DELETE)) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -396,7 +396,7 @@ export function GroupBrowser({
                             setEditingGroup(group);
                           }}
                           disabled={
-                            !permissions.includes(PERMISSIONS.GROUPS_UPDATE)
+                            !permissions.includes(PERMISSIONS.FILTERS_UPDATE)
                           }
                         >
                           <Edit className="mr-2 h-4 w-4" />
@@ -408,7 +408,7 @@ export function GroupBrowser({
                             setDeletingGroup(group);
                           }}
                           disabled={
-                            !permissions.includes(PERMISSIONS.GROUPS_DELETE)
+                            !permissions.includes(PERMISSIONS.FILTERS_DELETE)
                           }
                           className="text-destructive"
                         >

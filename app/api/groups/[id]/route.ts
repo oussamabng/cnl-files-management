@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.GROUPS_VIEW);
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
 
     if (!response.success) {
       return NextResponse.json(
@@ -81,7 +81,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.GROUPS_UPDATE);
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_UPDATE);
 
     if (!response.success) {
       return NextResponse.json(
@@ -163,7 +163,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.GROUPS_DELETE);
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_DELETE);
 
     if (!response.success) {
       return NextResponse.json(

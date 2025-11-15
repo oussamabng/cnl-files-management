@@ -22,7 +22,7 @@ async function getDescendantGroupIds(groupId: string): Promise<string[]> {
 
 export async function GET(req: Request) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.GROUPS_VIEW);
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
 
     if (!response.success) {
       return NextResponse.json(
@@ -162,7 +162,7 @@ export async function GET(req: Request) {
 }
 export async function POST(req: Request) {
   try {
-    const { error } = await requireApiPermission(PERMISSIONS.GROUPS_CREATE);
+    const { error } = await requireApiPermission(PERMISSIONS.FILTERS_CREATE);
     if (error) return error;
 
     const { name, parentId } = await req.json();
