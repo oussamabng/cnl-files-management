@@ -11,11 +11,11 @@ import { Button } from "./ui/button";
 import {
   ArrowLeft,
   Edit,
-  FolderPlus,
   Layers,
   MoreHorizontal,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import { Loading } from "./ui/loading";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -35,16 +35,23 @@ import {
 import { DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
 import { GroupForm } from "./group-form";
 import { DeleteGroupDialog } from "./delete-group-dialog";
+import { ManageDeleteKeywordDialog } from "./manage-delete-keyword-dialog";
 
 interface GroupData {
   id: string;
   name: string;
   parentId: string | null;
+  keywords: Array<{ id: string; name: string }>;
   _count: {
     children: number;
     group: number;
     keywords: number;
+    files: number;
   };
+}
+interface KeywordsData {
+  id: string;
+  name: string;
 }
 
 interface GroupBrowserProps {
@@ -73,6 +80,12 @@ export function GroupBrowser({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState<GroupData | null>(null);
   const [deletingGroup, setDeletingGroup] = useState<GroupData | null>(null);
+  const [currentKeywords, setCurrentKeywords] = useState<KeywordsData[]>([]);
+  const [selectedKeywordId, setSelectedKeywordId] = useState<string | null>(
+    null
+  );
+  const [deleteKeyword, setDeleteKeyword] = useState(false);
+  const [currentGroupName, setCurrentGroupName] = useState<string>("");
 
   const fetchGroups = async () => {
     try {
@@ -83,12 +96,14 @@ export function GroupBrowser({
       if (currentGroupId) {
         params.append("parentId", currentGroupId);
       }
+      // params.append("includeKeywords", "true");
 
       const response = await fetch(`/api/groups?${params}`);
 
       if (response.ok) {
-        const data = await response.json();
-        console.log(data);
+        const data: GroupData[] = await response.json();
+        const g = data.find((g) => g.id === currentGroupId);
+
         setGroups(data);
       } else {
         const errorData = await response.json();
@@ -98,6 +113,28 @@ export function GroupBrowser({
       setError("Une erreur s'est produite");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCurrentGroupKeywords = async () => {
+    if (!currentGroupId) {
+      setCurrentKeywords([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/groups/${currentGroupId}`);
+      if (response.ok) {
+        const data = await response.json();
+
+        setCurrentGroupName(data.name);
+        setCurrentKeywords(data.keywords || []);
+      } else {
+        setCurrentKeywords([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch keywords:", err);
+      setCurrentKeywords([]);
     }
   };
 
@@ -121,6 +158,9 @@ export function GroupBrowser({
   useEffect(() => {
     fetchGroups();
     fetchBreadcrumbs();
+    if (currentGroupId) {
+      fetchCurrentGroupKeywords();
+    }
   }, [currentGroupId]);
 
   const handleGroupClick = (GroupId: string) => {
@@ -146,6 +186,31 @@ export function GroupBrowser({
     setDeletingGroup(null);
   };
 
+  const handleDeleteClick = (keywordId: string) => {
+    setSelectedKeywordId(keywordId);
+    setDeleteKeyword(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!currentGroupId || !selectedKeywordId) return;
+
+    try {
+      await fetch(
+        `/api/groups/${currentGroupId}/keywords/${selectedKeywordId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      setCurrentKeywords((prev) =>
+        prev.filter((k) => k.id !== selectedKeywordId)
+      );
+    } finally {
+      setDeleteKeyword(false);
+      setSelectedKeywordId(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -159,7 +224,7 @@ export function GroupBrowser({
             </div>
             {permissions.includes(PERMISSIONS.GROUPS_CREATE) && (
               <Button disabled>
-                <FolderPlus className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" />
                 Nouveau groupe
               </Button>
             )}
@@ -185,7 +250,7 @@ export function GroupBrowser({
                 : "Naviguez dans votre structure de groupes"}
             </CardDescription>
           </div>
-          {permissions.includes(PERMISSIONS.FOLDERS_CREATE) &&
+          {permissions.includes(PERMISSIONS.GROUPS_CREATE) &&
             !selectionMode && (
               <Button onClick={() => setShowCreateForm(true)}>
                 <div className="relative">
@@ -256,7 +321,7 @@ export function GroupBrowser({
                     : "Dossier racine"}
                 </p>
                 <p className="text-xs text-blue-600">
-                  Les fichiers seront téléchargés à cet emplacement
+                  Les mot-clés seront regroupés dans ce groupe
                 </p>
               </div>
               <Button size="sm" onClick={() => onGroupSelect?.(currentGroupId)}>
@@ -274,19 +339,11 @@ export function GroupBrowser({
               onClick={() => handleGroupClick(group.id)}
             >
               <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
                   <Layers className="h-8 w-8 text-blue-600 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-medium truncate">{group.name}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">
-                        {group._count.keywords} mot-clé
-                        {group._count.keywords !== 1 ? "s" : ""}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {group._count.children} dossier
-                        {group._count.children !== 1 ? "s" : ""}
-                      </Badge>
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                      <h4 className="font-medium truncate">{group.name}</h4>
                       {group._count.children !== undefined &&
                         group._count.group > 0 && (
                           <Badge variant="secondary" className="text-xs">
@@ -295,11 +352,32 @@ export function GroupBrowser({
                           </Badge>
                         )}
                     </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        {group._count.files} fichier
+                        {group._count.files !== 1 ? "s" : ""}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {group._count.keywords} mot-clé
+                        {group._count.keywords !== 1 ? "s" : ""}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {group._count.children} dossier
+                        {group._count.children !== 1 ? "s" : ""}
+                      </Badge>
+                      {/* {group._count.children !== undefined &&
+                        group._count.group > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{group._count.group} imbriqué
+                            {group._count.group !== 1 ? "s" : ""}
+                          </Badge>
+                        )} */}
+                    </div>
                   </div>
                 </div>
                 {!selectionMode &&
-                  (permissions.includes(PERMISSIONS.FOLDERS_UPDATE) ||
-                    permissions.includes(PERMISSIONS.FOLDERS_DELETE)) && (
+                  (permissions.includes(PERMISSIONS.GROUPS_UPDATE) ||
+                    permissions.includes(PERMISSIONS.GROUPS_DELETE)) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -318,7 +396,7 @@ export function GroupBrowser({
                             setEditingGroup(group);
                           }}
                           disabled={
-                            !permissions.includes(PERMISSIONS.FOLDERS_UPDATE)
+                            !permissions.includes(PERMISSIONS.GROUPS_UPDATE)
                           }
                         >
                           <Edit className="mr-2 h-4 w-4" />
@@ -330,7 +408,7 @@ export function GroupBrowser({
                             setDeletingGroup(group);
                           }}
                           disabled={
-                            !permissions.includes(PERMISSIONS.FOLDERS_DELETE)
+                            !permissions.includes(PERMISSIONS.GROUPS_DELETE)
                           }
                           className="text-destructive"
                         >
@@ -344,9 +422,36 @@ export function GroupBrowser({
             </div>
           ))}
         </div>
+
         {groups.length === 0 && !loading && (
           <div className="text-center py-8 text-muted-foreground">
             <Layers className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          </div>
+        )}
+        {currentGroupId && currentKeywords.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-1 text-sm text-gray-500">
+              Mots-clés assignés à ce groupe :
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {currentKeywords.map((keyword) => (
+                <Badge
+                  key={keyword.id}
+                  variant="secondary"
+                  className="flex items-center gap-1 py-1 px-2 text-sm rounded-md"
+                >
+                  <span className="truncate max-w-xs">{keyword.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteClick(keyword.id)}
+                    className="ml-1 inline-flex items-center justify-center opacity-60 transition-all hover:opacity-100 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    aria-label={`Supprimer ${keyword.name}`}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
@@ -371,6 +476,16 @@ export function GroupBrowser({
         onOpenChange={(open) => !open && setDeletingGroup(null)}
         group={deletingGroup}
         onSuccess={handleSuccess}
+      />
+
+      <ManageDeleteKeywordDialog
+        open={deleteKeyword}
+        groupName={currentGroupName}
+        keywordName={
+          currentKeywords.find((k) => k.id === selectedKeywordId)?.name ?? ""
+        }
+        onOpenChange={(open) => !open && setDeleteKeyword(false)}
+        onSuccess={handleConfirmDelete}
       />
     </Card>
   );

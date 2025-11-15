@@ -54,12 +54,14 @@ import { Loading, TableLoading } from "@/components/ui/loading";
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 import { Checkbox } from "./ui/checkbox";
 import { AssignGroupDialog } from "./assign-group-dialog";
+import { Group } from "@/lib/generated/prisma";
 
 interface Keyword {
   id: string;
   name: string;
   _count: {
     files: number;
+    groups: number;
   };
 }
 
@@ -86,6 +88,7 @@ export function FiltersContent({
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [showBulkActionModal, setShowBulkActionModal] = useState(false);
+  const [groups, setGroups] = useState<Group[]>([]);
 
   const canUpdate = permissions.includes(PERMISSIONS.FILTERS_UPDATE);
   const canDelete = permissions.includes(PERMISSIONS.FILTERS_DELETE);
@@ -126,6 +129,23 @@ export function FiltersContent({
           <div className="flex items-center gap-2">
             <Badge variant={count > 0 ? "default" : "secondary"}>
               {count} {count === 1 ? "fichier" : "fichiers"}
+            </Badge>
+            {count === 0 && (
+              <span className="text-xs text-muted-foreground">Non utilisé</span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "_count.groups",
+      header: "Groups associés",
+      cell: ({ row }) => {
+        const count = row.original._count.groups;
+        return (
+          <div className="flex items-center gap-2">
+            <Badge variant={count > 0 ? "default" : "secondary"}>
+              {count} {count === 1 ? "groupe" : "groupes"}
             </Badge>
             {count === 0 && (
               <span className="text-xs text-muted-foreground">Non utilisé</span>
@@ -223,10 +243,56 @@ export function FiltersContent({
     return selectedRows.map((row) => row.original);
   };
 
+  const assignKeyword = async (keywordId: string, groupIds: string[]) => {
+    const response = await fetch(`/api/keywords/${keywordId}?assign=true`, {
+      method: "PUT",
+      body: JSON.stringify({
+        groupIds,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log(data);
+    } else {
+      console.error(data);
+    }
+  };
+
+  const handleBulkAssign = async (groupIds: string[]) => {
+    setLoading(true);
+    setError("");
+    try {
+      for (const keyword of selectedRows) {
+        await assignKeyword(keyword.id, groupIds);
+      }
+      setLoading(false);
+    } catch (error) {}
+  };
+
   const clearSelection = () => {
     setRowSelection({});
   };
 
+  const fetchGroups = async () => {
+    try {
+      setError("");
+      const response = await fetch("/api/groups?includeHierarchy=true");
+      const data = await response.json();
+
+      if (response.ok) {
+        setGroups(data);
+      } else {
+        setError(data.message || "Échec du chargement des groupes");
+      }
+    } catch {
+      setError("Une erreur s'est produite");
+    } finally {
+      setSearching(false);
+      setLoading(false);
+    }
+  };
   const fetchKeywords = async () => {
     try {
       setSearching(true);
@@ -248,12 +314,14 @@ export function FiltersContent({
 
   useEffect(() => {
     fetchKeywords();
+    fetchGroups();
   }, []);
 
   const handleSuccess = () => {
     fetchKeywords();
     setEditingKeyword(null);
     setDeletingKeyword(null);
+    setRowSelection({});
     setDeletingKeywordId(null); // Clear the deleting state
   };
 
@@ -536,6 +604,8 @@ export function FiltersContent({
           open={showBulkActionModal}
           onOpenChange={setShowBulkActionModal}
           onSuccess={handleSuccess}
+          onSave={handleBulkAssign}
+          groups={groups}
         />
       )}
     </>

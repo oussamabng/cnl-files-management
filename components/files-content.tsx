@@ -25,7 +25,7 @@ import {
   Home,
   Calendar,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { DateRange } from "react-day-picker";
 
@@ -80,12 +80,15 @@ import { KeywordMultiselect } from "@/components/keyword-multiselect";
 import { SimpleDateRangePicker } from "@/components/simple-date-range-picker";
 import { CommentDisplay } from "@/components/comment-display";
 import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
+import { Group } from "@/lib/generated/prisma";
+import { SelectGroup } from "./group-selector";
 
 interface FileData {
   id: string;
   name: string;
   path: string;
   keywords: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string }>;
   folder?: { id: string; name: string } | null;
   folderPath?: string;
   dateTexte?: string | null;
@@ -104,6 +107,7 @@ export function FilesContent({
 }) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
@@ -128,6 +132,7 @@ export function FilesContent({
   const [editingFile, setEditingFile] = useState<FileData | null>(null);
   const [deletingFile, setDeletingFile] = useState<FileData | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
   const [folderMap, setFolderMap] = useState<Map<string, string>>(new Map());
 
@@ -266,6 +271,61 @@ export function FilesContent({
       enableSorting: false,
     },
     {
+      accessorKey: "groups",
+      header: "Groupes",
+      cell: ({ row }) => {
+        const groups = row.original.groups;
+        const maxVisible = 2;
+
+        if (groups.length === 0) {
+          return <span className="text-xs text-muted-foreground">Aucun</span>;
+        }
+
+        if (groups.length <= maxVisible) {
+          return (
+            <div className="flex flex-wrap gap-1">
+              {groups.map((group) => (
+                <Badge key={group.id} variant="outline" className="text-xs">
+                  {group.name}
+                </Badge>
+              ))}
+            </div>
+          );
+        }
+
+        const visibleGroups = groups.slice(0, maxVisible);
+        const remainingCount = groups.length - maxVisible;
+        const allGroupNames = groups.map((g) => g.name).join(", ");
+
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex flex-wrap gap-1 cursor-help">
+                  {visibleGroups.map((group) => (
+                    <Badge key={group.id} variant="outline" className="text-xs">
+                      {group.name}
+                    </Badge>
+                  ))}
+                  <Badge variant="secondary" className="text-xs">
+                    +{remainingCount}
+                  </Badge>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <p className="break-words">
+                  <strong>Tous les groupes :</strong>
+                  <br />
+                  {allGroupNames}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      },
+      enableSorting: false,
+    },
+    {
       accessorKey: "keywords",
       header: "Mots-clés",
       cell: ({ row }) => {
@@ -324,7 +384,8 @@ export function FilesContent({
       },
       enableSorting: false,
     },
-    ...(permissions.includes(PERMISSIONS.FILES_UPDATE) || permissions.includes(PERMISSIONS.FILES_DELETE)
+    ...(permissions.includes(PERMISSIONS.FILES_UPDATE) ||
+    permissions.includes(PERMISSIONS.FILES_DELETE)
       ? [
           {
             id: "actions" as const,
@@ -410,6 +471,10 @@ export function FilesContent({
         params.append("keywords", selectedKeywords.join(","));
         params.append("mode", filterMode);
       }
+      if (selectedGroupIds.length > 0) {
+        params.append("groups", selectedGroupIds.join(","));
+        params.append("mode", filterMode);
+      }
       // Only add folderId if a specific folder is selected
       if (selectedFolderId) {
         params.append("folderId", selectedFolderId);
@@ -433,6 +498,8 @@ export function FilesContent({
           ...file,
           folderPath: file.folder ? folderMap.get(file.folder.id) : null,
         }));
+        console.log(filesWithPaths);
+
         setFiles(filesWithPaths);
       } else {
         setError(data.message || "Échec du chargement des fichiers");
@@ -446,6 +513,7 @@ export function FilesContent({
   }, [
     searchTerm,
     selectedKeywords,
+    selectedGroupIds,
     filterMode,
     selectedFolderId,
     dateRange,
@@ -465,9 +533,25 @@ export function FilesContent({
       console.error("Échec de la récupération des mots-clés:", err);
     }
   };
+  const fetchGroups = async () => {
+    try {
+      setError("");
+      const response = await fetch("/api/groups?includeHierarchy=true");
+      const data = await response.json();
+
+      if (response.ok) {
+        setGroups(data);
+      } else {
+        setError(data.message || "Échec du chargement des groupes");
+      }
+    } catch {
+      setError("Une erreur s'est produite");
+    }
+  };
 
   useEffect(() => {
     fetchKeywords();
+    fetchGroups();
   }, []);
 
   // Debounced search effect
@@ -481,6 +565,7 @@ export function FilesContent({
 
   const clearAllFilters = () => {
     setSelectedKeywords([]);
+    setSelectedGroupIds([]);
     setSearchTerm("");
     setSelectedFolderId(null);
     setSelectedFolderName("");
@@ -740,20 +825,33 @@ export function FilesContent({
             </div>
           )}
 
-          {/* Keywords Filter */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Mots-clés
-            </Label>
-            <KeywordMultiselect
-              keywords={keywords}
-              selectedKeywords={selectedKeywords}
-              onSelectionChange={setSelectedKeywords}
-              placeholder="Rechercher et sélectionner des mots-clés..."
-            />
+          {/* Keywords and Groups Filter */}
+          <div className="space-y-2 grid grid-cols-4 gap-4">
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                {/* <Filter className="h-4 w-4" /> */}
+                Filtrer par mots-clés
+              </Label>
+              <KeywordMultiselect
+                keywords={keywords}
+                selectedKeywords={selectedKeywords}
+                onSelectionChange={setSelectedKeywords}
+                placeholder="Sélectionner des mots-clés"
+                fullWidth={true}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                {/* <Filter className="h-4 w-4" /> */}
+                Filtrer par groupes
+              </Label>
+              <SelectGroup
+                selectedGroupIds={selectedGroupIds}
+                onGroupSelect={setSelectedGroupIds}
+                placeholder="Sélectionner des groupes"
+              />
+            </div>
           </div>
-
           <Separator />
 
           {/* Files Table */}
@@ -939,6 +1037,7 @@ export function FilesContent({
       <FileUploadDialog
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
+        groups={groups}
         keywords={keywords}
         currentFolderId={selectedFolderId}
         onSuccess={handleUploadSuccess}
@@ -949,6 +1048,7 @@ export function FilesContent({
           open={!!editingFile}
           onOpenChange={(open) => !open && setEditingFile(null)}
           file={editingFile}
+          groups={groups}
           keywords={keywords}
           onSuccess={handleSuccess}
         />

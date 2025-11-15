@@ -28,7 +28,8 @@ model File {
   path     String
   folderId String?
   folder   Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  keywords Keyword[]
+  keywords Keyword[] @relation("FileKeywords")
+  groups   Group[]   @relation("FileGroups")
 
   dateTexte   DateTime?
   commentaire String?
@@ -63,7 +64,8 @@ model Group {
   parentId String?
   parent   Group?    @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children Group[]   @relation("GroupHierarchy")
-  keywords Keyword[]
+  keywords Keyword[] @relation("KeywordGroups")
+  files    File[]    @relation("FileGroups")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,12 +76,11 @@ model Group {
 }
 
 model Keyword {
-  id      String  @id @default(cuid())
-  name    String
-  files   File[]
-  groupId String?
+  id    String @id @default(cuid())
+  name  String
+  files File[] @relation("FileKeywords")
 
-  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groups Group[] @relation("KeywordGroups")
 
   // @@fulltext([name]) // Optional if Postgres 12+
 

@@ -40,6 +40,8 @@ export async function GET(req: Request) {
     const search = searchParams.get("search") || "";
     const keywordIds =
       searchParams.get("keywords")?.split(",").filter(Boolean) || [];
+    const groupIds =
+      searchParams.get("groups")?.split(",").filter(Boolean) || [];
     const folderId = searchParams.get("folderId"); // Can be null, empty string, or actual ID
     const filterMode = searchParams.get("mode") || "OR"; // AND or OR
     const sortBy = searchParams.get("sortBy") || "name";
@@ -91,6 +93,25 @@ export async function GET(req: Request) {
         };
       }
     }
+    if(groupIds.length > 0) {
+      if(filterMode === "AND") {
+        whereClause.AND = groupIds.map(groupId => ({
+          groups: {
+            some: {
+              id: groupId,
+            },
+          },
+        }));
+      } else {
+        whereClause.groups = {
+          some: {
+            id: {
+              in: groupIds,
+            },
+          },
+        };
+      }
+    }
 
     // Add date range filtering
     if (dateFrom || dateTo) {
@@ -118,6 +139,12 @@ export async function GET(req: Request) {
           },
         },
         folder: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        groups: {
           select: {
             id: true,
             name: true,
@@ -154,6 +181,7 @@ export async function POST(req: Request) {
     const keywordIds = JSON.parse(
       (formData.get("keywordIds") as string) || "[]"
     );
+    const groupIds = JSON.parse((formData.get("groupIds") as string) || "[]");
     const customNames = JSON.parse(
       (formData.get("customNames") as string) || "{}"
     );
@@ -247,8 +275,17 @@ export async function POST(req: Request) {
           keywords: {
             connect: keywordIds.map((id: string) => ({ id })),
           },
+          groups: {
+            connect: groupIds.map((id: string) => ({ id })),
+          },
         },
         include: {
+          groups: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           keywords: {
             select: {
               id: true,

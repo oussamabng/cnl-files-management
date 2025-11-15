@@ -17,27 +17,66 @@ export async function PUT(
         { status: response.status }
       );
     }
-    const { name } = await req.json();
-    const { id } = params;
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
+    const { name, groupIds } = await req.json();
+
+    const { id } = await params;
+
+    const groupIdsArray = Array.isArray(groupIds)
+      ? groupIds.map((g) => String(g).trim()).filter(Boolean)
+      : typeof groupIds === "string"
+      ? groupIds
+          .split(",")
+          .map((g) => g.trim())
+          .filter(Boolean)
+      : [];
+
+    let keyword;
+
+    if (groupIdsArray.length > 0) {
+      const groups = await prisma.group.findMany({
+        where: { id: { in: groupIdsArray } },
+        select: { id: true },
+      });
+      console.log("we find ", groups.length);
+      console.log("you pass", groupIdsArray.length);
+
+      if (groups.length !== groupIdsArray.length) {
+        return NextResponse.json(
+          { error: "Un ou plusieurs groupes sélectionnés n'existent pas" },
+          { status: 404 }
+        );
+      }
+
+      keyword = await prisma.keyword.update({
+        where: { id },
+        data: {
+          groups: {
+            set: groupIdsArray.map((gid) => ({ id: gid })), // replace current groups
+          },
+        },
+        include: {
+          _count: { select: { files: true } },
+          groups: true,
+        },
+      });
+
+      return NextResponse.json(keyword);
+    } else if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
         { error: "Le nom du mot-clé est requis" },
         { status: 400 }
       );
     }
 
-    const keyword = await prisma.keyword.update({
+    keyword = await prisma.keyword.update({
       where: { id },
       data: {
         name: name.trim(),
       },
       include: {
-        _count: {
-          select: {
-            files: true,
-          },
-        },
+        _count: { select: { files: true } },
+        groups: true,
       },
     });
 

@@ -1838,10 +1838,12 @@ export namespace Prisma {
 
   export type FileCountOutputType = {
     keywords: number
+    groups: number
   }
 
   export type FileCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     keywords?: boolean | FileCountOutputTypeCountKeywordsArgs
+    groups?: boolean | FileCountOutputTypeCountGroupsArgs
   }
 
   // Custom InputTypes
@@ -1860,6 +1862,13 @@ export namespace Prisma {
    */
   export type FileCountOutputTypeCountKeywordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: KeywordWhereInput
+  }
+
+  /**
+   * FileCountOutputType without action
+   */
+  export type FileCountOutputTypeCountGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupWhereInput
   }
 
 
@@ -1910,11 +1919,13 @@ export namespace Prisma {
   export type GroupCountOutputType = {
     children: number
     keywords: number
+    files: number
   }
 
   export type GroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     children?: boolean | GroupCountOutputTypeCountChildrenArgs
     keywords?: boolean | GroupCountOutputTypeCountKeywordsArgs
+    files?: boolean | GroupCountOutputTypeCountFilesArgs
   }
 
   // Custom InputTypes
@@ -1942,6 +1953,13 @@ export namespace Prisma {
     where?: KeywordWhereInput
   }
 
+  /**
+   * GroupCountOutputType without action
+   */
+  export type GroupCountOutputTypeCountFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FileWhereInput
+  }
+
 
   /**
    * Count Type KeywordCountOutputType
@@ -1949,10 +1967,12 @@ export namespace Prisma {
 
   export type KeywordCountOutputType = {
     files: number
+    groups: number
   }
 
   export type KeywordCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     files?: boolean | KeywordCountOutputTypeCountFilesArgs
+    groups?: boolean | KeywordCountOutputTypeCountGroupsArgs
   }
 
   // Custom InputTypes
@@ -1971,6 +1991,13 @@ export namespace Prisma {
    */
   export type KeywordCountOutputTypeCountFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: FileWhereInput
+  }
+
+  /**
+   * KeywordCountOutputType without action
+   */
+  export type KeywordCountOutputTypeCountGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupWhereInput
   }
 
 
@@ -3477,6 +3504,7 @@ export namespace Prisma {
     updatedAt?: boolean
     folder?: boolean | File$folderArgs<ExtArgs>
     keywords?: boolean | File$keywordsArgs<ExtArgs>
+    groups?: boolean | File$groupsArgs<ExtArgs>
     _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["file"]>
 
@@ -3519,6 +3547,7 @@ export namespace Prisma {
   export type FileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     folder?: boolean | File$folderArgs<ExtArgs>
     keywords?: boolean | File$keywordsArgs<ExtArgs>
+    groups?: boolean | File$groupsArgs<ExtArgs>
     _count?: boolean | FileCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3533,6 +3562,7 @@ export namespace Prisma {
     objects: {
       folder: Prisma.$FolderPayload<ExtArgs> | null
       keywords: Prisma.$KeywordPayload<ExtArgs>[]
+      groups: Prisma.$GroupPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3939,6 +3969,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     folder<T extends File$folderArgs<ExtArgs> = {}>(args?: Subset<T, File$folderArgs<ExtArgs>>): Prisma__FolderClient<$Result.GetResult<Prisma.$FolderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     keywords<T extends File$keywordsArgs<ExtArgs> = {}>(args?: Subset<T, File$keywordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    groups<T extends File$groupsArgs<ExtArgs> = {}>(args?: Subset<T, File$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4412,6 +4443,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: KeywordScalarFieldEnum | KeywordScalarFieldEnum[]
+  }
+
+  /**
+   * File.groups
+   */
+  export type File$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Group
+     */
+    omit?: GroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
   }
 
   /**
@@ -5735,6 +5790,7 @@ export namespace Prisma {
     parent?: boolean | Group$parentArgs<ExtArgs>
     children?: boolean | Group$childrenArgs<ExtArgs>
     keywords?: boolean | Group$keywordsArgs<ExtArgs>
+    files?: boolean | Group$filesArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
@@ -5769,6 +5825,7 @@ export namespace Prisma {
     parent?: boolean | Group$parentArgs<ExtArgs>
     children?: boolean | Group$childrenArgs<ExtArgs>
     keywords?: boolean | Group$keywordsArgs<ExtArgs>
+    files?: boolean | Group$filesArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5784,6 +5841,7 @@ export namespace Prisma {
       parent: Prisma.$GroupPayload<ExtArgs> | null
       children: Prisma.$GroupPayload<ExtArgs>[]
       keywords: Prisma.$KeywordPayload<ExtArgs>[]
+      files: Prisma.$FilePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6188,6 +6246,7 @@ export namespace Prisma {
     parent<T extends Group$parentArgs<ExtArgs> = {}>(args?: Subset<T, Group$parentArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     children<T extends Group$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Group$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     keywords<T extends Group$keywordsArgs<ExtArgs> = {}>(args?: Subset<T, Group$keywordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KeywordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    files<T extends Group$filesArgs<ExtArgs> = {}>(args?: Subset<T, Group$filesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6685,6 +6744,30 @@ export namespace Prisma {
   }
 
   /**
+   * Group.files
+   */
+  export type Group$filesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the File
+     */
+    select?: FileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the File
+     */
+    omit?: FileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FileInclude<ExtArgs> | null
+    where?: FileWhereInput
+    orderBy?: FileOrderByWithRelationInput | FileOrderByWithRelationInput[]
+    cursor?: FileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FileScalarFieldEnum | FileScalarFieldEnum[]
+  }
+
+  /**
    * Group without action
    */
   export type GroupDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6716,19 +6799,16 @@ export namespace Prisma {
   export type KeywordMinAggregateOutputType = {
     id: string | null
     name: string | null
-    groupId: string | null
   }
 
   export type KeywordMaxAggregateOutputType = {
     id: string | null
     name: string | null
-    groupId: string | null
   }
 
   export type KeywordCountAggregateOutputType = {
     id: number
     name: number
-    groupId: number
     _all: number
   }
 
@@ -6736,19 +6816,16 @@ export namespace Prisma {
   export type KeywordMinAggregateInputType = {
     id?: true
     name?: true
-    groupId?: true
   }
 
   export type KeywordMaxAggregateInputType = {
     id?: true
     name?: true
-    groupId?: true
   }
 
   export type KeywordCountAggregateInputType = {
     id?: true
     name?: true
-    groupId?: true
     _all?: true
   }
 
@@ -6827,7 +6904,6 @@ export namespace Prisma {
   export type KeywordGroupByOutputType = {
     id: string
     name: string
-    groupId: string | null
     _count: KeywordCountAggregateOutputType | null
     _min: KeywordMinAggregateOutputType | null
     _max: KeywordMaxAggregateOutputType | null
@@ -6850,55 +6926,44 @@ export namespace Prisma {
   export type KeywordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    groupId?: boolean
     files?: boolean | Keyword$filesArgs<ExtArgs>
-    group?: boolean | Keyword$groupArgs<ExtArgs>
+    groups?: boolean | Keyword$groupsArgs<ExtArgs>
     _count?: boolean | KeywordCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["keyword"]>
 
   export type KeywordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    groupId?: boolean
-    group?: boolean | Keyword$groupArgs<ExtArgs>
   }, ExtArgs["result"]["keyword"]>
 
   export type KeywordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
-    groupId?: boolean
-    group?: boolean | Keyword$groupArgs<ExtArgs>
   }, ExtArgs["result"]["keyword"]>
 
   export type KeywordSelectScalar = {
     id?: boolean
     name?: boolean
-    groupId?: boolean
   }
 
-  export type KeywordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "groupId", ExtArgs["result"]["keyword"]>
+  export type KeywordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name", ExtArgs["result"]["keyword"]>
   export type KeywordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     files?: boolean | Keyword$filesArgs<ExtArgs>
-    group?: boolean | Keyword$groupArgs<ExtArgs>
+    groups?: boolean | Keyword$groupsArgs<ExtArgs>
     _count?: boolean | KeywordCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type KeywordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | Keyword$groupArgs<ExtArgs>
-  }
-  export type KeywordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | Keyword$groupArgs<ExtArgs>
-  }
+  export type KeywordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type KeywordIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $KeywordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Keyword"
     objects: {
       files: Prisma.$FilePayload<ExtArgs>[]
-      group: Prisma.$GroupPayload<ExtArgs> | null
+      groups: Prisma.$GroupPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
-      groupId: string | null
     }, ExtArgs["result"]["keyword"]>
     composites: {}
   }
@@ -7294,7 +7359,7 @@ export namespace Prisma {
   export interface Prisma__KeywordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     files<T extends Keyword$filesArgs<ExtArgs> = {}>(args?: Subset<T, Keyword$filesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    group<T extends Keyword$groupArgs<ExtArgs> = {}>(args?: Subset<T, Keyword$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    groups<T extends Keyword$groupsArgs<ExtArgs> = {}>(args?: Subset<T, Keyword$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7326,7 +7391,6 @@ export namespace Prisma {
   interface KeywordFieldRefs {
     readonly id: FieldRef<"Keyword", 'String'>
     readonly name: FieldRef<"Keyword", 'String'>
-    readonly groupId: FieldRef<"Keyword", 'String'>
   }
     
 
@@ -7576,10 +7640,6 @@ export namespace Prisma {
      */
     data: KeywordCreateManyInput | KeywordCreateManyInput[]
     skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KeywordIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7650,10 +7710,6 @@ export namespace Prisma {
      * Limit how many Keywords to update.
      */
     limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KeywordIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7747,9 +7803,9 @@ export namespace Prisma {
   }
 
   /**
-   * Keyword.group
+   * Keyword.groups
    */
-  export type Keyword$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Keyword$groupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Group
      */
@@ -7763,6 +7819,11 @@ export namespace Prisma {
      */
     include?: GroupInclude<ExtArgs> | null
     where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
   }
 
   /**
@@ -14391,8 +14452,7 @@ export namespace Prisma {
 
   export const KeywordScalarFieldEnum: {
     id: 'id',
-    name: 'name',
-    groupId: 'groupId'
+    name: 'name'
   };
 
   export type KeywordScalarFieldEnum = (typeof KeywordScalarFieldEnum)[keyof typeof KeywordScalarFieldEnum]
@@ -14628,6 +14688,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"File"> | Date | string
     folder?: XOR<FolderNullableScalarRelationFilter, FolderWhereInput> | null
     keywords?: KeywordListRelationFilter
+    groups?: GroupListRelationFilter
   }
 
   export type FileOrderByWithRelationInput = {
@@ -14641,6 +14702,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     folder?: FolderOrderByWithRelationInput
     keywords?: KeywordOrderByRelationAggregateInput
+    groups?: GroupOrderByRelationAggregateInput
   }
 
   export type FileWhereUniqueInput = Prisma.AtLeast<{
@@ -14658,6 +14720,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"File"> | Date | string
     folder?: XOR<FolderNullableScalarRelationFilter, FolderWhereInput> | null
     keywords?: KeywordListRelationFilter
+    groups?: GroupListRelationFilter
   }, "id" | "name_folderId">
 
   export type FileOrderByWithAggregationInput = {
@@ -14762,6 +14825,7 @@ export namespace Prisma {
     parent?: XOR<GroupNullableScalarRelationFilter, GroupWhereInput> | null
     children?: GroupListRelationFilter
     keywords?: KeywordListRelationFilter
+    files?: FileListRelationFilter
   }
 
   export type GroupOrderByWithRelationInput = {
@@ -14773,6 +14837,7 @@ export namespace Prisma {
     parent?: GroupOrderByWithRelationInput
     children?: GroupOrderByRelationAggregateInput
     keywords?: KeywordOrderByRelationAggregateInput
+    files?: FileOrderByRelationAggregateInput
   }
 
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
@@ -14788,6 +14853,7 @@ export namespace Prisma {
     parent?: XOR<GroupNullableScalarRelationFilter, GroupWhereInput> | null
     children?: GroupListRelationFilter
     keywords?: KeywordListRelationFilter
+    files?: FileListRelationFilter
   }, "id" | "name_parentId">
 
   export type GroupOrderByWithAggregationInput = {
@@ -14818,17 +14884,15 @@ export namespace Prisma {
     NOT?: KeywordWhereInput | KeywordWhereInput[]
     id?: StringFilter<"Keyword"> | string
     name?: StringFilter<"Keyword"> | string
-    groupId?: StringNullableFilter<"Keyword"> | string | null
     files?: FileListRelationFilter
-    group?: XOR<GroupNullableScalarRelationFilter, GroupWhereInput> | null
+    groups?: GroupListRelationFilter
   }
 
   export type KeywordOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
-    groupId?: SortOrderInput | SortOrder
     files?: FileOrderByRelationAggregateInput
-    group?: GroupOrderByWithRelationInput
+    groups?: GroupOrderByRelationAggregateInput
   }
 
   export type KeywordWhereUniqueInput = Prisma.AtLeast<{
@@ -14837,15 +14901,13 @@ export namespace Prisma {
     AND?: KeywordWhereInput | KeywordWhereInput[]
     OR?: KeywordWhereInput[]
     NOT?: KeywordWhereInput | KeywordWhereInput[]
-    groupId?: StringNullableFilter<"Keyword"> | string | null
     files?: FileListRelationFilter
-    group?: XOR<GroupNullableScalarRelationFilter, GroupWhereInput> | null
+    groups?: GroupListRelationFilter
   }, "id" | "name">
 
   export type KeywordOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
-    groupId?: SortOrderInput | SortOrder
     _count?: KeywordCountOrderByAggregateInput
     _max?: KeywordMaxOrderByAggregateInput
     _min?: KeywordMinOrderByAggregateInput
@@ -14857,7 +14919,6 @@ export namespace Prisma {
     NOT?: KeywordScalarWhereWithAggregatesInput | KeywordScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Keyword"> | string
     name?: StringWithAggregatesFilter<"Keyword"> | string
-    groupId?: StringNullableWithAggregatesFilter<"Keyword"> | string | null
   }
 
   export type PermissionWhereInput = {
@@ -15272,6 +15333,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     folder?: FolderCreateNestedOneWithoutFilesInput
     keywords?: KeywordCreateNestedManyWithoutFilesInput
+    groups?: GroupCreateNestedManyWithoutFilesInput
   }
 
   export type FileUncheckedCreateInput = {
@@ -15284,6 +15346,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     keywords?: KeywordUncheckedCreateNestedManyWithoutFilesInput
+    groups?: GroupUncheckedCreateNestedManyWithoutFilesInput
   }
 
   export type FileUpdateInput = {
@@ -15296,6 +15359,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     folder?: FolderUpdateOneWithoutFilesNestedInput
     keywords?: KeywordUpdateManyWithoutFilesNestedInput
+    groups?: GroupUpdateManyWithoutFilesNestedInput
   }
 
   export type FileUncheckedUpdateInput = {
@@ -15308,6 +15372,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     keywords?: KeywordUncheckedUpdateManyWithoutFilesNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutFilesNestedInput
   }
 
   export type FileCreateManyInput = {
@@ -15412,7 +15477,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     parent?: GroupCreateNestedOneWithoutChildrenInput
     children?: GroupCreateNestedManyWithoutParentInput
-    keywords?: KeywordCreateNestedManyWithoutGroupInput
+    keywords?: KeywordCreateNestedManyWithoutGroupsInput
+    files?: FileCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupUncheckedCreateInput = {
@@ -15422,7 +15488,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: GroupUncheckedCreateNestedManyWithoutParentInput
-    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupInput
+    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupsInput
+    files?: FileUncheckedCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupUpdateInput = {
@@ -15432,7 +15499,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: GroupUpdateOneWithoutChildrenNestedInput
     children?: GroupUpdateManyWithoutParentNestedInput
-    keywords?: KeywordUpdateManyWithoutGroupNestedInput
+    keywords?: KeywordUpdateManyWithoutGroupsNestedInput
+    files?: FileUpdateManyWithoutGroupsNestedInput
   }
 
   export type GroupUncheckedUpdateInput = {
@@ -15442,7 +15510,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: GroupUncheckedUpdateManyWithoutParentNestedInput
-    keywords?: KeywordUncheckedUpdateManyWithoutGroupNestedInput
+    keywords?: KeywordUncheckedUpdateManyWithoutGroupsNestedInput
+    files?: FileUncheckedUpdateManyWithoutGroupsNestedInput
   }
 
   export type GroupCreateManyInput = {
@@ -15472,34 +15541,33 @@ export namespace Prisma {
     id?: string
     name: string
     files?: FileCreateNestedManyWithoutKeywordsInput
-    group?: GroupCreateNestedOneWithoutKeywordsInput
+    groups?: GroupCreateNestedManyWithoutKeywordsInput
   }
 
   export type KeywordUncheckedCreateInput = {
     id?: string
     name: string
-    groupId?: string | null
     files?: FileUncheckedCreateNestedManyWithoutKeywordsInput
+    groups?: GroupUncheckedCreateNestedManyWithoutKeywordsInput
   }
 
   export type KeywordUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     files?: FileUpdateManyWithoutKeywordsNestedInput
-    group?: GroupUpdateOneWithoutKeywordsNestedInput
+    groups?: GroupUpdateManyWithoutKeywordsNestedInput
   }
 
   export type KeywordUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     files?: FileUncheckedUpdateManyWithoutKeywordsNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutKeywordsNestedInput
   }
 
   export type KeywordCreateManyInput = {
     id?: string
     name: string
-    groupId?: string | null
   }
 
   export type KeywordUpdateManyMutationInput = {
@@ -15510,7 +15578,6 @@ export namespace Prisma {
   export type KeywordUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PermissionCreateInput = {
@@ -15966,12 +16033,22 @@ export namespace Prisma {
     none?: KeywordWhereInput
   }
 
+  export type GroupListRelationFilter = {
+    every?: GroupWhereInput
+    some?: GroupWhereInput
+    none?: GroupWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type KeywordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type GroupOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -16099,16 +16176,6 @@ export namespace Prisma {
     isNot?: GroupWhereInput | null
   }
 
-  export type GroupListRelationFilter = {
-    every?: GroupWhereInput
-    some?: GroupWhereInput
-    none?: GroupWhereInput
-  }
-
-  export type GroupOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type GroupNameParentIdCompoundUniqueInput = {
     name: string
     parentId: string
@@ -16141,19 +16208,16 @@ export namespace Prisma {
   export type KeywordCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    groupId?: SortOrder
   }
 
   export type KeywordMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    groupId?: SortOrder
   }
 
   export type KeywordMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
-    groupId?: SortOrder
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -16570,10 +16634,22 @@ export namespace Prisma {
     connect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
   }
 
+  export type GroupCreateNestedManyWithoutFilesInput = {
+    create?: XOR<GroupCreateWithoutFilesInput, GroupUncheckedCreateWithoutFilesInput> | GroupCreateWithoutFilesInput[] | GroupUncheckedCreateWithoutFilesInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutFilesInput | GroupCreateOrConnectWithoutFilesInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
   export type KeywordUncheckedCreateNestedManyWithoutFilesInput = {
     create?: XOR<KeywordCreateWithoutFilesInput, KeywordUncheckedCreateWithoutFilesInput> | KeywordCreateWithoutFilesInput[] | KeywordUncheckedCreateWithoutFilesInput[]
     connectOrCreate?: KeywordCreateOrConnectWithoutFilesInput | KeywordCreateOrConnectWithoutFilesInput[]
     connect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
+  }
+
+  export type GroupUncheckedCreateNestedManyWithoutFilesInput = {
+    create?: XOR<GroupCreateWithoutFilesInput, GroupUncheckedCreateWithoutFilesInput> | GroupCreateWithoutFilesInput[] | GroupUncheckedCreateWithoutFilesInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutFilesInput | GroupCreateOrConnectWithoutFilesInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -16607,6 +16683,19 @@ export namespace Prisma {
     deleteMany?: KeywordScalarWhereInput | KeywordScalarWhereInput[]
   }
 
+  export type GroupUpdateManyWithoutFilesNestedInput = {
+    create?: XOR<GroupCreateWithoutFilesInput, GroupUncheckedCreateWithoutFilesInput> | GroupCreateWithoutFilesInput[] | GroupUncheckedCreateWithoutFilesInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutFilesInput | GroupCreateOrConnectWithoutFilesInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutFilesInput | GroupUpsertWithWhereUniqueWithoutFilesInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutFilesInput | GroupUpdateWithWhereUniqueWithoutFilesInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutFilesInput | GroupUpdateManyWithWhereWithoutFilesInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
   export type KeywordUncheckedUpdateManyWithoutFilesNestedInput = {
     create?: XOR<KeywordCreateWithoutFilesInput, KeywordUncheckedCreateWithoutFilesInput> | KeywordCreateWithoutFilesInput[] | KeywordUncheckedCreateWithoutFilesInput[]
     connectOrCreate?: KeywordCreateOrConnectWithoutFilesInput | KeywordCreateOrConnectWithoutFilesInput[]
@@ -16618,6 +16707,19 @@ export namespace Prisma {
     update?: KeywordUpdateWithWhereUniqueWithoutFilesInput | KeywordUpdateWithWhereUniqueWithoutFilesInput[]
     updateMany?: KeywordUpdateManyWithWhereWithoutFilesInput | KeywordUpdateManyWithWhereWithoutFilesInput[]
     deleteMany?: KeywordScalarWhereInput | KeywordScalarWhereInput[]
+  }
+
+  export type GroupUncheckedUpdateManyWithoutFilesNestedInput = {
+    create?: XOR<GroupCreateWithoutFilesInput, GroupUncheckedCreateWithoutFilesInput> | GroupCreateWithoutFilesInput[] | GroupUncheckedCreateWithoutFilesInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutFilesInput | GroupCreateOrConnectWithoutFilesInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutFilesInput | GroupUpsertWithWhereUniqueWithoutFilesInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutFilesInput | GroupUpdateWithWhereUniqueWithoutFilesInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutFilesInput | GroupUpdateManyWithWhereWithoutFilesInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
   export type FolderCreateNestedOneWithoutChildrenInput = {
@@ -16733,11 +16835,16 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
-  export type KeywordCreateNestedManyWithoutGroupInput = {
-    create?: XOR<KeywordCreateWithoutGroupInput, KeywordUncheckedCreateWithoutGroupInput> | KeywordCreateWithoutGroupInput[] | KeywordUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: KeywordCreateOrConnectWithoutGroupInput | KeywordCreateOrConnectWithoutGroupInput[]
-    createMany?: KeywordCreateManyGroupInputEnvelope
+  export type KeywordCreateNestedManyWithoutGroupsInput = {
+    create?: XOR<KeywordCreateWithoutGroupsInput, KeywordUncheckedCreateWithoutGroupsInput> | KeywordCreateWithoutGroupsInput[] | KeywordUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: KeywordCreateOrConnectWithoutGroupsInput | KeywordCreateOrConnectWithoutGroupsInput[]
     connect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
+  }
+
+  export type FileCreateNestedManyWithoutGroupsInput = {
+    create?: XOR<FileCreateWithoutGroupsInput, FileUncheckedCreateWithoutGroupsInput> | FileCreateWithoutGroupsInput[] | FileUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutGroupsInput | FileCreateOrConnectWithoutGroupsInput[]
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
   }
 
   export type GroupUncheckedCreateNestedManyWithoutParentInput = {
@@ -16747,11 +16854,16 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
-  export type KeywordUncheckedCreateNestedManyWithoutGroupInput = {
-    create?: XOR<KeywordCreateWithoutGroupInput, KeywordUncheckedCreateWithoutGroupInput> | KeywordCreateWithoutGroupInput[] | KeywordUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: KeywordCreateOrConnectWithoutGroupInput | KeywordCreateOrConnectWithoutGroupInput[]
-    createMany?: KeywordCreateManyGroupInputEnvelope
+  export type KeywordUncheckedCreateNestedManyWithoutGroupsInput = {
+    create?: XOR<KeywordCreateWithoutGroupsInput, KeywordUncheckedCreateWithoutGroupsInput> | KeywordCreateWithoutGroupsInput[] | KeywordUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: KeywordCreateOrConnectWithoutGroupsInput | KeywordCreateOrConnectWithoutGroupsInput[]
     connect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
+  }
+
+  export type FileUncheckedCreateNestedManyWithoutGroupsInput = {
+    create?: XOR<FileCreateWithoutGroupsInput, FileUncheckedCreateWithoutGroupsInput> | FileCreateWithoutGroupsInput[] | FileUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutGroupsInput | FileCreateOrConnectWithoutGroupsInput[]
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
   }
 
   export type GroupUpdateOneWithoutChildrenNestedInput = {
@@ -16778,18 +16890,30 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type KeywordUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<KeywordCreateWithoutGroupInput, KeywordUncheckedCreateWithoutGroupInput> | KeywordCreateWithoutGroupInput[] | KeywordUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: KeywordCreateOrConnectWithoutGroupInput | KeywordCreateOrConnectWithoutGroupInput[]
-    upsert?: KeywordUpsertWithWhereUniqueWithoutGroupInput | KeywordUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: KeywordCreateManyGroupInputEnvelope
+  export type KeywordUpdateManyWithoutGroupsNestedInput = {
+    create?: XOR<KeywordCreateWithoutGroupsInput, KeywordUncheckedCreateWithoutGroupsInput> | KeywordCreateWithoutGroupsInput[] | KeywordUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: KeywordCreateOrConnectWithoutGroupsInput | KeywordCreateOrConnectWithoutGroupsInput[]
+    upsert?: KeywordUpsertWithWhereUniqueWithoutGroupsInput | KeywordUpsertWithWhereUniqueWithoutGroupsInput[]
     set?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
     disconnect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
     delete?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
     connect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
-    update?: KeywordUpdateWithWhereUniqueWithoutGroupInput | KeywordUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: KeywordUpdateManyWithWhereWithoutGroupInput | KeywordUpdateManyWithWhereWithoutGroupInput[]
+    update?: KeywordUpdateWithWhereUniqueWithoutGroupsInput | KeywordUpdateWithWhereUniqueWithoutGroupsInput[]
+    updateMany?: KeywordUpdateManyWithWhereWithoutGroupsInput | KeywordUpdateManyWithWhereWithoutGroupsInput[]
     deleteMany?: KeywordScalarWhereInput | KeywordScalarWhereInput[]
+  }
+
+  export type FileUpdateManyWithoutGroupsNestedInput = {
+    create?: XOR<FileCreateWithoutGroupsInput, FileUncheckedCreateWithoutGroupsInput> | FileCreateWithoutGroupsInput[] | FileUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutGroupsInput | FileCreateOrConnectWithoutGroupsInput[]
+    upsert?: FileUpsertWithWhereUniqueWithoutGroupsInput | FileUpsertWithWhereUniqueWithoutGroupsInput[]
+    set?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    disconnect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    delete?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    update?: FileUpdateWithWhereUniqueWithoutGroupsInput | FileUpdateWithWhereUniqueWithoutGroupsInput[]
+    updateMany?: FileUpdateManyWithWhereWithoutGroupsInput | FileUpdateManyWithWhereWithoutGroupsInput[]
+    deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
   }
 
   export type GroupUncheckedUpdateManyWithoutParentNestedInput = {
@@ -16806,18 +16930,30 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type KeywordUncheckedUpdateManyWithoutGroupNestedInput = {
-    create?: XOR<KeywordCreateWithoutGroupInput, KeywordUncheckedCreateWithoutGroupInput> | KeywordCreateWithoutGroupInput[] | KeywordUncheckedCreateWithoutGroupInput[]
-    connectOrCreate?: KeywordCreateOrConnectWithoutGroupInput | KeywordCreateOrConnectWithoutGroupInput[]
-    upsert?: KeywordUpsertWithWhereUniqueWithoutGroupInput | KeywordUpsertWithWhereUniqueWithoutGroupInput[]
-    createMany?: KeywordCreateManyGroupInputEnvelope
+  export type KeywordUncheckedUpdateManyWithoutGroupsNestedInput = {
+    create?: XOR<KeywordCreateWithoutGroupsInput, KeywordUncheckedCreateWithoutGroupsInput> | KeywordCreateWithoutGroupsInput[] | KeywordUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: KeywordCreateOrConnectWithoutGroupsInput | KeywordCreateOrConnectWithoutGroupsInput[]
+    upsert?: KeywordUpsertWithWhereUniqueWithoutGroupsInput | KeywordUpsertWithWhereUniqueWithoutGroupsInput[]
     set?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
     disconnect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
     delete?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
     connect?: KeywordWhereUniqueInput | KeywordWhereUniqueInput[]
-    update?: KeywordUpdateWithWhereUniqueWithoutGroupInput | KeywordUpdateWithWhereUniqueWithoutGroupInput[]
-    updateMany?: KeywordUpdateManyWithWhereWithoutGroupInput | KeywordUpdateManyWithWhereWithoutGroupInput[]
+    update?: KeywordUpdateWithWhereUniqueWithoutGroupsInput | KeywordUpdateWithWhereUniqueWithoutGroupsInput[]
+    updateMany?: KeywordUpdateManyWithWhereWithoutGroupsInput | KeywordUpdateManyWithWhereWithoutGroupsInput[]
     deleteMany?: KeywordScalarWhereInput | KeywordScalarWhereInput[]
+  }
+
+  export type FileUncheckedUpdateManyWithoutGroupsNestedInput = {
+    create?: XOR<FileCreateWithoutGroupsInput, FileUncheckedCreateWithoutGroupsInput> | FileCreateWithoutGroupsInput[] | FileUncheckedCreateWithoutGroupsInput[]
+    connectOrCreate?: FileCreateOrConnectWithoutGroupsInput | FileCreateOrConnectWithoutGroupsInput[]
+    upsert?: FileUpsertWithWhereUniqueWithoutGroupsInput | FileUpsertWithWhereUniqueWithoutGroupsInput[]
+    set?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    disconnect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    delete?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+    update?: FileUpdateWithWhereUniqueWithoutGroupsInput | FileUpdateWithWhereUniqueWithoutGroupsInput[]
+    updateMany?: FileUpdateManyWithWhereWithoutGroupsInput | FileUpdateManyWithWhereWithoutGroupsInput[]
+    deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
   }
 
   export type FileCreateNestedManyWithoutKeywordsInput = {
@@ -16826,16 +16962,22 @@ export namespace Prisma {
     connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
   }
 
-  export type GroupCreateNestedOneWithoutKeywordsInput = {
-    create?: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutKeywordsInput
-    connect?: GroupWhereUniqueInput
+  export type GroupCreateNestedManyWithoutKeywordsInput = {
+    create?: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput> | GroupCreateWithoutKeywordsInput[] | GroupUncheckedCreateWithoutKeywordsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutKeywordsInput | GroupCreateOrConnectWithoutKeywordsInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
   export type FileUncheckedCreateNestedManyWithoutKeywordsInput = {
     create?: XOR<FileCreateWithoutKeywordsInput, FileUncheckedCreateWithoutKeywordsInput> | FileCreateWithoutKeywordsInput[] | FileUncheckedCreateWithoutKeywordsInput[]
     connectOrCreate?: FileCreateOrConnectWithoutKeywordsInput | FileCreateOrConnectWithoutKeywordsInput[]
     connect?: FileWhereUniqueInput | FileWhereUniqueInput[]
+  }
+
+  export type GroupUncheckedCreateNestedManyWithoutKeywordsInput = {
+    create?: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput> | GroupCreateWithoutKeywordsInput[] | GroupUncheckedCreateWithoutKeywordsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutKeywordsInput | GroupCreateOrConnectWithoutKeywordsInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
   export type FileUpdateManyWithoutKeywordsNestedInput = {
@@ -16851,14 +16993,17 @@ export namespace Prisma {
     deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
   }
 
-  export type GroupUpdateOneWithoutKeywordsNestedInput = {
-    create?: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutKeywordsInput
-    upsert?: GroupUpsertWithoutKeywordsInput
-    disconnect?: GroupWhereInput | boolean
-    delete?: GroupWhereInput | boolean
-    connect?: GroupWhereUniqueInput
-    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutKeywordsInput, GroupUpdateWithoutKeywordsInput>, GroupUncheckedUpdateWithoutKeywordsInput>
+  export type GroupUpdateManyWithoutKeywordsNestedInput = {
+    create?: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput> | GroupCreateWithoutKeywordsInput[] | GroupUncheckedCreateWithoutKeywordsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutKeywordsInput | GroupCreateOrConnectWithoutKeywordsInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutKeywordsInput | GroupUpsertWithWhereUniqueWithoutKeywordsInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutKeywordsInput | GroupUpdateWithWhereUniqueWithoutKeywordsInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutKeywordsInput | GroupUpdateManyWithWhereWithoutKeywordsInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
   export type FileUncheckedUpdateManyWithoutKeywordsNestedInput = {
@@ -16872,6 +17017,19 @@ export namespace Prisma {
     update?: FileUpdateWithWhereUniqueWithoutKeywordsInput | FileUpdateWithWhereUniqueWithoutKeywordsInput[]
     updateMany?: FileUpdateManyWithWhereWithoutKeywordsInput | FileUpdateManyWithWhereWithoutKeywordsInput[]
     deleteMany?: FileScalarWhereInput | FileScalarWhereInput[]
+  }
+
+  export type GroupUncheckedUpdateManyWithoutKeywordsNestedInput = {
+    create?: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput> | GroupCreateWithoutKeywordsInput[] | GroupUncheckedCreateWithoutKeywordsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutKeywordsInput | GroupCreateOrConnectWithoutKeywordsInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutKeywordsInput | GroupUpsertWithWhereUniqueWithoutKeywordsInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutKeywordsInput | GroupUpdateWithWhereUniqueWithoutKeywordsInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutKeywordsInput | GroupUpdateManyWithWhereWithoutKeywordsInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
   export type RolePermissionCreateNestedManyWithoutPermissionInput = {
@@ -17587,18 +17745,43 @@ export namespace Prisma {
   export type KeywordCreateWithoutFilesInput = {
     id?: string
     name: string
-    group?: GroupCreateNestedOneWithoutKeywordsInput
+    groups?: GroupCreateNestedManyWithoutKeywordsInput
   }
 
   export type KeywordUncheckedCreateWithoutFilesInput = {
     id?: string
     name: string
-    groupId?: string | null
+    groups?: GroupUncheckedCreateNestedManyWithoutKeywordsInput
   }
 
   export type KeywordCreateOrConnectWithoutFilesInput = {
     where: KeywordWhereUniqueInput
     create: XOR<KeywordCreateWithoutFilesInput, KeywordUncheckedCreateWithoutFilesInput>
+  }
+
+  export type GroupCreateWithoutFilesInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    parent?: GroupCreateNestedOneWithoutChildrenInput
+    children?: GroupCreateNestedManyWithoutParentInput
+    keywords?: KeywordCreateNestedManyWithoutGroupsInput
+  }
+
+  export type GroupUncheckedCreateWithoutFilesInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: GroupUncheckedCreateNestedManyWithoutParentInput
+    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupsInput
+  }
+
+  export type GroupCreateOrConnectWithoutFilesInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutFilesInput, GroupUncheckedCreateWithoutFilesInput>
   }
 
   export type FolderUpsertWithoutFilesInput = {
@@ -17652,7 +17835,33 @@ export namespace Prisma {
     NOT?: KeywordScalarWhereInput | KeywordScalarWhereInput[]
     id?: StringFilter<"Keyword"> | string
     name?: StringFilter<"Keyword"> | string
-    groupId?: StringNullableFilter<"Keyword"> | string | null
+  }
+
+  export type GroupUpsertWithWhereUniqueWithoutFilesInput = {
+    where: GroupWhereUniqueInput
+    update: XOR<GroupUpdateWithoutFilesInput, GroupUncheckedUpdateWithoutFilesInput>
+    create: XOR<GroupCreateWithoutFilesInput, GroupUncheckedCreateWithoutFilesInput>
+  }
+
+  export type GroupUpdateWithWhereUniqueWithoutFilesInput = {
+    where: GroupWhereUniqueInput
+    data: XOR<GroupUpdateWithoutFilesInput, GroupUncheckedUpdateWithoutFilesInput>
+  }
+
+  export type GroupUpdateManyWithWhereWithoutFilesInput = {
+    where: GroupScalarWhereInput
+    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutFilesInput>
+  }
+
+  export type GroupScalarWhereInput = {
+    AND?: GroupScalarWhereInput | GroupScalarWhereInput[]
+    OR?: GroupScalarWhereInput[]
+    NOT?: GroupScalarWhereInput | GroupScalarWhereInput[]
+    id?: StringFilter<"Group"> | string
+    name?: StringFilter<"Group"> | string
+    parentId?: StringNullableFilter<"Group"> | string | null
+    createdAt?: DateTimeFilter<"Group"> | Date | string
+    updatedAt?: DateTimeFilter<"Group"> | Date | string
   }
 
   export type FolderCreateWithoutChildrenInput = {
@@ -17715,6 +17924,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     keywords?: KeywordCreateNestedManyWithoutFilesInput
+    groups?: GroupCreateNestedManyWithoutFilesInput
   }
 
   export type FileUncheckedCreateWithoutFolderInput = {
@@ -17726,6 +17936,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     keywords?: KeywordUncheckedCreateNestedManyWithoutFilesInput
+    groups?: GroupUncheckedCreateNestedManyWithoutFilesInput
   }
 
   export type FileCreateOrConnectWithoutFolderInput = {
@@ -17830,7 +18041,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     parent?: GroupCreateNestedOneWithoutChildrenInput
-    keywords?: KeywordCreateNestedManyWithoutGroupInput
+    keywords?: KeywordCreateNestedManyWithoutGroupsInput
+    files?: FileCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupUncheckedCreateWithoutChildrenInput = {
@@ -17839,7 +18051,8 @@ export namespace Prisma {
     parentId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupInput
+    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupsInput
+    files?: FileUncheckedCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupCreateOrConnectWithoutChildrenInput = {
@@ -17853,7 +18066,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: GroupCreateNestedManyWithoutParentInput
-    keywords?: KeywordCreateNestedManyWithoutGroupInput
+    keywords?: KeywordCreateNestedManyWithoutGroupsInput
+    files?: FileCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupUncheckedCreateWithoutParentInput = {
@@ -17862,7 +18076,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: GroupUncheckedCreateNestedManyWithoutParentInput
-    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupInput
+    keywords?: KeywordUncheckedCreateNestedManyWithoutGroupsInput
+    files?: FileUncheckedCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupCreateOrConnectWithoutParentInput = {
@@ -17875,26 +18090,50 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type KeywordCreateWithoutGroupInput = {
+  export type KeywordCreateWithoutGroupsInput = {
     id?: string
     name: string
     files?: FileCreateNestedManyWithoutKeywordsInput
   }
 
-  export type KeywordUncheckedCreateWithoutGroupInput = {
+  export type KeywordUncheckedCreateWithoutGroupsInput = {
     id?: string
     name: string
     files?: FileUncheckedCreateNestedManyWithoutKeywordsInput
   }
 
-  export type KeywordCreateOrConnectWithoutGroupInput = {
+  export type KeywordCreateOrConnectWithoutGroupsInput = {
     where: KeywordWhereUniqueInput
-    create: XOR<KeywordCreateWithoutGroupInput, KeywordUncheckedCreateWithoutGroupInput>
+    create: XOR<KeywordCreateWithoutGroupsInput, KeywordUncheckedCreateWithoutGroupsInput>
   }
 
-  export type KeywordCreateManyGroupInputEnvelope = {
-    data: KeywordCreateManyGroupInput | KeywordCreateManyGroupInput[]
-    skipDuplicates?: boolean
+  export type FileCreateWithoutGroupsInput = {
+    id?: string
+    name: string
+    path: string
+    dateTexte?: Date | string | null
+    commentaire?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    folder?: FolderCreateNestedOneWithoutFilesInput
+    keywords?: KeywordCreateNestedManyWithoutFilesInput
+  }
+
+  export type FileUncheckedCreateWithoutGroupsInput = {
+    id?: string
+    name: string
+    path: string
+    folderId?: string | null
+    dateTexte?: Date | string | null
+    commentaire?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    keywords?: KeywordUncheckedCreateNestedManyWithoutFilesInput
+  }
+
+  export type FileCreateOrConnectWithoutGroupsInput = {
+    where: FileWhereUniqueInput
+    create: XOR<FileCreateWithoutGroupsInput, FileUncheckedCreateWithoutGroupsInput>
   }
 
   export type GroupUpsertWithoutChildrenInput = {
@@ -17914,7 +18153,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parent?: GroupUpdateOneWithoutChildrenNestedInput
-    keywords?: KeywordUpdateManyWithoutGroupNestedInput
+    keywords?: KeywordUpdateManyWithoutGroupsNestedInput
+    files?: FileUpdateManyWithoutGroupsNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutChildrenInput = {
@@ -17923,7 +18163,8 @@ export namespace Prisma {
     parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    keywords?: KeywordUncheckedUpdateManyWithoutGroupNestedInput
+    keywords?: KeywordUncheckedUpdateManyWithoutGroupsNestedInput
+    files?: FileUncheckedUpdateManyWithoutGroupsNestedInput
   }
 
   export type GroupUpsertWithWhereUniqueWithoutParentInput = {
@@ -17942,31 +18183,36 @@ export namespace Prisma {
     data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutParentInput>
   }
 
-  export type GroupScalarWhereInput = {
-    AND?: GroupScalarWhereInput | GroupScalarWhereInput[]
-    OR?: GroupScalarWhereInput[]
-    NOT?: GroupScalarWhereInput | GroupScalarWhereInput[]
-    id?: StringFilter<"Group"> | string
-    name?: StringFilter<"Group"> | string
-    parentId?: StringNullableFilter<"Group"> | string | null
-    createdAt?: DateTimeFilter<"Group"> | Date | string
-    updatedAt?: DateTimeFilter<"Group"> | Date | string
-  }
-
-  export type KeywordUpsertWithWhereUniqueWithoutGroupInput = {
+  export type KeywordUpsertWithWhereUniqueWithoutGroupsInput = {
     where: KeywordWhereUniqueInput
-    update: XOR<KeywordUpdateWithoutGroupInput, KeywordUncheckedUpdateWithoutGroupInput>
-    create: XOR<KeywordCreateWithoutGroupInput, KeywordUncheckedCreateWithoutGroupInput>
+    update: XOR<KeywordUpdateWithoutGroupsInput, KeywordUncheckedUpdateWithoutGroupsInput>
+    create: XOR<KeywordCreateWithoutGroupsInput, KeywordUncheckedCreateWithoutGroupsInput>
   }
 
-  export type KeywordUpdateWithWhereUniqueWithoutGroupInput = {
+  export type KeywordUpdateWithWhereUniqueWithoutGroupsInput = {
     where: KeywordWhereUniqueInput
-    data: XOR<KeywordUpdateWithoutGroupInput, KeywordUncheckedUpdateWithoutGroupInput>
+    data: XOR<KeywordUpdateWithoutGroupsInput, KeywordUncheckedUpdateWithoutGroupsInput>
   }
 
-  export type KeywordUpdateManyWithWhereWithoutGroupInput = {
+  export type KeywordUpdateManyWithWhereWithoutGroupsInput = {
     where: KeywordScalarWhereInput
-    data: XOR<KeywordUpdateManyMutationInput, KeywordUncheckedUpdateManyWithoutGroupInput>
+    data: XOR<KeywordUpdateManyMutationInput, KeywordUncheckedUpdateManyWithoutGroupsInput>
+  }
+
+  export type FileUpsertWithWhereUniqueWithoutGroupsInput = {
+    where: FileWhereUniqueInput
+    update: XOR<FileUpdateWithoutGroupsInput, FileUncheckedUpdateWithoutGroupsInput>
+    create: XOR<FileCreateWithoutGroupsInput, FileUncheckedCreateWithoutGroupsInput>
+  }
+
+  export type FileUpdateWithWhereUniqueWithoutGroupsInput = {
+    where: FileWhereUniqueInput
+    data: XOR<FileUpdateWithoutGroupsInput, FileUncheckedUpdateWithoutGroupsInput>
+  }
+
+  export type FileUpdateManyWithWhereWithoutGroupsInput = {
+    where: FileScalarWhereInput
+    data: XOR<FileUpdateManyMutationInput, FileUncheckedUpdateManyWithoutGroupsInput>
   }
 
   export type FileCreateWithoutKeywordsInput = {
@@ -17978,6 +18224,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     folder?: FolderCreateNestedOneWithoutFilesInput
+    groups?: GroupCreateNestedManyWithoutFilesInput
   }
 
   export type FileUncheckedCreateWithoutKeywordsInput = {
@@ -17989,6 +18236,7 @@ export namespace Prisma {
     commentaire?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    groups?: GroupUncheckedCreateNestedManyWithoutFilesInput
   }
 
   export type FileCreateOrConnectWithoutKeywordsInput = {
@@ -18003,6 +18251,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     parent?: GroupCreateNestedOneWithoutChildrenInput
     children?: GroupCreateNestedManyWithoutParentInput
+    files?: FileCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupUncheckedCreateWithoutKeywordsInput = {
@@ -18012,6 +18261,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     children?: GroupUncheckedCreateNestedManyWithoutParentInput
+    files?: FileUncheckedCreateNestedManyWithoutGroupsInput
   }
 
   export type GroupCreateOrConnectWithoutKeywordsInput = {
@@ -18035,33 +18285,20 @@ export namespace Prisma {
     data: XOR<FileUpdateManyMutationInput, FileUncheckedUpdateManyWithoutKeywordsInput>
   }
 
-  export type GroupUpsertWithoutKeywordsInput = {
+  export type GroupUpsertWithWhereUniqueWithoutKeywordsInput = {
+    where: GroupWhereUniqueInput
     update: XOR<GroupUpdateWithoutKeywordsInput, GroupUncheckedUpdateWithoutKeywordsInput>
     create: XOR<GroupCreateWithoutKeywordsInput, GroupUncheckedCreateWithoutKeywordsInput>
-    where?: GroupWhereInput
   }
 
-  export type GroupUpdateToOneWithWhereWithoutKeywordsInput = {
-    where?: GroupWhereInput
+  export type GroupUpdateWithWhereUniqueWithoutKeywordsInput = {
+    where: GroupWhereUniqueInput
     data: XOR<GroupUpdateWithoutKeywordsInput, GroupUncheckedUpdateWithoutKeywordsInput>
   }
 
-  export type GroupUpdateWithoutKeywordsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    parent?: GroupUpdateOneWithoutChildrenNestedInput
-    children?: GroupUpdateManyWithoutParentNestedInput
-  }
-
-  export type GroupUncheckedUpdateWithoutKeywordsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    parentId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    children?: GroupUncheckedUpdateManyWithoutParentNestedInput
+  export type GroupUpdateManyWithWhereWithoutKeywordsInput = {
+    where: GroupScalarWhereInput
+    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutKeywordsInput>
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -18743,19 +18980,46 @@ export namespace Prisma {
   export type KeywordUpdateWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    group?: GroupUpdateOneWithoutKeywordsNestedInput
+    groups?: GroupUpdateManyWithoutKeywordsNestedInput
   }
 
   export type KeywordUncheckedUpdateWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    groups?: GroupUncheckedUpdateManyWithoutKeywordsNestedInput
   }
 
   export type KeywordUncheckedUpdateManyWithoutFilesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type GroupUpdateWithoutFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: GroupUpdateOneWithoutChildrenNestedInput
+    children?: GroupUpdateManyWithoutParentNestedInput
+    keywords?: KeywordUpdateManyWithoutGroupsNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: GroupUncheckedUpdateManyWithoutParentNestedInput
+    keywords?: KeywordUncheckedUpdateManyWithoutGroupsNestedInput
+  }
+
+  export type GroupUncheckedUpdateManyWithoutFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FolderCreateManyParentInput = {
@@ -18809,6 +19073,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     keywords?: KeywordUpdateManyWithoutFilesNestedInput
+    groups?: GroupUpdateManyWithoutFilesNestedInput
   }
 
   export type FileUncheckedUpdateWithoutFolderInput = {
@@ -18820,6 +19085,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     keywords?: KeywordUncheckedUpdateManyWithoutFilesNestedInput
+    groups?: GroupUncheckedUpdateManyWithoutFilesNestedInput
   }
 
   export type FileUncheckedUpdateManyWithoutFolderInput = {
@@ -18839,18 +19105,14 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type KeywordCreateManyGroupInput = {
-    id?: string
-    name: string
-  }
-
   export type GroupUpdateWithoutParentInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: GroupUpdateManyWithoutParentNestedInput
-    keywords?: KeywordUpdateManyWithoutGroupNestedInput
+    keywords?: KeywordUpdateManyWithoutGroupsNestedInput
+    files?: FileUpdateManyWithoutGroupsNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutParentInput = {
@@ -18859,7 +19121,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     children?: GroupUncheckedUpdateManyWithoutParentNestedInput
-    keywords?: KeywordUncheckedUpdateManyWithoutGroupNestedInput
+    keywords?: KeywordUncheckedUpdateManyWithoutGroupsNestedInput
+    files?: FileUncheckedUpdateManyWithoutGroupsNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutParentInput = {
@@ -18869,21 +19132,56 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type KeywordUpdateWithoutGroupInput = {
+  export type KeywordUpdateWithoutGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     files?: FileUpdateManyWithoutKeywordsNestedInput
   }
 
-  export type KeywordUncheckedUpdateWithoutGroupInput = {
+  export type KeywordUncheckedUpdateWithoutGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     files?: FileUncheckedUpdateManyWithoutKeywordsNestedInput
   }
 
-  export type KeywordUncheckedUpdateManyWithoutGroupInput = {
+  export type KeywordUncheckedUpdateManyWithoutGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type FileUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    dateTexte?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    commentaire?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    folder?: FolderUpdateOneWithoutFilesNestedInput
+    keywords?: KeywordUpdateManyWithoutFilesNestedInput
+  }
+
+  export type FileUncheckedUpdateWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    dateTexte?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    commentaire?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    keywords?: KeywordUncheckedUpdateManyWithoutFilesNestedInput
+  }
+
+  export type FileUncheckedUpdateManyWithoutGroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    path?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    dateTexte?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    commentaire?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FileUpdateWithoutKeywordsInput = {
@@ -18895,6 +19193,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     folder?: FolderUpdateOneWithoutFilesNestedInput
+    groups?: GroupUpdateManyWithoutFilesNestedInput
   }
 
   export type FileUncheckedUpdateWithoutKeywordsInput = {
@@ -18906,6 +19205,7 @@ export namespace Prisma {
     commentaire?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    groups?: GroupUncheckedUpdateManyWithoutFilesNestedInput
   }
 
   export type FileUncheckedUpdateManyWithoutKeywordsInput = {
@@ -18915,6 +19215,34 @@ export namespace Prisma {
     folderId?: NullableStringFieldUpdateOperationsInput | string | null
     dateTexte?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     commentaire?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GroupUpdateWithoutKeywordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parent?: GroupUpdateOneWithoutChildrenNestedInput
+    children?: GroupUpdateManyWithoutParentNestedInput
+    files?: FileUpdateManyWithoutGroupsNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutKeywordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: GroupUncheckedUpdateManyWithoutParentNestedInput
+    files?: FileUncheckedUpdateManyWithoutGroupsNestedInput
+  }
+
+  export type GroupUncheckedUpdateManyWithoutKeywordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

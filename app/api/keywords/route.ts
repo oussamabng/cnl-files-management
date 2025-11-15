@@ -20,6 +20,7 @@ export async function GET() {
         _count: {
           select: {
             files: true,
+            groups: true,
           },
         },
       },

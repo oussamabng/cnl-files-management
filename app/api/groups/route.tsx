@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const parentId = searchParams.get("parentId") || null;
-    const includeGroups = searchParams.get("includeGroups") === "true";
+    const includeKeywords = searchParams.get("includeKeywords") === "true";
     const includeHierarchy = searchParams.get("includeHierarchy") === "true";
 
     if (includeHierarchy) {
@@ -50,8 +50,20 @@ export async function GET(req: Request) {
 
           const totalKeywords = await prisma.keyword.count({
             where: {
-              groupId: {
-                in: allGroupIds,
+              groups: {
+                some: {
+                  id: { in: allGroupIds },
+                },
+              },
+            },
+          });
+
+          const totalFiles = await prisma.file.count({
+            where: {
+              groups: {
+                some: {
+                  id: { in: allGroupIds },
+                },
               },
             },
           });
@@ -68,6 +80,7 @@ export async function GET(req: Request) {
               children: directChildren,
               keywords: totalKeywords,
               groups: totalGroups,
+              files: totalFiles,
             },
           };
         })
@@ -81,7 +94,7 @@ export async function GET(req: Request) {
         parentId: parentId,
       },
       include: {
-        ...(includeGroups && {
+        ...(includeKeywords && {
           keywords: {
             select: {
               id: true,
@@ -95,8 +108,6 @@ export async function GET(req: Request) {
       },
     });
 
-    console.log(groups);
-
     const groupsWithCounts = await Promise.all(
       groups.map(async (group) => {
         const descendantIds = await getDescendantGroupIds(group.id);
@@ -104,8 +115,20 @@ export async function GET(req: Request) {
 
         const totalKeywords = await prisma.keyword.count({
           where: {
-            groupId: {
-              in: allGroupIds,
+            groups: {
+              some: {
+                id: { in: allGroupIds },
+              },
+            },
+          },
+        });
+
+        const totalFiles = await prisma.file.count({
+          where: {
+            groups: {
+              some: {
+                id: { in: allGroupIds },
+              },
             },
           },
         });
@@ -122,6 +145,7 @@ export async function GET(req: Request) {
             children: directChildren,
             keywords: totalKeywords,
             group: totalGroups,
+            files: totalFiles,
           },
         };
       })
@@ -173,11 +197,14 @@ export async function POST(req: Request) {
     const allGroupIds = [group.id, ...descendantIds];
     const totalKeywords = await prisma.keyword.count({
       where: {
-        groupId: {
-          in: allGroupIds,
+        groups: {
+          some: {
+            id: { in: allGroupIds },
+          },
         },
       },
     });
+
     const directChildren = await prisma.group.count({
       where: { parentId: group.id },
     });

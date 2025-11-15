@@ -18,7 +18,7 @@ export async function PUT(
       );
     }
 
-    const { name, keywordIds, folderId, dateTexte, commentaire } =
+    const { name, keywordIds, groupIds, folderId, dateTexte, commentaire } =
       await req.json();
     const { id } = params;
 
@@ -55,6 +55,10 @@ export async function PUT(
         keywords: {
           set: [],
           connect: keywordIds.map((keywordId: string) => ({ id: keywordId })),
+        },
+        groups: {
+          set: [],
+          connect: groupIds.map((groupId: string) => ({ id: groupId })),
         },
       },
       include: {

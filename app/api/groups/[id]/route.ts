@@ -40,7 +40,6 @@ export async function GET(
             name: "asc",
           },
         },
-
         keywords: {
           select: {
             id: true,

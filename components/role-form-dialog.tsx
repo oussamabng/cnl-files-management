@@ -87,6 +87,14 @@ function getPermissionLabel(permission: string): string {
       return "Modifier les filtres";
     case PERMISSIONS.FILTERS_DELETE:
       return "Supprimer les filtres";
+    case PERMISSIONS.GROUPS_VIEW:
+      return "Voir les groupes";
+    case PERMISSIONS.GROUPS_CREATE:
+      return "Créer les groupes";
+    case PERMISSIONS.GROUPS_UPDATE:
+      return "Modifier les groupes";
+    case PERMISSIONS.GROUPS_DELETE:
+      return "Supprimer les groupes";
     case PERMISSIONS.ROLES_VIEW:
       return "Voir les rôles";
     case PERMISSIONS.ROLES_CREATE:
