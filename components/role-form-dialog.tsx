@@ -255,7 +255,7 @@ export function RoleFormDialog({
     const missingLabels = missingPermissions.map((perm) =>
       getPermissionLabel(perm)
     );
-    return `Requiert: ${missingLabels.join(", ")}`;
+    return `Exiger: ${missingLabels.join(", ")}`;
   };
 
   const getDependentPermissions = (permissionId: string): string[] => {
@@ -396,6 +396,10 @@ export function RoleFormDialog({
                           enabledPermissionsInGroup.some((p) => p.id === permId)
                         );
 
+                      const allPermissionsEnabled = permissions.every(
+                        (p) => !isPermissionDisabled(p.id)
+                      );
+
                       // The group is checked if all *enabled* permissions are selected
                       const isGroupChecked =
                         enabledPermissionsInGroup.length > 0 &&
@@ -417,11 +421,8 @@ export function RoleFormDialog({
                             <div className="flex items-center space-x-2">
                               <Checkbox
                                 id={`select-all-${category}`}
-                                checked={
-                                  isGroupIndeterminate
-                                    ? "indeterminate"
-                                    : isGroupChecked
-                                }
+                                checked={isGroupChecked}
+                                disabled={!allPermissionsEnabled}
                                 onCheckedChange={(checked) =>
                                   handleSelectAllGroup(category, !!checked)
                                 }
