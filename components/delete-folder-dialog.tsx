@@ -83,7 +83,8 @@ export function DeleteFolderDialog({
             )}
             {isLoading ? "Suppression du dossier..." : "Supprimer le dossier"}
           </AlertDialogTitle>
-          <AlertDialogDescription>
+
+          <AlertDialogDescription asChild>
             {isLoading ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -92,26 +93,28 @@ export function DeleteFolderDialog({
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loading variant="dots" size="sm" />
-                  <span>Suppression du dossier du système</span>
+                  <span>Cela peut prendre quelques instants</span>
                 </div>
               </div>
             ) : (
-              <>
-                Êtes-vous sûr de vouloir supprimer le dossier « {folder?.name} »
-                ?
+              <div className="space-y-2">
+                {" "}
+                {/* Use a div here as the direct child */}
+                <p>
+                  Êtes-vous sûr de vouloir supprimer le dossier « {folder?.name}{" "}
+                  » ?
+                </p>
                 {hasContent && (
-                  <span className="block mt-2 text-orange-600">
+                  <p className="block mt-2 text-orange-600">
                     Ce dossier contient {folder._count.files} fichier(s) et{" "}
                     {folder._count.children} sous-dossier(s). Veuillez d'abord
                     déplacer ou supprimer le contenu.
-                  </span>
+                  </p>
                 )}
                 {!hasContent && (
-                  <span className="block mt-2">
-                    Cette action est irréversible.
-                  </span>
+                  <p className="block mt-2">Cette action est irréversible.</p>
                 )}
-              </>
+              </div>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

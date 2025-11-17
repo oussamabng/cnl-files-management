@@ -45,7 +45,7 @@ export function DashboardStats() {
       setLoading(true);
       setError("");
       const response = await fetch("/api/dashboard/stats");
-
+      console.log("response fron server_DASHBOARD_STATS",response);
       if (response.ok) {
         const data = await response.json();
         setStats(data);

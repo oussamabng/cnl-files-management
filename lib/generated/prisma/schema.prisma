@@ -8,20 +8,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  firstName    String
+  lastName     String
+  password     String
+  userRoles    UserRole[]
+  chatRooms    ChatRoom[] @relation("ChatParticipants")
+  messages     Message[]
+  seenMessages Message[]  @relation("SeenMessages")
+
+  createdAt DateTime @default(now())
+}
+
 model File {
   id       String    @id @default(cuid())
   name     String
   path     String
-  folderId String? // Files can belong to a folder
+  folderId String?
   folder   Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  keywords Keyword[]
+  keywords Keyword[] @relation("FileKeywords")
+  groups   Group[]   @relation("FileGroups")
 
   dateTexte   DateTime?
   commentaire String?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([name, folderId]) // Unique name within the same folder
+  @@unique([name, folderId])
   @@index([name])
   @@index([folderId])
 }
@@ -29,14 +45,32 @@ model File {
 model Folder {
   id       String   @id @default(cuid())
   name     String
-  parentId String? // For hierarchical structure
+  parentId String?
   parent   Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children Folder[] @relation("FolderHierarchy")
   files    File[]
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([name, parentId]) // Unique name within the same parent folder
+  @@unique([name, parentId])
+  @@index([name])
+  @@index([parentId])
+}
+
+model Group {
+  id       String    @id @default(cuid())
+  name     String
+  parentId String?
+  parent   Group?    @relation("GroupHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Group[]   @relation("GroupHierarchy")
+  keywords Keyword[] @relation("KeywordGroups")
+  files    File[]    @relation("FileGroups")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, parentId])
   @@index([name])
   @@index([parentId])
 }
@@ -44,8 +78,74 @@ model Folder {
 model Keyword {
   id    String @id @default(cuid())
   name  String
-  files File[]
+  files File[] @relation("FileKeywords")
+
+  groups Group[] @relation("KeywordGroups")
+
+  // @@fulltext([name]) // Optional if Postgres 12+
 
   @@unique([name])
   @@index([name])
+}
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  key             String           @unique
+  description     String
+  rolePermissions RolePermission[]
+}
+
+model Role {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique
+  description     String?
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  createdAt DateTime @default(now())
+}
+
+model UserRole {
+  userId String
+  roleId Int
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model ChatRoom {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  participants User[]    @relation("ChatParticipants")
+  messages     Message[]
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  chatRoomId String
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  seenBy     User[]   @relation("SeenMessages")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chatRoomId, createdAt])
 }

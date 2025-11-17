@@ -79,7 +79,7 @@ export function KeywordForm({
         onOpenChange(false);
         form.reset();
       } else {
-        setError(data.error || "Une erreur est survenue");
+        setError(data.message || "Une erreur est survenue");
       }
     } catch {
       setError("Une erreur est survenue");

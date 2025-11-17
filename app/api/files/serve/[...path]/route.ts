@@ -3,16 +3,21 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
+import { PERMISSIONS } from "@/lib/constants/permissions";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
+    const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
 
-    if (!role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
     }
 
     const filePath = params.path.join("/");

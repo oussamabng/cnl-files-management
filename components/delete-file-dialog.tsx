@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +32,12 @@ export function DeleteFileDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (open) {
+      setError("");
+    }
+  }, [open]);
+
   const handleDelete = async () => {
     if (!file) return;
 
@@ -43,12 +49,12 @@ export function DeleteFileDialog({
         method: "DELETE",
       });
 
-      if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
         onSuccess();
         onOpenChange(false);
       } else {
-        const data = await response.json();
-        setError(data.error || "Échec de la suppression du fichier");
+        setError(data.message || "Échec de la suppression du fichier");
       }
     } catch {
       setError("Une erreur est survenue");
@@ -59,7 +65,6 @@ export function DeleteFileDialog({
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && !isLoading) {
-      setError("");
       onOpenChange(newOpen);
     }
   };
@@ -78,18 +83,19 @@ export function DeleteFileDialog({
           </AlertDialogTitle>
           <AlertDialogDescription>
             {isLoading ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
+              <>
+                <span className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span>Suppression de « {file?.name} »...</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                </span>
+                <br />
+                <span className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loading variant="dots" size="sm" />
                   <span>
                     Suppression du fichier de la base de données et du stockage
                   </span>
-                </div>
-              </div>
+                </span>
+              </>
             ) : (
               <>
                 Êtes-vous sûr de vouloir supprimer « {file?.name} » ? Cette

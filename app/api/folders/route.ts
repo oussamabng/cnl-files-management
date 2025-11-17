@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
-// Helper function to get all descendant folder IDs
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
   const children = await prisma.folder.findMany({
     where: { parentId: folderId },
@@ -20,13 +20,16 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
   return allDescendants;
 }
 
-// GET all folders with hierarchy
 export async function GET(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
+    const response = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
 
-    if (!role) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
     }
 
     const { searchParams } = new URL(req.url);
@@ -35,7 +38,6 @@ export async function GET(req: Request) {
     const includeHierarchy = searchParams.get("includeHierarchy") === "true";
 
     if (includeHierarchy) {
-      // Return all folders for building hierarchy with recursive file counts
       const folders = await prisma.folder.findMany({
         orderBy: {
           name: "asc",
@@ -143,29 +145,21 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error("Error fetching folders:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
 }
-
-// POST create new folder - Admin only
 export async function POST(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 }
-      );
-    }
+    const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_CREATE);
+    if (error) return error;
 
     const { name, parentId } = await req.json();
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
-        { error: "Folder name is required" },
+        { error: "Le nom du dossier est requis" },
         { status: 400 }
       );
     }
@@ -175,10 +169,9 @@ export async function POST(req: Request) {
       const parentFolder = await prisma.folder.findUnique({
         where: { id: parentId },
       });
-
       if (!parentFolder) {
         return NextResponse.json(
-          { error: "Parent folder not found" },
+          { error: "Dossier parent introuvable" },
           { status: 404 }
         );
       }
@@ -194,7 +187,6 @@ export async function POST(req: Request) {
     // Calculate recursive counts for the new folder
     const descendantIds = await getDescendantFolderIds(folder.id);
     const allFolderIds = [folder.id, ...descendantIds];
-
     const totalFiles = await prisma.file.count({
       where: {
         folderId: {
@@ -202,11 +194,9 @@ export async function POST(req: Request) {
         },
       },
     });
-
     const directChildren = await prisma.folder.count({
       where: { parentId: folder.id },
     });
-
     // Count ALL descendant folders (recursive)
     const totalFolders = descendantIds.length;
 
@@ -220,16 +210,14 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error("Error creating folder:", error);
-
     if (error.code === "P2002") {
       return NextResponse.json(
-        { error: "Folder name already exists in this location" },
+        { error: "Un dossier avec ce nom existe déjà à cet emplacement" },
         { status: 409 }
       );
     }
-
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }

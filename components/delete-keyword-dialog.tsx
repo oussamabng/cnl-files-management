@@ -76,7 +76,7 @@ export function DeleteKeywordDialog({
             )}
             {isLoading ? "Suppression du mot-clé..." : "Supprimer le mot-clé"}
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription asChild>
             {isLoading ? (
               <div className="space-y-2">
                 <p>
@@ -89,17 +89,21 @@ export function DeleteKeywordDialog({
                 </div>
               </div>
             ) : (
-              <>
-                Êtes-vous sûr de vouloir supprimer le mot-clé « {keyword?.name}{" "}
-                » ?
+              // When not loading, we also wrap the multiple <p> tags in a single <div>
+              // to satisfy the expectation of `asChild` receiving a single element.
+              <div className="space-y-2">
+                <p>
+                  Êtes-vous sûr de vouloir supprimer le mot-clé «{" "}
+                  {keyword?.name} » ?
+                </p>
                 {keyword && keyword._count.files > 0 && (
-                  <span className="block mt-2 text-orange-600">
+                  <p className="block mt-2 text-orange-600">
                     Ce mot-clé est actuellement associé à {keyword._count.files}{" "}
                     fichier(s).
-                  </span>
+                  </p>
                 )}
-                Cette action est irréversible.
-              </>
+                <p>Cette action est irréversible.</p>
+              </div>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

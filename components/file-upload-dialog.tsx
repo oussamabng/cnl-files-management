@@ -16,15 +16,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Textarea } from "@/components/ui/textarea";
 import { FolderSelector } from "@/components/folder-selector";
 import { SimpleDatePicker } from "@/components/simple-date-picker";
+import { KeywordMultiselect } from "./keyword-multiselect";
+import { SelectGroup } from "./group-selector";
+import { se } from "date-fns/locale";
 
 interface FileUploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   keywords: Array<{ id: string; name: string }>;
+  groups: Array<{ id: string; name: string }>;
   currentFolderId?: string | null;
   onSuccess: () => void;
 }
@@ -39,11 +43,13 @@ export function FileUploadDialog({
   open,
   onOpenChange,
   keywords,
+  groups,
   currentFolderId,
   onSuccess,
 }: FileUploadDialogProps) {
   const [files, setFiles] = useState<FileWithName[]>([]);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -112,6 +118,7 @@ export function FileUploadDialog({
 
     try {
       const formData = new FormData();
+      console.log(formData);
 
       files.forEach((fileItem) => {
         formData.append("files", fileItem.file);
@@ -124,6 +131,7 @@ export function FileUploadDialog({
       }, {} as Record<number, string>);
 
       formData.append("keywordIds", JSON.stringify(selectedKeywords));
+      formData.append("groupIds", JSON.stringify(selectedGroupIds));
       formData.append("customNames", JSON.stringify(customNames));
       formData.append("folderId", selectedFolderId || "");
 
@@ -134,11 +142,13 @@ export function FileUploadDialog({
       if (commentaire.trim()) {
         formData.append("commentaire", commentaire.trim());
       }
+      console.log("uploading");
 
       const response = await fetch("/api/files", {
         method: "POST",
         body: formData,
       });
+      const data = await response.json();
 
       if (response.ok) {
         onSuccess();
@@ -158,6 +168,7 @@ export function FileUploadDialog({
   const handleClose = () => {
     setFiles([]);
     setSelectedKeywords([]);
+    setSelectedGroupIds([]);
     setSelectedFolderId(currentFolderId || null);
     setDateTexte(undefined);
     setCommentaire("");
@@ -270,34 +281,37 @@ export function FileUploadDialog({
             </div>
           )}
 
-          {/* Keywords Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">
+              Assigner des groupes (optionnel)
+            </Label>
+            {groups.length > 0 && (
+              <SelectGroup
+                selectedGroupIds={selectedGroupIds}
+                onGroupSelect={setSelectedGroupIds}
+                placeholder="Sélectionner des groupes..."
+                disabled={isUploading || isLoading}
+                showSelected={true}
+              />
+            )}
+          </div>
           <div className="space-y-3">
             <Label className="text-base font-medium">
               Assigner des mots-clés (optionnel)
             </Label>
             {keywords.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                  {keywords.map((keyword) => (
-                    <div
-                      key={keyword.id}
-                      className="flex items-center space-x-2"
-                    >
-                      <Checkbox
-                        id={`upload-${keyword.id}`}
-                        checked={selectedKeywords.includes(keyword.id)}
-                        onCheckedChange={() => toggleKeyword(keyword.id)}
-                      />
-                      <Label
-                        htmlFor={`upload-${keyword.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {keyword.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-                {selectedKeywords.length > 0 && (
+                <KeywordMultiselect
+                  keywords={keywords}
+                  fullWidth={true}
+                  selectedKeywords={selectedKeywords}
+                  onSelectionChange={setSelectedKeywords}
+                  placeholder="Sélectionner des mots-clés..."
+                  disabled={isUploading || isLoading}
+                  showSelected={true}
+                />
+
+                {/* {selectedKeywords.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {selectedKeywords.map((keywordId) => {
                       const keyword = keywords.find((k) => k.id === keywordId);
@@ -308,7 +322,7 @@ export function FileUploadDialog({
                       ) : null;
                     })}
                   </div>
-                )}
+                )} */}
               </>
             ) : (
               <p className="text-sm text-muted-foreground">

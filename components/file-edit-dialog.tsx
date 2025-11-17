@@ -30,6 +30,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { FolderSelector } from "@/components/folder-selector";
 import { SimpleDatePicker } from "@/components/simple-date-picker";
+import { SelectGroup } from "./group-selector";
+import { KeywordMultiselect } from "./keyword-multiselect";
 
 const fileSchema = z.object({
   nameWithoutExtension: z
@@ -47,10 +49,12 @@ interface FileEditDialogProps {
     id: string;
     name: string;
     keywords: Array<{ id: string; name: string }>;
+    groups: Array<{ id: string; name: string }>;
     folder?: { id: string; name: string } | null;
     dateTexte?: string | null;
     commentaire?: string | null;
   } | null;
+  groups: Array<{ id: string; name: string }>;
   keywords: Array<{ id: string; name: string }>;
   onSuccess: () => void;
 }
@@ -58,11 +62,13 @@ interface FileEditDialogProps {
 export function FileEditDialog({
   open,
   onOpenChange,
+  groups,
   file,
   keywords,
   onSuccess,
 }: FileEditDialogProps) {
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState("");
@@ -89,6 +95,7 @@ export function FileEditDialog({
       setFileExtension(extension);
       form.setValue("nameWithoutExtension", nameWithoutExt);
       setSelectedKeywords(file.keywords.map((k) => k.id));
+      setSelectedGroupIds(file.groups.map((g) => g.id));
       setSelectedFolderId(file.folder?.id || null);
       setDateTexte(file.dateTexte ? new Date(file.dateTexte) : undefined);
       setCommentaire(file.commentaire || "");
@@ -121,6 +128,7 @@ export function FileEditDialog({
         body: JSON.stringify({
           name: finalName,
           keywordIds: selectedKeywords,
+          groupIds: selectedGroupIds,
           folderId: selectedFolderId,
           dateTexte: dateTexte ? dateTexte.toISOString() : null,
           commentaire: commentaire.trim() || null,
@@ -133,7 +141,9 @@ export function FileEditDialog({
         onSuccess();
         onOpenChange(false);
       } else {
-        setError(data.error || "Une erreur s'est produite");
+        console.log(data);
+
+        setError(data.message || "Une erreur s'est produite");
       }
     } catch {
       setError("Une erreur s'est produite");
@@ -226,6 +236,56 @@ export function FileEditDialog({
               </p>
             </div>
 
+            <div className="space-y-3">
+              <Label className="text-base font-medium">
+                Assigner des groupes (optionnel)
+              </Label>
+              {groups.length > 0 && (
+                <SelectGroup
+                  selectedGroupIds={selectedGroupIds}
+                  onGroupSelect={setSelectedGroupIds}
+                  placeholder="Sélectionner des groupes..."
+                  disabled={isLoading}
+                  showSelected={true}
+                />
+              )}
+            </div>
+            <div className="space-y-3">
+              <Label className="text-base font-medium">
+                Assigner des mots-clés (optionnel)
+              </Label>
+              {keywords.length > 0 ? (
+                <>
+                  <KeywordMultiselect
+                    keywords={keywords}
+                    fullWidth={true}
+                    selectedKeywords={selectedKeywords}
+                    onSelectionChange={setSelectedKeywords}
+                    placeholder="Sélectionner des mots-clés..."
+                    disabled={isLoading}
+                    showSelected={true}
+                  />
+
+                  {/* {selectedKeywords.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {selectedKeywords.map((keywordId) => {
+                                  const keyword = keywords.find((k) => k.id === keywordId);
+                                  return keyword ? (
+                                    <Badge key={keywordId} variant="secondary">
+                                      {keyword.name}
+                                    </Badge>
+                                  ) : null;
+                                })}
+                              </div>
+                            )} */}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Aucun mot-clé disponible. Les fichiers seront téléchargés sans
+                  étiquettes.
+                </p>
+              )}
+            </div>
             {/* Additional Fields */}
             <div className="flex flex-col gap-4">
               {/* Date Texte */}
@@ -254,54 +314,6 @@ export function FileEditDialog({
                   disabled={isLoading}
                 />
               </div>
-            </div>
-
-            {/* Keywords */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Mots-clés</Label>
-              {keywords.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-3 border rounded-lg bg-muted/30">
-                    {keywords.map((keyword) => (
-                      <div
-                        key={keyword.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`edit-${keyword.id}`}
-                          checked={selectedKeywords.includes(keyword.id)}
-                          onCheckedChange={() => toggleKeyword(keyword.id)}
-                          disabled={isLoading}
-                        />
-                        <Label
-                          htmlFor={`edit-${keyword.id}`}
-                          className="text-sm cursor-pointer"
-                        >
-                          {keyword.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  {selectedKeywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {selectedKeywords.map((keywordId) => {
-                        const keyword = keywords.find(
-                          (k) => k.id === keywordId
-                        );
-                        return keyword ? (
-                          <Badge key={keywordId} variant="secondary">
-                            {keyword.name}
-                          </Badge>
-                        ) : null;
-                      })}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucun mot-clé disponible.
-                </p>
-              )}
             </div>
 
             {error && (

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import fs from "fs";
 import path from "path";
+import { PERMISSIONS } from "@/lib/constants/permissions";
+import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
+import { getDescendantGroupIds } from "../groups/route";
 
 // Helper function to get all descendant folder IDs
 async function getDescendantFolderIds(folderId: string): Promise<string[]> {
@@ -25,17 +28,21 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
 // GET files with search and filter - Allow both admin and utilisateur
 export async function GET(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
+    const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
 
-    if (!role) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
     }
-
     // Both admin and utilisateur can read files
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
     const keywordIds =
       searchParams.get("keywords")?.split(",").filter(Boolean) || [];
+    const groupIds =
+      searchParams.get("groups")?.split(",").filter(Boolean) || [];
     const folderId = searchParams.get("folderId"); // Can be null, empty string, or actual ID
     const filterMode = searchParams.get("mode") || "OR"; // AND or OR
     const sortBy = searchParams.get("sortBy") || "name";
@@ -87,6 +94,30 @@ export async function GET(req: Request) {
         };
       }
     }
+    if (groupIds.length > 0) {
+      const allGroupIds: string[] = [];
+
+      for (const groupId of groupIds) {
+        const descendants = await getDescendantGroupIds(groupId);
+        allGroupIds.push(groupId, ...descendants);
+      }
+
+      if (filterMode === "AND") {
+        whereClause.AND = allGroupIds.map((id) => ({
+          groups: {
+            some: { id },
+          },
+        }));
+      } else {
+        whereClause.groups = {
+          some: {
+            id: {
+              in: allGroupIds,
+            },
+          },
+        };
+      }
+    }
 
     // Add date range filtering
     if (dateFrom || dateTo) {
@@ -119,6 +150,12 @@ export async function GET(req: Request) {
             name: true,
           },
         },
+        groups: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
         [sortBy]: sortOrder,
@@ -135,21 +172,22 @@ export async function GET(req: Request) {
   }
 }
 
-// POST upload files - Allow both admin and utilisateur
 export async function POST(req: Request) {
   try {
-    const role = (await cookies()).get("auth_token")?.value;
+    const response = await requireApiPermission(PERMISSIONS.FILES_UPLOAD);
 
-    if (!role) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    if (!response.success) {
+      return NextResponse.json(
+        { error: response.error, message: response.message },
+        { status: response.status }
+      );
     }
-
-    // Both admin and utilisateur can upload files
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const keywordIds = JSON.parse(
       (formData.get("keywordIds") as string) || "[]"
     );
+    const groupIds = JSON.parse((formData.get("groupIds") as string) || "[]");
     const customNames = JSON.parse(
       (formData.get("customNames") as string) || "{}"
     );
@@ -243,8 +281,17 @@ export async function POST(req: Request) {
           keywords: {
             connect: keywordIds.map((id: string) => ({ id })),
           },
+          groups: {
+            connect: groupIds.map((id: string) => ({ id })),
+          },
         },
         include: {
+          groups: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           keywords: {
             select: {
               id: true,

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronsUpDown, Search, X, Trash2 } from "lucide-react";
+import { useState, useRef, useLayoutEffect } from "react";
+import { Check, ChevronsUpDown, X, Trash2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -32,6 +32,8 @@ interface KeywordMultiselectProps {
   onSelectionChange: (selectedIds: string[]) => void;
   placeholder?: string;
   disabled?: boolean;
+  fullWidth?: boolean;
+  showSelected?: boolean;
 }
 
 export function KeywordMultiselect({
@@ -40,9 +42,19 @@ export function KeywordMultiselect({
   onSelectionChange,
   placeholder = "Sélectionner des mots-clés...",
   disabled = false,
+  fullWidth = false,
+  showSelected,
 }: KeywordMultiselectProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [contentWidth, setContentWidth] = useState<number>();
+
+  useLayoutEffect(() => {
+    if (!fullWidth && triggerRef.current) {
+      setContentWidth(triggerRef.current.offsetWidth);
+    }
+  }, [triggerRef.current, selectedKeywords.length, fullWidth]);
 
   const selectedKeywordNames = keywords
     .filter((keyword) => selectedKeywords.includes(keyword.id))
@@ -71,17 +83,25 @@ export function KeywordMultiselect({
   return (
     <div className="space-y-2">
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger
+          asChild
+          style={fullWidth ? { width: "100%" } : { width: contentWidth }}
+        >
           <Button
+            ref={triggerRef}
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between"
+            className={cn("justify-between")}
             disabled={disabled}
+            style={fullWidth ? { width: "100%" } : { width: contentWidth }}
           >
             <div className="flex items-center gap-1 min-w-0 flex-1">
               {selectedKeywords.length === 0 ? (
-                <span className="text-muted-foreground">{placeholder}</span>
+                <div className="flex flex-row items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{placeholder}</span>
+                </div>
               ) : (
                 <span className="truncate">
                   {selectedKeywords.length} mot
@@ -94,18 +114,23 @@ export function KeywordMultiselect({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start" side="bottom">
+
+        <PopoverContent
+          className="p-0"
+          align="start"
+          side="bottom"
+          sideOffset={0}
+          avoidCollisions={false}
+          style={fullWidth ? { minWidth: "100%" } : { width: contentWidth }}
+        >
           <Command>
-            <div className="flex items-center border-b px-3">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <CommandInput
-                placeholder="Rechercher des mots-clés..."
-                value={searchValue}
-                onValueChange={setSearchValue}
-                className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            <CommandList>
+            <CommandInput
+              placeholder="Rechercher des mots-clés..."
+              value={searchValue}
+              onValueChange={setSearchValue}
+              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <CommandList className="max-h-60 w-full">
               <CommandEmpty>Aucun mot-clé trouvé.</CommandEmpty>
               <CommandGroup>
                 <ScrollArea className="h-60">
@@ -150,8 +175,7 @@ export function KeywordMultiselect({
         </PopoverContent>
       </Popover>
 
-      {/* Selected Keywords Display */}
-      {selectedKeywords.length > 0 && (
+      {showSelected && selectedKeywords.length > 0 && (
         <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto p-2 border rounded-md bg-muted/30">
           {selectedKeywordNames.map((name) => {
             const keywordId = keywords.find((k) => k.name === name)?.id;

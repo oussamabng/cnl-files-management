@@ -36,6 +36,7 @@ import {
 import { FolderForm } from "@/components/folder-form";
 import { DeleteFolderDialog } from "@/components/delete-folder-dialog";
 import { Loading } from "@/components/ui/loading";
+import { PERMISSIONS, PermissionValue } from "@/lib/constants/permissions";
 
 interface FolderData {
   id: string;
@@ -49,7 +50,7 @@ interface FolderData {
 }
 
 interface FolderBrowserProps {
-  role: string;
+  permissions: PermissionValue[];
   currentFolderId: string | null;
   onFolderChange: (folderId: string | null) => void;
   onFolderSelect?: (folderId: string | null) => void; // For folder selection in upload
@@ -57,7 +58,7 @@ interface FolderBrowserProps {
 }
 
 export function FolderBrowser({
-  role,
+  permissions,
   currentFolderId,
   onFolderChange,
   onFolderSelect,
@@ -89,10 +90,11 @@ export function FolderBrowser({
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         setFolders(data);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || "Échec du chargement des dossiers");
+        setError(errorData.message || "Échec du chargement des dossiers");
       }
     } catch {
       setError("Une erreur s'est produite");
@@ -157,7 +159,7 @@ export function FolderBrowser({
                 Naviguez dans votre structure de dossiers
               </CardDescription>
             </div>
-            {role === "admin" && (
+            {permissions.includes(PERMISSIONS.FOLDERS_CREATE) && (
               <Button disabled>
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Nouveau dossier
@@ -186,12 +188,13 @@ export function FolderBrowser({
                 : "Naviguez dans votre structure de dossiers"}
             </CardDescription>
           </div>
-          {role === "admin" && !selectionMode && (
-            <Button onClick={() => setShowCreateForm(true)}>
-              <FolderPlus className="mr-2 h-4 w-4" />
-              Nouveau dossier
-            </Button>
-          )}
+          {permissions.includes(PERMISSIONS.FOLDERS_CREATE) &&
+            !selectionMode && (
+              <Button onClick={() => setShowCreateForm(true)}>
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Nouveau dossier
+              </Button>
+            )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -201,7 +204,6 @@ export function FolderBrowser({
           </Alert>
         )}
 
-        {/* Breadcrumbs */}
         {breadcrumbs.length > 0 && (
           <div className="flex items-center gap-2">
             <Button
@@ -303,42 +305,49 @@ export function FolderBrowser({
                     </div>
                   </div>
                 </div>
-
-                {role === "admin" && !selectionMode && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingFolder(folder);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Renommer
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeletingFolder(folder);
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Supprimer
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                {!selectionMode &&
+                  (permissions.includes(PERMISSIONS.FOLDERS_UPDATE) ||
+                    permissions.includes(PERMISSIONS.FOLDERS_DELETE)) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingFolder(folder);
+                          }}
+                          disabled={
+                            !permissions.includes(PERMISSIONS.FOLDERS_UPDATE)
+                          }
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Renommer
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingFolder(folder);
+                          }}
+                          disabled={
+                            !permissions.includes(PERMISSIONS.FOLDERS_DELETE)
+                          }
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
               </div>
             </div>
           ))}
@@ -348,7 +357,7 @@ export function FolderBrowser({
           <div className="text-center py-8 text-muted-foreground">
             <Folder className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Aucun dossier trouvé à cet emplacement</p>
-            {role === "admin" && (
+            {permissions.includes(PERMISSIONS.FOLDERS_CREATE) && (
               <p className="text-sm mt-2">
                 Créez votre premier dossier pour commencer
               </p>

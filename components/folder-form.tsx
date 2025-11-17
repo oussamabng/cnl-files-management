@@ -85,7 +85,7 @@ export function FolderForm({
         onOpenChange(false);
         form.reset();
       } else {
-        setError(data.error || "Une erreur s'est produite");
+        setError(data.message || "Une  s'est produite");
       }
     } catch (err) {
       setError("Une erreur s'est produite");

@@ -23,6 +23,93 @@ export function Loading({
 
   if (variant === "spinner") {
     return (
+      <span className={cn("inline-flex items-center gap-2", className)}>
+        <span
+          className={cn(
+            "animate-spin rounded-full border-2 border-muted border-t-primary inline-block",
+            sizeClasses[size]
+          )}
+        />
+        {text && <span className="text-sm text-muted-foreground">{text}</span>}
+      </span>
+    );
+  }
+
+  if (variant === "dots") {
+    return (
+      <span className={cn("inline-flex items-center gap-2", className)}>
+        <span className="inline-flex space-x-1">
+          <span
+            className={cn(
+              "rounded-full bg-primary animate-bounce inline-block",
+              size === "sm" ? "h-2 w-2" : size === "md" ? "h-3 w-3" : "h-4 w-4"
+            )}
+            style={{ animationDelay: "0ms" }}
+          />
+          <span
+            className={cn(
+              "rounded-full bg-primary animate-bounce inline-block",
+              size === "sm" ? "h-2 w-2" : size === "md" ? "h-3 w-3" : "h-4 w-4"
+            )}
+            style={{ animationDelay: "150ms" }}
+          />
+          <span
+            className={cn(
+              "rounded-full bg-primary animate-bounce inline-block",
+              size === "sm" ? "h-2 w-2" : size === "md" ? "h-3 w-3" : "h-4 w-4"
+            )}
+            style={{ animationDelay: "300ms" }}
+          />
+        </span>
+        {text && (
+          <span className="text-sm text-muted-foreground ml-2">{text}</span>
+        )}
+      </span>
+    );
+  }
+
+  if (variant === "pulse") {
+    return (
+      <span className={cn("inline-flex items-center gap-2", className)}>
+        <span
+          className={cn(
+            "rounded-full bg-primary animate-pulse inline-block",
+            sizeClasses[size]
+          )}
+        />
+        {text && <span className="text-sm text-muted-foreground">{text}</span>}
+      </span>
+    );
+  }
+
+  if (variant === "skeleton") {
+    return (
+      <span className={cn("inline-block space-y-2", className)}>
+        <span className="block h-4 bg-muted animate-pulse rounded" />
+        <span className="block h-4 bg-muted animate-pulse rounded w-3/4" />
+        <span className="block h-4 bg-muted animate-pulse rounded w-1/2" />
+      </span>
+    );
+  }
+
+  return null;
+}
+
+// Block-level loading components (use div elements)
+export function BlockLoading({
+  variant = "spinner",
+  size = "md",
+  className,
+  text,
+}: LoadingProps) {
+  const sizeClasses = {
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
+  };
+
+  if (variant === "spinner") {
+    return (
       <div className={cn("flex items-center justify-center gap-2", className)}>
         <div
           className={cn(
