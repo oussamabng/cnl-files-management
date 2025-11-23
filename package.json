@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "dev:socket": "NODE_OPTIONS='--loader ts-node/esm --trace-warnings no-warnings' ts-node server.mts",
     "build": "next build",
-    "start": "next start -p 80",
+    "start": "next start -p 3100",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "find:unused": "next-unused"
