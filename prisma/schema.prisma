@@ -4,8 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./prisma/dev.db"
 }
 
 model User {
@@ -23,13 +23,13 @@ model User {
 }
 
 model File {
-  id        String    @id @default(cuid())
-  name      String
-  path      String
-  folderId  String?
-  folder    Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  id       String    @id @default(cuid())
+  name     String
+  path     String
+  folderId String?
+  folder   Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
   keywords Keyword[] @relation("FileKeywords")
-  groups    Group[]   @relation("FileGroups")
+  groups   Group[]   @relation("FileGroups")
 
   dateTexte   DateTime?
   commentaire String?
