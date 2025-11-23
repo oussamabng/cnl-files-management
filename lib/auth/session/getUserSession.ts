@@ -2,13 +2,10 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 import { UserWithRolesAndPermissions } from "@/types/authorization";
-import { ROLES } from "@/lib/constants/roles";
-import { RoleValue } from "../../constants/roles";
 
 const JWT_SECRET = (process.env.JWT_SECRET as string) || "your-jwt-secret";
 
 export async function getSessionUser(): Promise<UserWithRolesAndPermissions | null> {
-
   const token = (await cookies()).get("auth_token")?.value;
   if (!token) return null;
 

@@ -6,6 +6,9 @@ import { cookies } from "next/headers";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-key";
 
+const shouldUseSecureCookies =
+  process.env.NODE_ENV === "production" && process.env.USE_HTTPS === "true";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -35,6 +38,7 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -43,6 +47,7 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
     const token = jwt.sign(
       { userId: user.id, role: user.userRoles[0]?.role.name },
       JWT_SECRET,
@@ -50,9 +55,10 @@ export async function POST(req: Request) {
         expiresIn: "24h",
       }
     );
+
     (await cookies()).set("auth_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: shouldUseSecureCookies,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24,
@@ -63,6 +69,7 @@ export async function POST(req: Request) {
       status: 200,
     });
   } catch (error) {
+    console.error("Login error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
