@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeClosed, EyeOff, Loader2 } from "lucide-react";
 import {
   PERMISSIONS,
   PERMISSION_DEPENDENCIES,
@@ -255,7 +255,7 @@ export function RoleFormDialog({
     const missingLabels = missingPermissions.map((perm) =>
       getPermissionLabel(perm)
     );
-    return `Requiert: ${missingLabels.join(", ")}`;
+    return `Exige: ${missingLabels.join(", ")}`;
   };
 
   const getDependentPermissions = (permissionId: string): string[] => {
@@ -290,26 +290,20 @@ export function RoleFormDialog({
 
   const handleSelectAllGroup = (category: string, checked: boolean) => {
     setFormData((prev) => {
-      // Get all permissions in the current category
       const permissionsInGroup = AVAILABLE_PERMISSIONS.filter(
         (p) => p.category === category
       ).map((p) => p.id);
 
       const newPermissions = new Set(prev.permissions);
-
-      // Filter for only the *enabled* permissions within the group
       const enabledPermissionsInGroup = permissionsInGroup.filter(
         (permId) => !isPermissionDisabled(permId)
       );
 
       if (checked) {
-        // Add only enabled permissions when "Select All" is checked
         enabledPermissionsInGroup.forEach((permId) =>
           newPermissions.add(permId)
         );
       } else {
-        // Remove all permissions in the group, regardless of their enabled state,
-        // to ensure a complete uncheck.
         permissionsInGroup.forEach((permId) => newPermissions.delete(permId));
       }
 
@@ -330,7 +324,7 @@ export function RoleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="min-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="min-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Modifier le rôle" : "Créer un nouveau rôle"}
@@ -344,97 +338,77 @@ export function RoleFormDialog({
             </Alert>
           )}
 
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom du rôle</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder="Ex: Administrateur, Éditeur..."
-                required
-              />
+          <div className="space-y-4">
+            <div className="w-full flex flex-row gap-3">
+              <div className="space-y-2 w-full">
+                <Label  htmlFor="name">
+                  Nom du rôle
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder="Ex: Administrateur, Éditeur..."
+                  required
+                />
+              </div>
+
+              <div className="space-y-2 w-full">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  placeholder="Description du rôle et de ses responsabilités"
+                  rows={3}
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                placeholder="Description du rôle et de ses responsabilités"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label>Permissions</Label>
+            <div className="space-y-4 ">
+              <Label className="text-xl font-semibold">Permissions</Label>
               {fetchingAllPermissions ? (
                 <div className="text-sm text-gray-500 flex items-center gap-2 mt-2">
                   <Loader2 className="h-4 w-4 animate-spin" /> Chargement des
                   permissions...
                 </div>
               ) : (
-                <div className="space-y-4 mt-2 p-4 border rounded-md bg-muted/20">
+                <div className="grid grid-cols-3 gap-4 mt-2 p-4 border rounded-md bg-muted/20">
                   {Object.entries(groupedPermissions).map(
                     ([category, permissions]) => {
-                      // Filter for *only* the enabled permissions in the group
+                      console.log(category);
                       const enabledPermissionsInGroup = permissions.filter(
                         (p) => !isPermissionDisabled(p.id)
                       );
 
-                      // Determine how many of the *enabled* permissions are currently selected
                       const selectedEnabledPermissionsInGroup =
                         formData.permissions.filter((permId) =>
                           enabledPermissionsInGroup.some((p) => p.id === permId)
                         );
 
-                      // The group is checked if all *enabled* permissions are selected
                       const isGroupChecked =
                         enabledPermissionsInGroup.length > 0 &&
                         selectedEnabledPermissionsInGroup.length ===
                           enabledPermissionsInGroup.length;
 
-                      // The group is indeterminate if some (but not all) *enabled* permissions are selected
                       const isGroupIndeterminate =
                         selectedEnabledPermissionsInGroup.length > 0 &&
                         selectedEnabledPermissionsInGroup.length <
                           enabledPermissionsInGroup.length;
 
-                      return (
-                        <Card key={category}>
-                          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                            <CardTitle className="text-base font-semibold">
+                      if (category === "Tableau de bord") {
+                        return (
+                          <div key={category} className="col-span-3 grid grid-cols-1 gap-3">
+                            {/* <CardTitle className="ml-4 6text-base font-semibold">
                               {category}
-                            </CardTitle>
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`select-all-${category}`}
-                                checked={
-                                  isGroupIndeterminate
-                                    ? "indeterminate"
-                                    : isGroupChecked
-                                }
-                                onCheckedChange={(checked) =>
-                                  handleSelectAllGroup(category, !!checked)
-                                }
-                              />
-                              <Label
-                                htmlFor={`select-all-${category}`}
-                                className="text-sm font-normal cursor-pointer"
-                              >
-                                Tout sélectionner
-                              </Label>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            </CardTitle> */}
                             {permissions.map((permission) => {
                               const isDisabled = isPermissionDisabled(
                                 permission.id
@@ -450,7 +424,7 @@ export function RoleFormDialog({
                                 <div
                                   key={permission.id}
                                   className={cn(
-                                    "flex flex-col gap-1 rounded-md border border-muted p-3 transition-colors",
+                                    "flex flex-col gap-1 ml-2 rounded-md border border-muted p-3 transition-colors",
                                     isDisabled
                                       ? "opacity-50 cursor-not-allowed"
                                       : "hover:bg-muted/30"
@@ -472,7 +446,7 @@ export function RoleFormDialog({
                                     <Label
                                       htmlFor={permission.id}
                                       className={cn(
-                                        "text-sm font-medium",
+                                        "text-basw font-medium",
                                         isDisabled
                                           ? "cursor-not-allowed"
                                           : "cursor-pointer"
@@ -480,6 +454,7 @@ export function RoleFormDialog({
                                     >
                                       {permission.name}
                                     </Label>
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
                                   </div>
                                   {isDisabled && tooltipMessage && (
                                     <div className="text-xs text-muted-foreground pl-6">
@@ -489,9 +464,94 @@ export function RoleFormDialog({
                                 </div>
                               );
                             })}
-                          </CardContent>
-                        </Card>
-                      );
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <Card key={category}>
+                            <CardHeader className=" flex flex-row items-center justify-between">
+                              <CardTitle className="text-base font-semibold">
+                                {category}
+                              </CardTitle>
+                              <div className="flex items-center space-x-1">
+                                <Checkbox
+                                  id={`select-all-${category}`}
+                                  checked={
+                                    isGroupIndeterminate
+                                      ? "indeterminate"
+                                      : isGroupChecked
+                                  }
+                                  onCheckedChange={(checked) =>
+                                    handleSelectAllGroup(category, !!checked)
+                                  }
+                                />
+                                <Label
+                                  htmlFor={`select-all-${category}`}
+                                  className="text-sm font-normal cursor-pointer"
+                                >
+                                  Tout sélectionner
+                                </Label>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {permissions.map((permission) => {
+                                const isDisabled = isPermissionDisabled(
+                                  permission.id
+                                );
+                                const isChecked = formData.permissions.includes(
+                                  permission.id
+                                );
+                                const tooltipMessage = isDisabled
+                                  ? getDisabledTooltip(permission.id)
+                                  : "";
+
+                                return (
+                                  <div
+                                    key={permission.id}
+                                    className={cn(
+                                      "flex flex-col gap-1 rounded-md border border-muted p-3 transition-colors",
+                                      isDisabled
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : "hover:bg-muted/30"
+                                    )}
+                                    title={tooltipMessage}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Checkbox
+                                        id={permission.id}
+                                        checked={isChecked}
+                                        disabled={isDisabled}
+                                        onCheckedChange={(checked) =>
+                                          handlePermissionChange(
+                                            permission.id,
+                                            !!checked
+                                          )
+                                        }
+                                      />
+                                      <Label
+                                        htmlFor={permission.id}
+                                        className={cn(
+                                          "text-sm font-medium",
+                                          isDisabled
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        )}
+                                      >
+                                        {permission.name}
+                                      </Label>
+                                    </div>
+                                    {isDisabled && tooltipMessage && (
+                                      <div className="text-xs text-muted-foreground pl-6">
+                                        {tooltipMessage}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </CardContent>
+                          </Card>
+                        );
+                      }
                     }
                   )}
                 </div>
