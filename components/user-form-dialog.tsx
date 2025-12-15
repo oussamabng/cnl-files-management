@@ -1,7 +1,11 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type * as z from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,44 +15,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Form } from "@/components/ui/form";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+
 import {
-  Loader2,
-  Shield,
-  Info,
+  Check,
+  Copy,
   Eye,
   EyeOff,
-  Check,
-  X,
-  RefreshCw,
+  Info,
+  Loader2,
   Lock,
-  Copy,
+  RefreshCw,
   Users,
+  X,
 } from "lucide-react";
+
 import type { UserWithRolesAndPermissions } from "@/types/authorization";
 import type { RoleWithPermissions } from "@/types/roles";
-import { PERMISSIONS } from "@/lib/constants/permissions"; // Import PERMISSIONS
+
+import { FormField, type SelectOption } from "@/components/ui/form-field";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import { calculatePasswordStrength } from "@/lib/utils";
+import { RolePermissionsTooltip } from "./role-permissions-tooltip";
+import { buildUserFormSchema } from "@/lib/validation/user-form.schema";
+
 interface UserFormDialogProps {
   user: UserWithRolesAndPermissions | null;
   open: boolean;
@@ -57,488 +57,42 @@ interface UserFormDialogProps {
   onUserUpdated: () => void;
 }
 
-interface RolePermissionsTooltipProps {
-  role: RoleWithPermissions;
-  children: React.ReactNode;
-}
+// Local utils (keep here or move to "@/lib/utils/password.utils")
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
 
-interface PasswordStrength {
-  score: number;
-  label: string;
-  color: string;
-  requirements: {
-    length: boolean;
-    uppercase: boolean;
-    lowercase: boolean;
-    number: boolean;
-    special: boolean;
-  };
-}
-
-function RolePermissionsTooltip({
-  role,
-  children,
-}: RolePermissionsTooltipProps) {
-  if (!role.rolePermissions || role.rolePermissions.length === 0) {
-    return <>{children}</>;
-  }
-
-  const groupedPermissions = role.rolePermissions.reduce(
-    (acc, { permission }) => {
-      const category = permission.key.split("_")[0] || "OTHER";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(permission);
-      return acc;
-    },
-    {} as Record<string, any[]>
-  );
-
-  const getCategoryName = (category: string) => {
-    switch (category.toLowerCase()) {
-      case "files":
-        return "Fichiers";
-      case "folders":
-        return "Dossiers";
-      case "users":
-        return "Utilisateurs";
-      case "roles":
-        return "Rôles";
-      case "dashboard":
-        return "Tableau de bord";
-      case "filters":
-        return "Filtres";
-      case "comments":
-        return "Commentaires";
-      case "admin":
-        return "Administration";
-      default:
-        return category;
+    try {
+      document.execCommand("copy");
+      return true;
+    } catch {
+      return false;
+    } finally {
+      document.body.removeChild(textArea);
     }
-  };
-
-  const getPermissionActionLabel = (key: string) => {
-    if (key.includes("VIEW")) return "Voir";
-    if (key.includes("CREATE")) return "Créer";
-    if (key.includes("UPDATE")) return "Modifier";
-    if (key.includes("DELETE")) return "Supprimer";
-    if (key.includes("UPLOAD")) return "Télécharger";
-    if (key.includes("SUPER_ADMIN")) return "Super Admin";
-    return "Accès";
-  };
-
-  return (
-    <Tooltip delayDuration={200}>
-      <TooltipTrigger asChild>
-        <div className="w-full">{children}</div>
-      </TooltipTrigger>
-      <TooltipContent
-        side="right"
-        className="max-w-sm p-0 z-50 border-0 shadow-xl bg-white dark:bg-gray-900 flex flex-col max-h-[90vh]" // Added flex-col and max-h
-        sideOffset={8}
-      >
-        <div className="overflow-hidden rounded-lg flex flex-col flex-1">
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 border-b flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-                <Shield className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-foreground">
-                  {role.name}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  {role.rolePermissions.length} permission
-                  {role.rolePermissions.length > 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-          </div>
-          <ScrollArea className="flex-1">
-            <div className="p-4 space-y-4">
-              {Object.entries(groupedPermissions).map(
-                ([category, permissions]) => (
-                  <div key={category} className="space-y-2">
-                    <div className="flex items-center gap-2 pb-2">
-                      <h5 className="font-medium text-xs uppercase tracking-wide text-muted-foreground">
-                        {getCategoryName(category)}
-                      </h5>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      {permissions.map((permission) => {
-                        const actionLabel = getPermissionActionLabel(
-                          permission.key
-                        );
-                        return (
-                          <div
-                            key={permission.id}
-                            className="flex items-center gap-2.5 p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium text-foreground">
-                                  {actionLabel}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  sur
-                                </span>
-                                <span className="text-xs text-foreground truncate">
-                                  {getCategoryName(category)}
-                                </span>
-                              </div>
-                              {permission.description && (
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                                  {permission.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </ScrollArea>
-          <div className="px-4 py-2 bg-muted/20 border-t flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">
-                  Permissions actives
-                </span>
-              </div>
-              <Badge variant="secondary" className="text-xs">
-                {role.rolePermissions.length}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-interface RoleCheckboxItemProps {
-  role: RoleWithPermissions;
-  isChecked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}
-
-function RoleCheckboxItem({
-  role,
-  isChecked,
-  onCheckedChange,
-}: RoleCheckboxItemProps) {
-  const hasPermissions =
-    role.rolePermissions && role.rolePermissions.length > 0;
-
-  const checkboxContent = (
-    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30 transition-all duration-200 cursor-pointer w-full group">
-      <FormControl>
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={onCheckedChange}
-          className="mt-0.5"
-        />
-      </FormControl>
-      <div className="flex-1 space-y-1.5 leading-none">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FormLabel className="text-sm font-medium cursor-pointer group-hover:text-primary transition-colors">
-              {role.name}
-            </FormLabel>
-            {hasPermissions && (
-              <div className="flex items-center gap-1">
-                <Info className="h-3.5 w-3.5 text-primary/60" />
-                <span className="text-xs text-muted-foreground">Détails</span>
-              </div>
-            )}
-          </div>
-        </div>
-        {hasPermissions && (
-          <div className="flex items-center gap-2">
-            <Users className="h-3 w-3 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">
-              {role.rolePermissions?.length} permission
-              {role.rolePermissions && role.rolePermissions.length > 1
-                ? "s"
-                : ""}{" "}
-              assignée
-              {role.rolePermissions && role.rolePermissions.length > 1
-                ? "s"
-                : ""}
-            </p>
-          </div>
-        )}
-        {role.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-            {role.description}
-          </p>
-        )}
-      </div>
-    </FormItem>
-  );
-
-  if (hasPermissions) {
-    return (
-      <RolePermissionsTooltip role={role}>
-        {checkboxContent}
-      </RolePermissionsTooltip>
-    );
   }
-
-  return checkboxContent;
 }
 
-function calculatePasswordStrength(password: string): PasswordStrength {
-  const requirements = {
-    length: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /\d/.test(password),
-    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-  };
+function generateSecurePassword(length = 14): string {
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=";
 
-  let score = 0;
-  if (requirements.length) score += 2;
-  if (requirements.uppercase) score += 2;
-  if (requirements.lowercase) score += 1;
-  if (requirements.number) score += 1;
-  if (requirements.special) score += 1;
-
-  const normalizedScore = Math.min(5, score);
-
-  let label = "";
-  let color = "";
-
-  switch (normalizedScore) {
-    case 0:
-    case 1:
-      label = "Très faible";
-      color = "bg-red-500";
-      break;
-    case 2:
-      label = "Faible";
-      color = "bg-orange-500";
-      break;
-    case 3:
-      label = "Moyen";
-      color = "bg-yellow-500";
-      break;
-    case 4:
-      label = "Fort";
-      color = "bg-blue-500";
-      break;
-    case 5:
-      label = "Très fort";
-      color = "bg-green-500";
-      break;
-  }
-
-  return { score: normalizedScore, label, color, requirements };
-}
-
-function generatePassword(): string {
-  const lowercase = "abcdefghijklmnopqrstuvwxyz";
-  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numbers = "0123456789";
-  const special = '!@#$%^&*(),.?":{}|<>';
-  const allChars = lowercase + uppercase + numbers + special;
+  const cryptoObj = window.crypto || (window as any).msCrypto;
+  const randomValues = new Uint32Array(length);
+  cryptoObj.getRandomValues(randomValues);
 
   let password = "";
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-
-  for (let i = 1; i < 8; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
+  for (let i = 0; i < length; i++) {
+    password += charset[randomValues[i] % charset.length];
   }
 
-  return password
-    .split("")
-    .sort(() => Math.random() - 0.5)
-    .join("");
-}
-
-interface PasswordFieldProps {
-  field: any;
-  showPassword: boolean;
-  setShowPassword: (show: boolean) => void;
-  loading: boolean;
-  isEdit: boolean;
-  onGenerate: (password: string) => void;
-  onCopy: (password: string) => void;
-  copySuccess: boolean;
-}
-
-function PasswordField({
-  field,
-  showPassword,
-  setShowPassword,
-  loading,
-  isEdit,
-  onGenerate,
-  onCopy,
-  copySuccess,
-}: PasswordFieldProps) {
-  const passwordStrength = useMemo(
-    () => calculatePasswordStrength(field.value || ""),
-    [field.value]
-  );
-
-  const handleGenerate = () => {
-    const newPassword = generatePassword();
-    onGenerate(newPassword);
-  };
-
-  return (
-    <FormItem>
-      <FormLabel className="flex items-center gap-2">
-        <Lock className="h-4 w-4" />
-        Mot de passe
-        {isEdit && (
-          <span className="text-xs text-muted-foreground font-normal">
-            (Laissez vide pour conserver le mot de passe actuel)
-          </span>
-        )}
-      </FormLabel>
-      <FormControl>
-        <div className="space-y-3">
-          <div className="relative">
-            <Input
-              type={showPassword ? "text" : "password"}
-              placeholder={
-                isEdit ? "Nouveau mot de passe (optionnel)" : "Mot de passe"
-              }
-              {...field}
-              className="pr-28"
-            />
-            <div className="absolute right-1 top-1 flex gap-1">
-              {field.value && field.value.length > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className={`h-8 w-8 p-0 transition-colors ${
-                        copySuccess ? "text-green-600 bg-green-50" : ""
-                      }`}
-                      onClick={() => onCopy(field.value)}
-                      disabled={loading}
-                    >
-                      {copySuccess ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                      <span className="sr-only">
-                        {copySuccess ? "Copié!" : "Copier le mot de passe"}
-                      </span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      {copySuccess
-                        ? "Copié dans le presse-papiers!"
-                        : "Copier le mot de passe"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={handleGenerate}
-                    disabled={loading}
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    <span className="sr-only">Générer un mot de passe</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Générer un mot de passe sécurisé</p>
-                </TooltipContent>
-              </Tooltip>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                <span className="sr-only">
-                  {showPassword
-                    ? "Masquer le mot de passe"
-                    : "Afficher le mot de passe"}
-                </span>
-              </Button>
-            </div>
-          </div>
-          {field.value && field.value.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Progress
-                  value={(passwordStrength.score / 5) * 100}
-                  className="flex-1 h-2"
-                />
-                <span className="text-xs font-medium min-w-fit">
-                  {passwordStrength.label}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-1">
-                  {passwordStrength.requirements.length ? (
-                    <Check className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <X className="h-3 w-3 text-red-500" />
-                  )}
-                  <span
-                    className={
-                      passwordStrength.requirements.length
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }
-                  >
-                    8+ caractères
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {passwordStrength.requirements.uppercase ? (
-                    <Check className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <X className="h-3 w-3 text-red-500" />
-                  )}
-                  <span
-                    className={
-                      passwordStrength.requirements.uppercase
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }
-                  >
-                    Majuscule (requis)
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  );
+  return password;
 }
 
 export function UserFormDialog({
@@ -550,91 +104,17 @@ export function UserFormDialog({
 }: UserFormDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  const formSchema = z
-    .object({
-      firstName: z.string().min(1, "Le prénom est requis"),
-      lastName: z.string().min(1, "Le nom est requis"),
-      email: z.string().email("Email invalide"),
-      password: user
-        ? z
-            .string()
-            .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-            .regex(
-              /[A-Z]/,
-              "Le mot de passe doit contenir au moins une majuscule"
-            )
-            .or(z.literal(""))
-        : z
-            .string()
-            .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-            .regex(
-              /[A-Z]/,
-              "Le mot de passe doit contenir au moins une majuscule"
-            ),
-      confirmPassword: user
-        ? z.string().optional()
-        : z.string().min(1, "Veuillez confirmer le mot de passe"),
-      roleIds: z
-        .array(z.string())
-        .min(1, "Au moins un rôle doit être sélectionné"),
-    })
-    .refine(
-      (data) => {
-        if (!user) {
-          return data.password === data.confirmPassword;
-        }
-        if (data.password && data.password.length > 0) {
-          return data.password === data.confirmPassword;
-        }
-        return true;
-      },
-      {
-        message: "Les mots de passe ne correspondent pas",
-        path: ["confirmPassword"],
-      }
-    )
-    .refine(
-      (data) => {
-        const selectedRoleObjects = availableRoles.filter((role) =>
-          data.roleIds.includes(role.id.toString())
-        );
+  const formSchema = useMemo(
+    () => buildUserFormSchema(Boolean(user), availableRoles),
+    [user, availableRoles]
+  );
 
-        const allSelectedPermissions = new Set<string>();
-        selectedRoleObjects.forEach((role) => {
-          role.rolePermissions.forEach((rp) => {
-            allSelectedPermissions.add(rp.permission.key);
-          });
-        });
-
-        const dependentRolePermissions = [
-          PERMISSIONS.ROLES_CREATE,
-          PERMISSIONS.ROLES_UPDATE,
-          PERMISSIONS.ROLES_DELETE,
-        ];
-        const requiresRolesView = dependentRolePermissions.some((depPerm) =>
-          allSelectedPermissions.has(depPerm)
-        );
-
-        if (
-          requiresRolesView &&
-          !allSelectedPermissions.has(PERMISSIONS.ROLES_VIEW)
-        ) {
-          return false;
-        }
-        return true;
-      },
-      {
-        message:
-          "Les permissions de création, modification ou suppression de rôles nécessitent la permission de 'Voir les rôles'.",
-        path: ["roleIds"],
-      }
-    );
-
-  type FormData = z.infer<typeof formSchema>;
+  type FormData = z.infer<ReturnType<typeof buildUserFormSchema>>;
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -648,32 +128,68 @@ export function UserFormDialog({
     },
   });
 
+  const roleOptions = useMemo<SelectOption<RoleWithPermissions>[]>(() => {
+    return availableRoles.map((role) => ({
+      label: role.name,
+      value: role.id.toString(),
+      meta: role,
+    }));
+  }, [availableRoles]);
+
   useEffect(() => {
-    if (open) {
-      if (user) {
-        form.reset({
-          firstName: user.firstName || "",
-          lastName: user.lastName || "",
-          email: user.email,
-          password: "",
-          confirmPassword: "",
-          roleIds: user.userRoles.map((ur) => ur.role.id.toString()),
-        });
-      } else {
-        form.reset({
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          roleIds: [],
-        });
-      }
-      setError(null);
-      setShowPassword(false);
-      setShowConfirmPassword(false);
+    if (!open) return;
+
+    if (user) {
+      form.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email,
+        password: "",
+        confirmPassword: "",
+        roleIds: user.userRoles.map((ur) => ur.role.id.toString()),
+      });
+    } else {
+      form.reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        roleIds: [],
+      });
     }
+
+    setError(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setCopySuccess(false);
   }, [open, user, form]);
+
+  const passwordValue = form.watch("password") || "";
+  const passwordStrength = useMemo(
+    () => calculatePasswordStrength(passwordValue),
+    [passwordValue]
+  );
+
+  const handleCopyPassword = async (text: string) => {
+    const ok = await copyToClipboard(text);
+    if (!ok) return;
+
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  const handlePasswordGenerate = () => {
+    const password = generateSecurePassword();
+    form.setValue("password", password, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    form.setValue("confirmPassword", password, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -701,9 +217,9 @@ export function UserFormDialog({
       });
 
       const result = await response.json();
-
-      if (!result.success)
+      if (!result.success) {
         throw new Error(result.message || "Une erreur est survenue");
+      }
 
       onUserUpdated();
       onOpenChange(false);
@@ -714,228 +230,353 @@ export function UserFormDialog({
     }
   };
 
-  const handleRoleChange = (roleId: string, checked: boolean) => {
-    const currentRoles = form.getValues("roleIds");
-    if (checked) {
-      form.setValue("roleIds", [...currentRoles, roleId]);
-    } else {
-      form.setValue(
-        "roleIds",
-        currentRoles.filter((id) => id !== roleId)
-      );
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy password:", err);
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand("copy");
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-      } catch (fallbackErr) {
-        console.error("Fallback copy failed:", fallbackErr);
-      }
-      document.body.removeChild(textArea);
-    }
-  };
-
-  const handlePasswordGenerate = (password: string) => {
-    form.setValue("password", password);
-    form.setValue("confirmPassword", password);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+      <DialogContent className="w-[95vw] max-w-[95vw] overflow-hidden p-0 sm:max-w-3xl">
         <TooltipProvider>
-          <DialogHeader>
-            <DialogTitle>
-              {user ? "Modifier l'utilisateur" : "Créer un utilisateur"}
-            </DialogTitle>
-            <DialogDescription>
-              {user
-                ? "Modifiez les informations de l'utilisateur ci-dessous."
-                : "Remplissez les informations pour créer un nouvel utilisateur."}
-            </DialogDescription>
-          </DialogHeader>
-
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Prénom</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Prénom" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nom</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nom" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex max-h-[90vh] min-h-0 flex-col"
+            >
+              <div className="border-b px-6 py-5">
+                <DialogHeader className="space-y-2">
+                  <DialogTitle>
+                    {user ? "Modifier l'utilisateur" : "Créer un utilisateur"}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {user
+                      ? "Modifiez les informations de l'utilisateur ci-dessous."
+                      : "Remplissez les informations pour créer un nouvel utilisateur."}
+                  </DialogDescription>
+                </DialogHeader>
               </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="email@exemple.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <ScrollArea className="min-h-0 flex-1 px-6 py-5">
+                <div className="mx-auto w-full space-y-5">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      type="text"
+                      label="Prénom"
+                      required
+                      placeholder="Prénom"
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      type="text"
+                      label="Nom"
+                      required
+                      placeholder="Nom"
+                    />
+                  </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <PasswordField
-                    field={field}
-                    showPassword={showPassword}
-                    setShowPassword={setShowPassword}
-                    loading={loading}
-                    isEdit={!!user}
-                    onGenerate={handlePasswordGenerate}
-                    onCopy={copyToClipboard}
-                    copySuccess={copySuccess}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    type="email"
+                    label="Email"
+                    required
+                    placeholder="email@exemple.com"
                   />
-                )}
-              />
 
-              {(!user ||
-                (form.watch("password") &&
-                  form.watch("password").length > 0)) && (
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirmer le mot de passe</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirmer le mot de passe"
-                            {...field}
-                            className="pr-12"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-1 top-1 h-8 w-8 p-0"
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            disabled={loading}
-                          >
-                            {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
+                  {/* ✅ FIX: align items from top so password expansion doesn't vertically center confirm field */}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 items-start">
+                    {/* PASSWORD */}
+                    <div className="flex flex-col">
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        label={
+                          <span className="flex items-center gap-2">
+                            <Lock className="h-4 w-4" />
+                            Mot de passe{" "}
+                            {user && (
+                              <span className="text-xs font-normal text-muted-foreground">
+                                (Laissez vide pour conserver l'actuel)
+                              </span>
                             )}
-                            <span className="sr-only">
-                              {showConfirmPassword ? "Masquer" : "Afficher"}
-                            </span>
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              <FormField
-                control={form.control}
-                name="roleIds"
-                render={() => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Rôles
-                    </FormLabel>
-                    <ScrollArea className="max-h-30 border rounded-lg p-2">
-                      <div className="space-y-2">
-                        {availableRoles.map((role) => (
-                          <FormField
-                            key={role.id}
-                            control={form.control}
-                            name="roleIds"
-                            render={({ field }) => (
-                              <RoleCheckboxItem
-                                role={role}
-                                isChecked={
-                                  field.value?.includes(role.id.toString()) ||
-                                  false
+                          </span>
+                        }
+                        render={({ field }) => (
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder={
+                                  user
+                                    ? "Nouveau mot de passe (optionnel)"
+                                    : "Mot de passe"
                                 }
-                                onCheckedChange={(checked) =>
-                                  handleRoleChange(role.id.toString(), checked)
-                                }
+                                {...field}
+                                value={(field.value as string) || ""}
+                                className="pr-28"
+                                disabled={loading}
                               />
+
+                              <div className="absolute right-1 top-1 flex gap-1">
+                                {(field.value as string)?.length > 0 && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className={`h-8 w-8 p-0 transition-colors ${
+                                          copySuccess
+                                            ? "bg-green-50 text-green-600"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          handleCopyPassword(
+                                            field.value as string
+                                          )
+                                        }
+                                        disabled={loading}
+                                      >
+                                        {copySuccess ? (
+                                          <Check className="h-4 w-4" />
+                                        ) : (
+                                          <Copy className="h-4 w-4" />
+                                        )}
+                                        <span className="sr-only">
+                                          {copySuccess
+                                            ? "Copié!"
+                                            : "Copier le mot de passe"}
+                                        </span>
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {copySuccess
+                                        ? "Copié !"
+                                        : "Copier le mot de passe"}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={handlePasswordGenerate}
+                                      disabled={loading}
+                                    >
+                                      <RefreshCw className="h-4 w-4" />
+                                      <span className="sr-only">Générer</span>
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Générer un mot de passe sécurisé
+                                  </TooltipContent>
+                                </Tooltip>
+
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => setShowPassword((s) => !s)}
+                                  disabled={loading}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
+                                  <span className="sr-only">
+                                    {showPassword ? "Masquer" : "Afficher"}
+                                  </span>
+                                </Button>
+                              </div>
+                            </div>
+
+                            {(field.value as string)?.length > 0 && (
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Progress
+                                    value={(passwordStrength.score / 5) * 100}
+                                    className="h-2 flex-1"
+                                  />
+                                  <span className="min-w-fit text-xs font-medium">
+                                    {passwordStrength.label}
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+                                  <div className="flex items-center gap-1">
+                                    {passwordStrength.requirements.length ? (
+                                      <Check className="h-3 w-3 text-green-500" />
+                                    ) : (
+                                      <X className="h-3 w-3 text-red-500" />
+                                    )}
+                                    <span
+                                      className={
+                                        passwordStrength.requirements.length
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      8+ caractères
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-1">
+                                    {passwordStrength.requirements.uppercase ? (
+                                      <Check className="h-3 w-3 text-green-500" />
+                                    ) : (
+                                      <X className="h-3 w-3 text-red-500" />
+                                    )}
+                                    <span
+                                      className={
+                                        passwordStrength.requirements.uppercase
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }
+                                    >
+                                      Majuscule (requis)
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
                             )}
-                          />
-                        ))}
+                          </div>
+                        )}
+                      />
+                    </div>
+
+                    {/* CONFIRM */}
+                    {(!user || (passwordValue && passwordValue.length > 0)) && (
+                      <div className="flex flex-col">
+                        <FormField
+                          control={form.control}
+                          name="confirmPassword"
+                          label="Confirmer le mot de passe"
+                          render={({ field }) => (
+                            <div className="relative">
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirmer le mot de passe"
+                                {...field}
+                                value={(field.value as string) || ""}
+                                className="pr-12"
+                                disabled={loading}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-1 top-1 h-8 w-8 p-0"
+                                onClick={() =>
+                                  setShowConfirmPassword((s) => !s)
+                                }
+                                disabled={loading}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                                <span className="sr-only">
+                                  {showConfirmPassword ? "Masquer" : "Afficher"}
+                                </span>
+                              </Button>
+                            </div>
+                          )}
+                        />
                       </div>
-                    </ScrollArea>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    )}
+                  </div>
 
-              {error && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                  {error}
+                  {/* ✅ ROLES FIELD (kept as-is) */}
+                  <FormField<FormData, "roleIds", RoleWithPermissions>
+                    control={form.control}
+                    name="roleIds"
+                    type="multiselect"
+                    label={
+                      <span className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Rôles
+                      </span>
+                    }
+                    required
+                    options={roleOptions}
+                    selectPlaceholder="Sélectionner des rôles"
+                    searchPlaceholder="Rechercher un rôle..."
+                    emptyText="Aucun rôle trouvé."
+                    renderOption={(opt) => {
+                      const role = opt.meta!;
+                      const content = (
+                        <div className="flex min-w-0 items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate text-sm">
+                                {opt.label}
+                              </span>
+                              {role.rolePermissions?.length ? (
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Info className="h-3.5 w-3.5 text-primary/60" />
+                                  Détails
+                                </span>
+                              ) : null}
+                            </div>
+                            {role.description ? (
+                              <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                                {role.description}
+                              </p>
+                            ) : null}
+                          </div>
+
+                          {role.rolePermissions?.length ? (
+                            <Badge variant="secondary" className="shrink-0">
+                              {role.rolePermissions.length}
+                            </Badge>
+                          ) : null}
+                        </div>
+                      );
+
+                      return role.rolePermissions?.length ? (
+                        <RolePermissionsTooltip role={role}>
+                          {content}
+                        </RolePermissionsTooltip>
+                      ) : (
+                        content
+                      );
+                    }}
+                    description="Sélectionnez un ou plusieurs rôles."
+                  />
+
+                  {error && (
+                    <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                      {error}
+                    </div>
+                  )}
                 </div>
-              )}
+              </ScrollArea>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={loading}
-                >
-                  Annuler
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {user ? "Modifier" : "Créer"}
-                </Button>
-              </DialogFooter>
+              <div className="border-t px-6 py-4">
+                <DialogFooter className="flex-row justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onOpenChange(false)}
+                    disabled={loading}
+                  >
+                    Annuler
+                  </Button>
+
+                  <Button type="submit" disabled={loading}>
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {user ? "Modifier" : "Créer"}
+                  </Button>
+                </DialogFooter>
+              </div>
             </form>
           </Form>
         </TooltipProvider>

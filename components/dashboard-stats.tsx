@@ -19,15 +19,18 @@ import {
   Folder,
 } from "lucide-react";
 import { StatsLoading, CardLoading } from "@/components/ui/loading";
+import { Group } from '../lib/generated/prisma/index';
 
 interface DashboardStats {
   totalFiles: number;
   totalKeywords: number;
   totalFolders: number;
+  totalGroups: number;
   recentFiles: number;
   filesWithoutKeywords: number;
   unusedKeywords: number;
   emptyFolders: number;
+  emptyGroups: number;
   topKeywords: Array<{
     id: string;
     name: string;
@@ -45,7 +48,7 @@ export function DashboardStats() {
       setLoading(true);
       setError("");
       const response = await fetch("/api/dashboard/stats");
-      console.log("response fron server_DASHBOARD_STATS",response);
+      console.log("response fron server_DASHBOARD_STATS", response);
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -96,8 +99,7 @@ export function DashboardStats() {
 
   return (
     <div className="space-y-6">
-      {/* Cartes de synthèse */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -109,6 +111,21 @@ export function DashboardStats() {
             <div className="text-2xl font-bold">{stats.totalFiles}</div>
             <p className="text-xs text-muted-foreground">
               Fichiers dans votre système
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Groupes totaux
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalGroups}</div>
+            <p className="text-xs text-muted-foreground">
+              Groupes dans votre système
             </p>
           </CardContent>
         </Card>
@@ -174,9 +191,7 @@ export function DashboardStats() {
         </Card>
       </div>
 
-      {/* Statistiques détaillées */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Mots-clés les plus utilisés */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -215,7 +230,6 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        {/* Santé du système */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -245,12 +259,24 @@ export function DashboardStats() {
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
+                <span className="text-sm">Groupes vides</span>
+                <Badge
+                  variant={stats.emptyGroups > 0 ? "outline" : "secondary"}
+                >
+                  {stats.emptyGroups}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
                 <span className="text-sm">Mots-clés inutilisés</span>
                 <Badge
                   variant={stats.unusedKeywords > 0 ? "outline" : "secondary"}
                 >
                   {stats.unusedKeywords}
                 </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Groupes totaux</span>
+                <Badge variant="secondary">{stats.totalGroups}</Badge>
               </div>
             </div>
           </CardContent>
