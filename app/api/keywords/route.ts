@@ -6,7 +6,7 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET() {
   try {
-    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW)
+    const response = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
 
     if (!response.success) {
       return NextResponse.json(
@@ -56,6 +56,19 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Le nom du mot-clé est requis" },
         { status: 400 }
+      );
+    }
+
+    const existring = await prisma.keyword.findFirst({
+      where: {
+        name: name.trim(),
+      },
+    });
+
+    if (existring) {
+      return NextResponse.json(
+        { error: "Le mot-clé existe déjà" },
+        { status: 409 }
       );
     }
 

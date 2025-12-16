@@ -42,13 +42,18 @@ export async function GET(req: Request) {
         ? "desc"
         : "asc";
 
-    // Allow sorting only on safe columns
+    const qRaw = (url.searchParams.get("q") || "").trim();
+    const q = qRaw.length ? qRaw : null;
+
     const allowedSortBy = new Set(["name", "createdAt"]);
     const effectiveSortBy = allowedSortBy.has(sortBy) ? sortBy : "name";
 
-    const where = {
-      name: { not: "SUPERADMIN" },
-    } as const;
+    const where: any = {
+      AND: [
+        { name: { not: "SUPERADMIN" } },
+        ...(q ? [{ name: { contains: q, mode: "insensitive" } }] : []),
+      ],
+    };
 
     const skip = pageIndex * pageSize;
     const take = pageSize;
@@ -72,16 +77,11 @@ export async function GET(req: Request) {
           skip,
           take,
         }),
-
-        // total assigned users across all roles (not just this page)
-        // requires your Prisma model to be named UserRole (client: prisma.userRole)
         prisma.userRole.count({
           where: {
             role: { name: { not: "SUPERADMIN" } },
           },
         }),
-
-        // unique permissions across all roles
         prisma.rolePermission.findMany({
           where: { role: { name: { not: "SUPERADMIN" } } },
           distinct: ["permissionId"],
@@ -166,26 +166,33 @@ export async function POST(req: Request) {
       );
     }
 
-    const permissionsKeys: PermissionValue[] = matchedPermissions.map(
-      (p) => p.key as PermissionValue
-    );
+    const permissionKeys = matchedPermissions.map(
+      (p) => p.key
+    ) as PermissionValue[];
 
-    const missingDependencies: Record<PermissionValue, PermissionValue[]> = {};
+    const permissionKeySet = new Set<PermissionValue>(permissionKeys);
 
-    permissionsKeys.forEach((permissionId) => {
-      const required = PERMISSION_DEPENDENCIES[permissionId];
-      if (!required?.length) return;
+    const missingDependencies: Partial<
+      Record<PermissionValue, PermissionValue[]>
+    > = {};
+
+    for (const perm of permissionKeys) {
+      const required = PERMISSION_DEPENDENCIES[perm];
+      if (!required?.length) continue;
 
       const missing = required.filter(
-        (reqPerm) => !permissionsKeys.includes(reqPerm)
+        (reqPerm) => !permissionKeySet.has(reqPerm as PermissionValue)
       );
-      if (missing.length) missingDependencies[permissionId] = missing;
-    });
+      if (missing.length)
+        missingDependencies[perm] = missing as PermissionValue[];
+    }
 
     if (Object.keys(missingDependencies).length) {
       return NextResponse.json(
         {
-          message: getValidationErrorMessage(missingDependencies),
+          message: getValidationErrorMessage(
+            missingDependencies as Record<PermissionValue, PermissionValue[]>
+          ),
           success: false,
         },
         { status: 400 }

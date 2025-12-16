@@ -6,41 +6,111 @@ import { createUser } from "@/lib/auth/session/create-user";
 
 export async function GET(req: Request) {
   try {
-    const response = await requireApiPermission(PERMISSIONS.USERS_VIEW);
-
-    if (!response.success) {
+    const auth = await requireApiPermission(PERMISSIONS.USERS_VIEW);
+    if (!auth.success) {
       return NextResponse.json(
-        { error: response.error, message: response.message },
-        { status: response.status }
+        { error: auth.error, message: auth.message, success: false },
+        { status: auth.status }
       );
     }
 
-    const users = await prisma.user.findMany({
-      include: {
+    const url = new URL(req.url);
+
+    const pageIndex = clamp(
+      toInt(url.searchParams.get("pageIndex"), 0),
+      0,
+      1_000_000
+    );
+    const pageSize = clamp(toInt(url.searchParams.get("pageSize"), 10), 1, 100);
+
+    const sortBy = url.searchParams.get("sortBy") || "createdAt";
+    const sortDir =
+      (url.searchParams.get("sortDir") || "desc").toLowerCase() === "asc"
+        ? "asc"
+        : "desc";
+
+    const allowedSortBy = new Set([
+      "firstName",
+      "lastName",
+      "email",
+      "createdAt",
+    ]);
+    const effectiveSortBy = allowedSortBy.has(sortBy) ? sortBy : "createdAt";
+
+    const qRaw = (url.searchParams.get("q") || "").trim();
+    const q = qRaw.length ? qRaw : null;
+
+    const roleIds = parseCsvInts(url.searchParams.get("roleIds"));
+
+    const where: any = {
+      AND: [
+        {
+          NOT: {
+            userRoles: {
+              some: {
+                role: { name: "SUPERADMIN" },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    if (q) {
+      where.AND.push({
+        OR: [
+          { firstName: { contains: q, mode: "insensitive" } },
+          { lastName: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    if (roleIds.length) {
+      where.AND.push({
         userRoles: {
-          include: {
-            role: {
-              include: {
-                rolePermissions: {
-                  include: {
-                    permission: true,
-                  },
+          some: {
+            roleId: { in: roleIds },
+          },
+        },
+      });
+    }
+
+    const skip = pageIndex * pageSize;
+    const take = pageSize;
+
+    const [total, users] = await prisma.$transaction([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        include: {
+          userRoles: {
+            include: {
+              role: {
+                include: {
+                  rolePermissions: { include: { permission: true } },
                 },
               },
             },
           },
         },
-      },
+        orderBy: { [effectiveSortBy]: sortDir } as any,
+        skip,
+        take,
+      }),
+    ]);
+
+    const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
+    return NextResponse.json({
+      success: true,
+      data: users,
+      meta: { pageIndex, pageSize, total, pageCount },
+      stats: { totalUsers: total },
     });
-
-    if (!users)
-      return NextResponse.json({ status: 404, message: "Aucun utilisateur" });
-
-    return NextResponse.json({ status: 200, data: users });
   } catch (error) {
-    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Internal session error" },
+      { message: "Erreur interne du serveur", success: false },
       { status: 500 }
     );
   }
@@ -109,4 +179,21 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+function toInt(v: string | null, fallback: number) {
+  const n = Number.parseInt(v ?? "", 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function parseCsvInts(v: string | null) {
+  if (!v) return [];
+  return v
+    .split(",")
+    .map((x) => Number.parseInt(x.trim(), 10))
+    .filter((x) => Number.isFinite(x));
 }

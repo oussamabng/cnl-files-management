@@ -1,232 +1,163 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type {
-  PaginationState,
-  SortingState,
-  Updater,
-} from "@tanstack/react-table";
-import type {
-  PaginatedApiResponse,
-  ServerPaginationMeta,
-} from "@/types/pagination";
+import * as React from "react";
+import type { SortingState } from "@tanstack/react-table";
 
-type UseServerDataTableOptions<
-  TData,
-  TStats,
-  TExtra extends Record<string, unknown>
-> = {
-  endpoint: string;
-  enabled?: boolean;
+type PaginationState = { pageIndex: number; pageSize: number };
 
-  initialPageSize?: number;
-  initialSorting?: SortingState;
-
-  extraQuery?: TExtra;
-
-  /**
-   * Optional: customize query string building.
-   * If not provided, defaults to: pageIndex, pageSize, sortBy, sortDir + extraQuery fields.
-   */
-  buildSearchParams?: (args: {
-    pagination: PaginationState;
-    sorting: SortingState;
-    extraQuery: TExtra;
-  }) => URLSearchParams;
+type Meta = {
+  pageIndex: number;
+  pageSize: number;
+  total: number;
+  pageCount: number;
 };
 
-function clampInt(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value));
-}
+type ServerResponse<TData, TStats> = {
+  success?: boolean;
+  data: TData[];
+  meta?: Meta;
+  stats?: TStats;
+  message?: string;
+  error?: string;
+};
 
-export function useServerDataTable<
-  TData,
-  TStats = unknown,
-  TExtra extends Record<string, unknown> = Record<string, never>
->(opts: UseServerDataTableOptions<TData, TStats, TExtra>) {
-  const {
-    endpoint,
-    enabled = true,
-    initialPageSize = 10,
-    initialSorting = [],
-    extraQuery = {} as TExtra,
-    buildSearchParams,
-  } = opts;
+function buildQuery(params: Record<string, unknown>) {
+  const sp = new URLSearchParams();
 
-  const [data, setData] = useState<TData[]>([]);
-  const [meta, setMeta] = useState<ServerPaginationMeta | null>(null);
-  const [stats, setStats] = useState<TStats | null>(null);
-
-  const [error, setError] = useState<string | null>(null);
-
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: initialPageSize,
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null) return;
+    if (Array.isArray(v)) {
+      const cleaned = v.map(String).filter(Boolean);
+      if (!cleaned.length) return;
+      sp.set(k, cleaned.join(","));
+      return;
+    }
+    const s = String(v);
+    if (!s) return;
+    sp.set(k, s);
   });
 
-  const [sorting, setSorting] = useState<SortingState>(initialSorting);
+  return sp.toString();
+}
 
-  const [isFetching, setIsFetching] = useState(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+export function useServerDataTable<TData, TStats = unknown>(opts: {
+  endpoint: string;
+  enabled?: boolean;
+  initialPageSize?: number;
+  initialSorting?: SortingState;
+  query?: Record<string, unknown>;
+}) {
+  const enabled = opts.enabled ?? true;
 
-  const reloadKeyRef = useRef(0);
-  const refetch = useCallback(() => {
-    reloadKeyRef.current += 1;
-    // trigger effect by updating state:
-    setInternalReloadKey(reloadKeyRef.current);
-  }, []);
-  const [internalReloadKey, setInternalReloadKey] = useState(0);
+  const [data, setData] = React.useState<TData[]>([]);
+  const [meta, setMeta] = React.useState<Meta | undefined>(undefined);
+  const [stats, setStats] = React.useState<TStats | undefined>(undefined);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const abortRef = useRef<AbortController | null>(null);
-  const lastRequestIdRef = useRef(0);
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: opts.initialPageSize ?? 10,
+  });
 
-  const effectiveBuildParams = useMemo(() => {
-    if (buildSearchParams) return buildSearchParams;
-
-    return ({
-      pagination,
-      sorting,
-      extraQuery,
-    }: {
-      pagination: PaginationState;
-      sorting: SortingState;
-      extraQuery: TExtra;
-    }) => {
-      const params = new URLSearchParams();
-
-      params.set("pageIndex", String(pagination.pageIndex));
-      params.set("pageSize", String(pagination.pageSize));
-
-      const s0 = sorting?.[0];
-      if (s0?.id) {
-        params.set("sortBy", s0.id);
-        params.set("sortDir", s0.desc ? "desc" : "asc");
-      }
-
-      Object.entries(extraQuery ?? {}).forEach(([k, v]) => {
-        if (v === undefined || v === null) return;
-        params.set(k, String(v));
-      });
-
-      return params;
-    };
-  }, [buildSearchParams]);
-
-  const fetchPage = useCallback(async () => {
-    if (!enabled) return;
-
-    const requestId = ++lastRequestIdRef.current;
-
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setIsFetching(true);
-    setError(null);
-
-    try {
-      // sanitize pagination locally (avoid crazy values)
-      const safePagination: PaginationState = {
-        pageIndex: clampInt(pagination.pageIndex, 0, 1_000_000),
-        pageSize: clampInt(pagination.pageSize, 1, 100),
-      };
-
-      const params = effectiveBuildParams({
-        pagination: safePagination,
-        sorting,
-        extraQuery,
-      });
-
-      const url = `${endpoint}?${params.toString()}`;
-
-      const res = await fetch(url, { signal: controller.signal });
-      const json = (await res.json()) as PaginatedApiResponse<TData, TStats>;
-
-      if (requestId !== lastRequestIdRef.current) return; // stale response
-      if (!res.ok || !json.success) {
-        setError(json.message || "Erreur lors du chargement.");
-        setHasLoadedOnce(true);
-        return;
-      }
-
-      setData(json.data ?? []);
-      setMeta(json.meta);
-      setStats((json.stats ?? null) as TStats | null);
-
-      // If current pageIndex becomes out of range (e.g., deleted last item on last page),
-      // auto-clamp and refetch.
-      const pc = json.meta?.pageCount ?? 0;
-      const nextMaxIndex = Math.max(0, pc - 1);
-
-      if (safePagination.pageIndex > nextMaxIndex) {
-        setPagination((p) => ({ ...p, pageIndex: nextMaxIndex }));
-      }
-
-      setHasLoadedOnce(true);
-    } catch (e: any) {
-      if (e?.name === "AbortError") return;
-      setError("Erreur de connexion au serveur.");
-      setHasLoadedOnce(true);
-    } finally {
-      if (requestId === lastRequestIdRef.current) {
-        setIsFetching(false);
-      }
-    }
-  }, [
-    enabled,
-    endpoint,
-    pagination,
-    sorting,
-    extraQuery,
-    effectiveBuildParams,
-  ]);
-
-  useEffect(() => {
-    void fetchPage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    enabled,
-    endpoint,
-    pagination.pageIndex,
-    pagination.pageSize,
-    JSON.stringify(sorting),
-    JSON.stringify(extraQuery),
-    internalReloadKey,
-  ]);
-
-  const onPaginationChange = useCallback(
-    (updater: Updater<PaginationState>) => {
-      setPagination((prev) =>
-        typeof updater === "function" ? updater(prev) : updater
-      );
-    },
-    []
+  const [sorting, setSorting] = React.useState<SortingState>(
+    opts.initialSorting ?? []
   );
 
-  const onSortingChange = useCallback((updater: Updater<SortingState>) => {
-    setSorting((prev) =>
-      typeof updater === "function" ? updater(prev) : updater
-    );
-    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
+  const [isFetching, setIsFetching] = React.useState(false);
+
+  const [nonce, bumpNonce] = React.useState(0);
+
+  const refetch = React.useCallback(() => bumpNonce((n) => n + 1), []);
+
+  const setPageIndex = React.useCallback((pageIndex: number) => {
+    setPagination((p) => ({ ...p, pageIndex }));
   }, []);
 
-  const isInitialLoading = enabled && !hasLoadedOnce && isFetching;
+  const setPageSize = React.useCallback((pageSize: number) => {
+    setPagination((p) => ({ ...p, pageIndex: 0, pageSize }));
+  }, []);
+
+  React.useEffect(() => {
+    if (!enabled) {
+      setIsInitialLoading(false);
+      return;
+    }
+
+    const ac = new AbortController();
+
+    const run = async () => {
+      setIsFetching(true);
+      setError(null);
+
+      const primarySort = sorting?.[0];
+      const query = buildQuery({
+        pageIndex: pagination.pageIndex,
+        pageSize: pagination.pageSize,
+        sortBy: primarySort?.id,
+        sortDir: primarySort ? (primarySort.desc ? "desc" : "asc") : undefined,
+        ...(opts.query ?? {}),
+      });
+
+      const url = query ? `${opts.endpoint}?${query}` : opts.endpoint;
+
+      try {
+        const res = await fetch(url, { signal: ac.signal });
+        const json = (await res.json()) as ServerResponse<TData, TStats>;
+
+        if (!res.ok || json.success === false) {
+          const msg =
+            json.message ||
+            json.error ||
+            "Erreur lors du chargement des données";
+          setError(msg);
+          setData([]);
+          setMeta(undefined);
+          setStats(undefined);
+          return;
+        }
+
+        setData(json.data ?? []);
+        setMeta(json.meta);
+        setStats(json.stats);
+      } catch (e) {
+        if ((e as any)?.name === "AbortError") return;
+        setError("Erreur lors du chargement des données");
+        setData([]);
+        setMeta(undefined);
+        setStats(undefined);
+      } finally {
+        setIsFetching(false);
+        setIsInitialLoading(false);
+      }
+    };
+
+    run();
+
+    return () => ac.abort();
+  }, [
+    enabled,
+    opts.endpoint,
+    JSON.stringify(opts.query ?? {}),
+    pagination.pageIndex,
+    pagination.pageSize,
+    JSON.stringify(sorting ?? []),
+    nonce,
+  ]);
 
   return {
     data,
     meta,
     stats,
     error,
-
     pagination,
     sorting,
-
-    isFetching,
     isInitialLoading,
-
-    setPagination: onPaginationChange,
-    setSorting: onSortingChange,
-
+    isFetching,
+    setPagination,
+    setSorting,
+    setPageIndex,
+    setPageSize,
     refetch,
   };
 }

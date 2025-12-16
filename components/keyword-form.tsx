@@ -79,7 +79,7 @@ export function KeywordForm({
         onOpenChange(false);
         form.reset();
       } else {
-        setError(data.message || "Une erreur est survenue");
+        setError(data.error || "Une erreur est survenue");
       }
     } catch {
       setError("Une erreur est survenue");
@@ -98,7 +98,7 @@ export function KeywordForm({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>
             {keyword ? "Modifier le mot-clé" : "Créer un mot-clé"}

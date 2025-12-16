@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,11 +24,16 @@ import type { RoleWithPermissions } from "@/types/roles";
 import { createRolesColumns } from "@/app/dashboard/roles/columns";
 import { DataTable } from "@/components/ui/data-table";
 import { useServerDataTable } from "@/hooks/use-server-data-table";
+import { TableFiltresBar } from "@/components/table-filtres-bar";
 
 type RolesStats = {
   totalRoles: number;
   assignedUsersCount: number;
   uniquePermissionsCount: number;
+};
+
+type RolesFiltresForm = {
+  q: string;
 };
 
 interface RolesContentProps {
@@ -90,8 +97,21 @@ export function RolesContent({ permissions }: RolesContentProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
+  const [applied, setApplied] = useState<{ q: string } | null>(null);
+
   const canViewRoles = permissions.includes(PERMISSIONS.ROLES_VIEW);
   const canCreateRole = permissions.includes(PERMISSIONS.ROLES_CREATE);
+
+  const form = useForm<RolesFiltresForm>({
+    defaultValues: { q: "" },
+    mode: "onSubmit",
+  });
+
+  const query = useMemo(() => {
+    if (!applied) return {};
+    const q = applied.q.trim();
+    return { q: q.length ? q : undefined };
+  }, [applied]);
 
   const isSuperAdmin = (roleName: string | null): boolean =>
     roleName === "SUPERADMIN";
@@ -107,13 +127,17 @@ export function RolesContent({ permissions }: RolesContentProps) {
     isFetching,
     setPagination,
     setSorting,
+    setPageIndex,
     refetch,
   } = useServerDataTable<RoleWithPermissions, RolesStats>({
     endpoint: "/api/roles",
     enabled: canViewRoles,
     initialPageSize: 10,
     initialSorting: [{ id: "name", desc: false }],
+    query,
   });
+
+  const showReset = !!(applied && applied.q.trim().length);
 
   const handleCreateRole = () => {
     setSelectedRole(null);
@@ -132,8 +156,8 @@ export function RolesContent({ permissions }: RolesContentProps) {
 
   const handleRoleUpdated = () => {
     refetch();
-    setIsFormOpen(false);
-    setSelectedRole(null);
+    // setIsFormOpen(false);
+    // setSelectedRole(null);
   };
 
   const handleRoleDeleted = () => {
@@ -149,7 +173,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
       onEdit: handleEditRole,
       onDelete: handleDeleteRole,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permissions]);
 
   if (isInitialLoading) {
@@ -203,9 +226,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
-          {/* <h1 className="text-3xl font-bold tracking-tight">
-            Gestion des rôles
-          </h1> */}
           <p className="text-muted-foreground">
             Gérez les rôles et leurs permissions pour contrôler l&apos;accès à
             votre application
@@ -221,6 +241,7 @@ export function RolesContent({ permissions }: RolesContentProps) {
           )}
         </div>
       </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-muted/60">
           <CardContent className="p-6">
@@ -265,7 +286,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </Card>
       </div>
 
-      {/* Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -280,10 +300,28 @@ export function RolesContent({ permissions }: RolesContentProps) {
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          {error && (
-            <div className="mb-4 text-sm text-destructive">{error}</div>
-          )}
+        <CardContent className="space-y-4">
+          <TableFiltresBar
+            form={form}
+            search={{
+              name: "q",
+              label: "Recherche",
+              placeholder: "Nom du rôle",
+            }}
+            showReset={showReset}
+            onApply={(values) => {
+              setApplied({ q: values.q ?? "" });
+              setPageIndex(0);
+            }}
+            onReset={() => {
+              form.reset({ q: "" });
+              setApplied(null);
+              setPageIndex(0);
+            }}
+
+          />
+
+          {error && <div className="text-sm text-destructive">{error}</div>}
 
           {totalRoles === 0 ? (
             <EmptyRolesState
@@ -308,7 +346,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
       <RoleFormDialog
         role={selectedRole}
         open={isFormOpen}

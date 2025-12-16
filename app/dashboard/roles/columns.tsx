@@ -236,12 +236,6 @@ export function createRolesColumns(opts: {
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Supprimer
-                  {(role._count?.userRoles || 0) > 0 && (
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      ({role._count.userRoles} utilisateur
-                      {role._count.userRoles > 1 ? "s" : ""})
-                    </span>
-                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
