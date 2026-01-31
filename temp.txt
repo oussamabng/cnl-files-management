@@ -1,0 +1,5 @@
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" ^
+ /v CNLDrive ^
+ /t REG_SZ ^
+ /d "\"C:\cnl\start-cnl-drive.bat\"" ^
+ /f
