@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-key";
 
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { error: "Identifiant ou mot de passe incorrect" },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const isMatch = await bcrypt.compare(password, user.password);
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     if (!isMatch) {
       return NextResponse.json(
         { error: "Identifiant ou mot de passe incorrect" },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const token = jwt.sign(
@@ -48,24 +48,29 @@ export async function POST(req: Request) {
       JWT_SECRET,
       {
         expiresIn: "24h",
-      }
+      },
     );
+
+    const h = await headers();
+
+    const proto = h.get("x-forwarded-proto") ?? "http";
+    const isHttps = proto === "https";
     (await cookies()).set("auth_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttps,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24 * 90,
     });
 
     return NextResponse.json({
       success: true,
       status: 200,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
