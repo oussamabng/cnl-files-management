@@ -1,5 +1,3 @@
-import { group } from "console";
-
 export const PERMISSIONS = {
   DASHBOARD_VIEW: "DASHBOARD_VIEW",
 

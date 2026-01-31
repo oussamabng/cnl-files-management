@@ -1,14 +1,15 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 
+export const runtime = "nodejs"; // important if you ever deploy to an env that might default to edge
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { filename: string } }
+  ctx: { params: Promise<{ filename: string }> } // <-- params is a Promise
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_VIEW);
@@ -20,13 +21,25 @@ export async function GET(
       );
     }
 
-    const { filename } = params;
+    const { filename: rawFilename } = await ctx.params; // <-- FIX
+    const filename = decodeURIComponent(rawFilename || "").trim();
+
+    if (!filename) {
+      return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+    }
+
+    // (optional but recommended) avoid path traversal like ../../etc/passwd
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      filename.includes("\\")
+    ) {
+      return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
+    }
 
     // Verify file exists in database
     const file = await prisma.file.findFirst({
-      where: {
-        name: filename,
-      },
+      where: { name: filename },
     });
 
     if (!file) {
@@ -36,10 +49,8 @@ export async function GET(
       );
     }
 
-    // Get file from data directory
     const filePath = path.join(process.cwd(), "data", "uploads", filename);
 
-    // Check if file exists on filesystem
     if (!fs.existsSync(filePath)) {
       console.error(`File not found on filesystem: ${filePath}`);
       return NextResponse.json(
@@ -48,11 +59,9 @@ export async function GET(
       );
     }
 
-    // Read the file
     const fileBuffer = fs.readFileSync(filePath);
     const stats = fs.statSync(filePath);
 
-    // Determine content type based on file extension
     const ext = path.extname(filename).toLowerCase();
     const contentTypes: Record<string, string> = {
       ".pdf": "application/pdf",
@@ -94,22 +103,12 @@ export async function GET(
       ".css": "text/css",
       ".js": "application/javascript",
       ".ts": "application/typescript",
-      ".py": "text/x-python",
-      ".java": "text/x-java-source",
-      ".cpp": "text/x-c++src",
-      ".c": "text/x-csrc",
-      ".php": "application/x-httpd-php",
-      ".rb": "application/x-ruby",
-      ".go": "text/x-go",
-      ".rs": "text/x-rust",
-      ".sql": "application/sql",
       ".md": "text/markdown",
       ".rtf": "application/rtf",
     };
 
     const contentType = contentTypes[ext] || "application/octet-stream";
 
-    // Update the inline types to only include truly previewable files
     const inlineTypes = [
       "application/pdf",
       "text/plain",
@@ -131,7 +130,6 @@ export async function GET(
       ? "inline"
       : "attachment";
 
-    // Set headers for file serving
     const headers = new Headers({
       "Content-Type": contentType,
       "Content-Length": stats.size.toString(),

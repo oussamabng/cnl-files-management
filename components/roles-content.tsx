@@ -242,50 +242,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-muted/60">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 shrink-0 text-blue-600" />
-              <p className="text-sm font-medium leading-none text-muted-foreground">
-                Total des rôles
-              </p>
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight">
-              {totalRoles}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-muted/60">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 shrink-0 text-green-600" />
-              <p className="text-sm font-medium leading-none text-muted-foreground">
-                Utilisateurs assignés
-              </p>
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight">
-              {assignedUsersCount}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-muted/60">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Eye className="h-5 w-5 shrink-0 text-purple-600" />
-              <p className="text-sm font-medium leading-none text-muted-foreground">
-                Permissions uniques
-              </p>
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight">
-              {uniquePermissionsCount}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -318,7 +274,6 @@ export function RolesContent({ permissions }: RolesContentProps) {
               setApplied(null);
               setPageIndex(0);
             }}
-
           />
 
           {error && <div className="text-sm text-destructive">{error}</div>}

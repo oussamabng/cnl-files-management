@@ -282,59 +282,6 @@ export function UsersContent({ permissions }: UsersContentProps) {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-muted/60">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 shrink-0 text-green-600" />
-              <p className="text-sm font-medium leading-none text-muted-foreground">
-                Total utilisateurs
-              </p>
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight">
-              {totalUsers}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Utilisateurs (hors SUPERADMIN)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-muted/60">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 shrink-0 text-blue-600" />
-              <p className="text-sm font-medium leading-none text-muted-foreground">
-                Rôles disponibles
-              </p>
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight">
-              {canViewRoles ? rolesTotal : 0}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Rôles configurés
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-muted/60">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 shrink-0 text-purple-600" />
-              <p className="text-sm font-medium leading-none text-muted-foreground">
-                Page actuelle
-              </p>
-            </div>
-            <p className="mt-2 text-2xl font-bold tracking-tight">
-              {(meta?.pageIndex ?? 0) + 1} / {meta?.pageCount ?? 1}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Navigation paginée
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
