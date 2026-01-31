@@ -3,11 +3,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Archive Management System",
+  title: "CNL Drive",
   description:
     "Système de gestion d'archives avec authentification et permissions",
 };
@@ -17,7 +16,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
     <html lang="fr">
       <body className={inter.className}>
