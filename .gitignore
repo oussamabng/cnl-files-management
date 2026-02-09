@@ -44,3 +44,9 @@ next-env.d.ts
 *.dylib
 *.dll
 *.so
+
+
+# env files
+.env
+.env.*
+!.env.example
