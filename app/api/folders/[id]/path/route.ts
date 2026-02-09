@@ -5,13 +5,13 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { error } = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
     if (error) return error;
 
-    const { id } = params;
+    const { id } = await params;
     const path = await getFolderPath(id);
 
     return NextResponse.json(path);
@@ -19,13 +19,13 @@ export async function GET(
     console.error("Error fetching folder path:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" }, // Translated
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 async function getFolderPath(
-  folderId: string
+  folderId: string,
 ): Promise<Array<{ id: string; name: string }>> {
   const folder = await prisma.folder.findUnique({
     where: { id: folderId },

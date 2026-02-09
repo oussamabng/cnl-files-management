@@ -6,18 +6,18 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string; keywordId: string } }
+  { params }: { params: Promise<{ id: string; keywordId: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILTERS_DELETE);
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
-    const { id: groupId, keywordId } = params;
+    const { id: groupId, keywordId } = await params;
 
     const group = await prisma.group.findUnique({
       where: { id: groupId },
@@ -27,7 +27,7 @@ export async function DELETE(
     if (!group) {
       return NextResponse.json(
         { error: "Groupe introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -39,7 +39,7 @@ export async function DELETE(
     if (!keyword) {
       return NextResponse.json(
         { error: "Mot-clé introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -57,7 +57,7 @@ export async function DELETE(
     console.error("Error removing keyword from group:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

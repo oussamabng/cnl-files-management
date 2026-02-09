@@ -6,7 +6,7 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_UPDATE);
@@ -20,7 +20,7 @@ export async function PUT(
 
     const { name, keywordIds, groupIds, folderId, dateTexte, commentaire } =
       await req.json();
-    const { id } = params;
+    const { id } = await params;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
@@ -95,7 +95,7 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_DELETE);
@@ -107,7 +107,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const file = await prisma.file.findUnique({
       where: { id },

@@ -5,13 +5,13 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { error } = await requireApiPermission(PERMISSIONS.FILTERS_VIEW);
     if (error) return error;
 
-    const { id } = params;
+    const { id } = await params;
     const path = await getGroupsPath(id);
 
     return NextResponse.json(path);

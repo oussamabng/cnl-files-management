@@ -6,30 +6,29 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const response = await requireApiPermission(PERMISSIONS.FILTERS_UPDATE);
 
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
     const { name, groupIds } = await req.json();
 
-    const { id } = await params;
-
     const groupIdsArray = Array.isArray(groupIds)
       ? groupIds.map((g) => String(g).trim()).filter(Boolean)
       : typeof groupIds === "string"
-      ? groupIds
-          .split(",")
-          .map((g) => g.trim())
-          .filter(Boolean)
-      : [];
+        ? groupIds
+            .split(",")
+            .map((g) => g.trim())
+            .filter(Boolean)
+        : [];
 
     let keyword;
 
@@ -44,7 +43,7 @@ export async function PUT(
       if (groups.length !== groupIdsArray.length) {
         return NextResponse.json(
           { error: "Un ou plusieurs groupes sélectionnés n'existent pas" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -65,7 +64,7 @@ export async function PUT(
     } else if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
         { error: "Le nom du mot-clé est requis" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,25 +85,25 @@ export async function PUT(
     if (error.code === "P2002") {
       return NextResponse.json(
         { error: "Le mot-clé existe déjà" },
-        { status: 409 }
+        { status: 409 },
       );
     }
     if (error.code === "P2025") {
       return NextResponse.json(
         { error: "Mot-clé introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILTERS_DELETE);
@@ -112,11 +111,11 @@ export async function DELETE(
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.keyword.delete({
       where: { id },
@@ -128,12 +127,12 @@ export async function DELETE(
     if (error.code === "P2025") {
       return NextResponse.json(
         { error: "Mot-clé introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

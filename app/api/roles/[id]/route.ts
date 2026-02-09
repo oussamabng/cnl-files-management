@@ -5,17 +5,18 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.ROLES_UPDATE);
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
-    const roleId = Number(params.id);
+    const { id } = await params;
+    const roleId = Number(id);
     const body = await req.json();
     const { name, permissionIds, description } = body;
 
@@ -24,7 +25,7 @@ export async function PUT(
     if (!name || !Array.isArray(permissionIds)) {
       return NextResponse.json(
         { error: "Entrée invalide. 'name' et 'permissionIds' sont requis." }, // Translated
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -54,24 +55,25 @@ export async function PUT(
     console.error("Error updating role:", err);
     return NextResponse.json(
       { error: "Erreur interne du serveur" }, // Translated
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const response = await requireApiPermission(PERMISSIONS.ROLES_DELETE);
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
-    const roleId = Number(params.id);
+    const roleId = Number(id);
 
     await prisma.rolePermission.deleteMany({
       where: { roleId },
@@ -89,7 +91,7 @@ export async function DELETE(
     console.error("Error deleting role:", err);
     return NextResponse.json(
       { error: "Erreur interne du serveur" }, // Translated
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

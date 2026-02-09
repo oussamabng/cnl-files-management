@@ -6,7 +6,7 @@ import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FOLDERS_VIEW);
@@ -14,10 +14,10 @@ export async function GET(
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
-    const { id } = params;
+    const { id } = await params;
     const folder = await prisma.folder.findUnique({
       where: { id },
       include: {
@@ -65,7 +65,7 @@ export async function GET(
     if (!folder) {
       return NextResponse.json(
         { error: "Dossier introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -74,14 +74,14 @@ export async function GET(
     console.error("Error fetching folder:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FOLDERS_UPDATE);
@@ -89,24 +89,24 @@ export async function PUT(
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
     const { name, parentId } = await req.json();
-    const { id } = params;
+    const { id } = await params;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
         { error: "Le nom du dossier est requis" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (parentId === id) {
       return NextResponse.json(
         { error: "Impossible de déplacer le dossier vers lui-même" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -118,7 +118,7 @@ export async function PUT(
             error:
               "Impossible de déplacer le dossier vers l'un de ses descendants",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -145,25 +145,25 @@ export async function PUT(
     if (error.code === "P2002") {
       return NextResponse.json(
         { error: "Un dossier avec ce nom existe déjà à cet emplacement" },
-        { status: 409 }
+        { status: 409 },
       );
     }
     if (error.code === "P2025") {
       return NextResponse.json(
         { error: "Dossier introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FOLDERS_DELETE);
@@ -171,11 +171,11 @@ export async function DELETE(
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const folder = await prisma.folder.findUnique({
       where: { id },
       include: {
@@ -191,7 +191,7 @@ export async function DELETE(
     if (!folder) {
       return NextResponse.json(
         { error: "Dossier introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -201,7 +201,7 @@ export async function DELETE(
           error:
             "Impossible de supprimer un dossier contenant des fichiers ou des sous-dossiers",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -215,19 +215,19 @@ export async function DELETE(
     if (error.code === "P2025") {
       return NextResponse.json(
         { error: "Dossier introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 async function checkIfDescendant(
   folderId: string,
-  potentialAncestorId: string
+  potentialAncestorId: string,
 ): Promise<boolean> {
   const descendants = await prisma.folder.findMany({
     where: {
