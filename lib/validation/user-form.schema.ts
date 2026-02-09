@@ -15,12 +15,11 @@ export function buildUserFormSchema(
       password: user
         ? z
             .string()
-            .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-            .regex(/[A-Z]/, "Une majuscule est requise")
+            .min(4, "Le mot de passe doit contenir au moins 4 caractères")
             .or(z.literal(""))
         : z
             .string()
-            .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+            .min(4, "Le mot de passe doit contenir au moins 4 caractères")
             .regex(/[A-Z]/, "Une majuscule est requise"),
 
       confirmPassword: user

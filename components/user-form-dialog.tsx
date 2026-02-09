@@ -39,13 +39,8 @@ import type { UserWithRolesAndPermissions } from "@/types/authorization";
 import type { RoleWithPermissions } from "@/types/roles";
 
 import { FormField, type SelectOption } from "@/components/ui/form-field";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-import { calculatePasswordStrength } from "@/lib/utils";
 import { RolePermissionsTooltip } from "./role-permissions-tooltip";
 import { buildUserFormSchema } from "@/lib/validation/user-form.schema";
 
@@ -57,7 +52,9 @@ interface UserFormDialogProps {
   onUserUpdated: () => void;
 }
 
-// Local utils (keep here or move to "@/lib/utils/password.utils")
+// --------------------
+// Local utils
+// --------------------
 async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
@@ -79,7 +76,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-function generateSecurePassword(length = 14): string {
+function generateSecurePassword(length = 4): string {
   const charset =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=";
 
@@ -93,6 +90,16 @@ function generateSecurePassword(length = 14): string {
   }
 
   return password;
+}
+
+// ✅ SUPER SIMPLE: only min 4 chars
+function simplePasswordCheck(password: string) {
+  const ok = (password?.length ?? 0) >= 4;
+  return {
+    ok,
+    percent: ok ? 100 : Math.min(((password?.length ?? 0) / 4) * 100, 100),
+    label: ok ? "OK" : "Trop court",
+  };
 }
 
 export function UserFormDialog({
@@ -111,7 +118,7 @@ export function UserFormDialog({
 
   const formSchema = useMemo(
     () => buildUserFormSchema(Boolean(user), availableRoles),
-    [user, availableRoles]
+    [user, availableRoles],
   );
 
   type FormData = z.infer<ReturnType<typeof buildUserFormSchema>>;
@@ -166,10 +173,7 @@ export function UserFormDialog({
   }, [open, user, form]);
 
   const passwordValue = form.watch("password") || "";
-  const passwordStrength = useMemo(
-    () => calculatePasswordStrength(passwordValue),
-    [passwordValue]
-  );
+  const pw = useMemo(() => simplePasswordCheck(passwordValue), [passwordValue]);
 
   const handleCopyPassword = async (text: string) => {
     const ok = await copyToClipboard(text);
@@ -181,10 +185,7 @@ export function UserFormDialog({
 
   const handlePasswordGenerate = () => {
     const password = generateSecurePassword();
-    form.setValue("password", password, {
-      shouldValidate: true,
-      shouldDirty: true,
-    });
+    form.setValue("password", password, { shouldValidate: true, shouldDirty: true });
     form.setValue("confirmPassword", password, {
       shouldValidate: true,
       shouldDirty: true,
@@ -206,7 +207,11 @@ export function UserFormDialog({
         roleIds: data.roleIds,
       };
 
+      // ✅ Only rule: if provided, password must be >= 4 chars
       if (data.password && data.password.length > 0) {
+        if (data.password.length < 4) {
+          throw new Error("Le mot de passe doit contenir au moins 4 caractères.");
+        }
         payload.password = data.password;
       }
 
@@ -282,8 +287,7 @@ export function UserFormDialog({
                     placeholder="email@exemple.com"
                   />
 
-                  {/* ✅ FIX: align items from top so password expansion doesn't vertically center confirm field */}
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 items-start">
+                  <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                     {/* PASSWORD */}
                     <div className="flex flex-col">
                       <FormField
@@ -330,9 +334,7 @@ export function UserFormDialog({
                                             : ""
                                         }`}
                                         onClick={() =>
-                                          handleCopyPassword(
-                                            field.value as string
-                                          )
+                                          handleCopyPassword(field.value as string)
                                         }
                                         disabled={loading}
                                       >
@@ -349,9 +351,7 @@ export function UserFormDialog({
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      {copySuccess
-                                        ? "Copié !"
-                                        : "Copier le mot de passe"}
+                                      {copySuccess ? "Copié !" : "Copier le mot de passe"}
                                     </TooltipContent>
                                   </Tooltip>
                                 )}
@@ -398,49 +398,25 @@ export function UserFormDialog({
                             {(field.value as string)?.length > 0 && (
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2">
-                                  <Progress
-                                    value={(passwordStrength.score / 5) * 100}
-                                    className="h-2 flex-1"
-                                  />
+                                  <Progress value={pw.percent} className="h-2 flex-1" />
                                   <span className="min-w-fit text-xs font-medium">
-                                    {passwordStrength.label}
+                                    {pw.label}
                                   </span>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-                                  <div className="flex items-center gap-1">
-                                    {passwordStrength.requirements.length ? (
-                                      <Check className="h-3 w-3 text-green-500" />
-                                    ) : (
-                                      <X className="h-3 w-3 text-red-500" />
-                                    )}
-                                    <span
-                                      className={
-                                        passwordStrength.requirements.length
-                                          ? "text-green-600"
-                                          : "text-red-600"
-                                      }
-                                    >
-                                      8+ caractères
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-1">
-                                    {passwordStrength.requirements.uppercase ? (
-                                      <Check className="h-3 w-3 text-green-500" />
-                                    ) : (
-                                      <X className="h-3 w-3 text-red-500" />
-                                    )}
-                                    <span
-                                      className={
-                                        passwordStrength.requirements.uppercase
-                                          ? "text-green-600"
-                                          : "text-red-600"
-                                      }
-                                    >
-                                      Majuscule (requis)
-                                    </span>
-                                  </div>
+                                <div className="flex items-center gap-1 text-xs">
+                                  {pw.ok ? (
+                                    <Check className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <X className="h-3 w-3 text-red-500" />
+                                  )}
+                                  <span
+                                    className={
+                                      pw.ok ? "text-green-600" : "text-red-600"
+                                    }
+                                  >
+                                    4+ caractères
+                                  </span>
                                 </div>
                               </div>
                             )}
@@ -471,9 +447,7 @@ export function UserFormDialog({
                                 variant="ghost"
                                 size="sm"
                                 className="absolute right-1 top-1 h-8 w-8 p-0"
-                                onClick={() =>
-                                  setShowConfirmPassword((s) => !s)
-                                }
+                                onClick={() => setShowConfirmPassword((s) => !s)}
                                 disabled={loading}
                               >
                                 {showConfirmPassword ? (
@@ -492,8 +466,8 @@ export function UserFormDialog({
                     )}
                   </div>
 
-                  {/* ✅ ROLES FIELD (kept as-is) */}
-                  <FormField<FormData, "roleIds", RoleWithPermissions>
+                  {/* ROLES */}
+                  <FormField<any, "roleIds", RoleWithPermissions>
                     control={form.control}
                     name="roleIds"
                     type="multiselect"
@@ -514,9 +488,7 @@ export function UserFormDialog({
                         <div className="flex min-w-0 items-center justify-between gap-2">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="truncate text-sm">
-                                {opt.label}
-                              </span>
+                              <span className="truncate text-sm">{opt.label}</span>
                               {role.rolePermissions?.length ? (
                                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Info className="h-3.5 w-3.5 text-primary/60" />
@@ -570,9 +542,7 @@ export function UserFormDialog({
                   </Button>
 
                   <Button type="submit" disabled={loading}>
-                    {loading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {user ? "Modifier" : "Créer"}
                   </Button>
                 </DialogFooter>
