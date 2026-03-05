@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 import { getDescendantGroupIds } from "../groups/route";
@@ -25,6 +24,28 @@ async function getDescendantFolderIds(folderId: string): Promise<string[]> {
   return allDescendants;
 }
 
+function normalizeFilename(input: string) {
+  return String(input || "")
+    .normalize("NFKC")
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// For now, storagePath is just the filename (keeps your current disk layout)
+// Later, if you want physical subfolders, you can change storagePath to include folderId.
+function toStoragePath(filename: string) {
+  return normalizeFilename(filename);
+}
+
+function toServeUrl(storagePathOrLegacy: string) {
+  const storagePath = storagePathOrLegacy.startsWith("/api/files/serve/")
+    ? storagePathOrLegacy.replace("/api/files/serve/", "")
+    : storagePathOrLegacy;
+
+  return `/api/files/serve/${encodeURI(storagePath)}`;
+}
+
 // GET files with search and filter - Allow both admin and utilisateur
 export async function GET(req: Request) {
   try {
@@ -33,10 +54,10 @@ export async function GET(req: Request) {
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
-    // Both admin and utilisateur can read files
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
     const keywordIds =
@@ -54,7 +75,6 @@ export async function GET(req: Request) {
 
     // Add folder filter - search recursively in child folders
     if (folderId && folderId !== "") {
-      // Get all descendant folder IDs
       const descendantIds = await getDescendantFolderIds(folderId);
       const allFolderIds = [folderId, ...descendantIds];
 
@@ -62,7 +82,6 @@ export async function GET(req: Request) {
         in: allFolderIds,
       };
     }
-    // If no folderId is provided, we search ALL files (don't add folder filter)
 
     // Add name search
     if (search) {
@@ -75,28 +94,23 @@ export async function GET(req: Request) {
     // Add keyword filtering
     if (keywordIds.length > 0) {
       if (filterMode === "AND") {
-        // File must have ALL selected keywords
         whereClause.AND = keywordIds.map((keywordId) => ({
           keywords: {
-            some: {
-              id: keywordId,
-            },
+            some: { id: keywordId },
           },
         }));
       } else {
-        // File must have ANY of the selected keywords
         whereClause.keywords = {
           some: {
-            id: {
-              in: keywordIds,
-            },
+            id: { in: keywordIds },
           },
         };
       }
     }
+
+    // Add group filtering (including descendants)
     if (groupIds.length > 0) {
       const allGroupIds: string[] = [];
-
       for (const groupId of groupIds) {
         const descendants = await getDescendantGroupIds(groupId);
         allGroupIds.push(groupId, ...descendants);
@@ -104,16 +118,12 @@ export async function GET(req: Request) {
 
       if (filterMode === "AND") {
         whereClause.AND = allGroupIds.map((id) => ({
-          groups: {
-            some: { id },
-          },
+          groups: { some: { id } },
         }));
       } else {
         whereClause.groups = {
           some: {
-            id: {
-              in: allGroupIds,
-            },
+            id: { in: allGroupIds },
           },
         };
       }
@@ -128,7 +138,6 @@ export async function GET(req: Request) {
       }
 
       if (dateTo) {
-        // Add one day to include the end date
         const endDate = new Date(dateTo);
         endDate.setDate(endDate.getDate() + 1);
         whereClause.dateTexte.lt = endDate;
@@ -138,36 +147,30 @@ export async function GET(req: Request) {
     const files = await prisma.file.findMany({
       where: whereClause,
       include: {
-        keywords: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        folder: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        groups: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        keywords: { select: { id: true, name: true } },
+        folder: { select: { id: true, name: true } },
+        groups: { select: { id: true, name: true } },
       },
       orderBy: {
         [sortBy]: sortOrder,
       },
     });
 
-    return NextResponse.json(files);
+    // IMPORTANT:
+    // - We now treat DB "path" as a storage path (relative), not an API URL.
+    // - To keep the frontend working, we expose `url`.
+    // - For legacy rows where path was "/api/files/serve/<name>", we still generate a correct url.
+    const withUrl = files.map((f) => ({
+      ...f,
+      url: toServeUrl(f.path || f.name),
+    }));
+
+    return NextResponse.json(withUrl);
   } catch (error) {
     console.error("Erreur lors de la récupération des fichiers:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -179,17 +182,18 @@ export async function POST(req: Request) {
     if (!response.success) {
       return NextResponse.json(
         { error: response.error, message: response.message },
-        { status: response.status }
+        { status: response.status },
       );
     }
+
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const keywordIds = JSON.parse(
-      (formData.get("keywordIds") as string) || "[]"
+      (formData.get("keywordIds") as string) || "[]",
     );
     const groupIds = JSON.parse((formData.get("groupIds") as string) || "[]");
     const customNames = JSON.parse(
-      (formData.get("customNames") as string) || "{}"
+      (formData.get("customNames") as string) || "{}",
     );
     const folderId = (formData.get("folderId") as string) || null;
     const dateTexte = formData.get("dateTexte") as string;
@@ -198,7 +202,7 @@ export async function POST(req: Request) {
     if (!files || files.length === 0) {
       return NextResponse.json(
         { error: "Aucun fichier fourni" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -211,35 +215,38 @@ export async function POST(req: Request) {
       if (!folder) {
         return NextResponse.json(
           { error: "Dossier non trouvé" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
 
-    // Create data directory if it doesn't exist
+    // Disk storage base (matches your serve route reading from data/uploads)
     const dataDir = path.join(process.cwd(), "data", "uploads");
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    const uploadedFiles = [];
+    const uploadedFiles: any[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const originalName = file.name;
-      const customName = customNames[i] || originalName;
+      const originalName = normalizeFilename(file.name);
+      const customName = normalizeFilename(customNames[i] || originalName);
 
-      // Generate unique name if needed (check within the same folder)
+      if (!customName) {
+        return NextResponse.json(
+          { error: "Nom de fichier invalide" },
+          { status: 400 },
+        );
+      }
+
+      // Generate unique name if needed (check within the same folder in DB)
       let finalName = customName;
       let counter = 1;
 
-      // Check database for existing names in the same folder
       while (true) {
         const existingFile = await prisma.file.findFirst({
-          where: {
-            name: finalName,
-            folderId: folderId,
-          },
+          where: { name: finalName, folderId },
         });
 
         if (!existingFile) break;
@@ -251,31 +258,39 @@ export async function POST(req: Request) {
       }
 
       // Also check filesystem for existing files
-      let finalPath = path.join(dataDir, finalName);
+      let storagePath = toStoragePath(finalName); // currently just finalName
+      let finalPath = path.join(dataDir, storagePath);
+
       counter = 1;
       while (fs.existsSync(finalPath)) {
         const nameWithoutExt = customName.replace(/\.[^/.]+$/, "");
         const extension = customName.match(/\.[^/.]+$/)?.[0] || "";
         const uniqueName = `${nameWithoutExt}_${counter}${extension}`;
-        finalPath = path.join(dataDir, uniqueName);
         finalName = uniqueName;
+        storagePath = toStoragePath(finalName);
+        finalPath = path.join(dataDir, storagePath);
         counter++;
       }
 
-      // Save file to data/uploads directory
+      // Ensure directory exists (in case storagePath later includes folders)
+      fs.mkdirSync(path.dirname(finalPath), { recursive: true });
+
+      // Save file to disk
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
       fs.writeFileSync(finalPath, buffer);
 
       console.log(`Fichier sauvegardé: ${finalPath}`);
 
-      // Save file metadata to database
+      // Save DB record
+      // IMPORTANT:
+      // - We store `path` as a STORAGE PATH (relative), not "/api/files/serve/...".
+      // - Frontend uses `url` we add below.
       const savedFile = await prisma.file.create({
         data: {
           name: finalName,
-          path: `/api/files/serve/${finalName}`, // API route to serve the file
-          folderId: folderId,
+          path: storagePath,
+          folderId,
           dateTexte: dateTexte ? new Date(dateTexte) : null,
           commentaire: commentaire || null,
           keywords: {
@@ -286,28 +301,16 @@ export async function POST(req: Request) {
           },
         },
         include: {
-          groups: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          keywords: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          folder: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
+          groups: { select: { id: true, name: true } },
+          keywords: { select: { id: true, name: true } },
+          folder: { select: { id: true, name: true } },
         },
       });
 
-      uploadedFiles.push(savedFile);
+      uploadedFiles.push({
+        ...savedFile,
+        url: toServeUrl(savedFile.path || savedFile.name),
+      });
     }
 
     return NextResponse.json(uploadedFiles);
@@ -315,7 +318,7 @@ export async function POST(req: Request) {
     console.error("Erreur lors du téléchargement des fichiers:", error);
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

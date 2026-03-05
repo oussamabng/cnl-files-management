@@ -88,6 +88,7 @@ interface FileData {
   id: string;
   name: string;
   path: string;
+  url: string;
   keywords: Array<{ id: string; name: string }>;
   groups: Array<{ id: string; name: string }>;
   folder?: { id: string; name: string } | null;
@@ -181,7 +182,7 @@ export function FilesContent({
       cell: ({ row }) => (
         <FileOpener
           fileName={row.getValue("name")}
-          filePath={row.original.path}
+          filePath={row.original.url}
         />
       ),
     },
@@ -612,7 +613,12 @@ export function FilesContent({
     fetchFolderPaths();
   };
 
-  const hasActiveFilters = searchTerm || selectedFolderId || dateRange?.from || selectedGroupIds.length > 0 || selectedKeywords.length > 0;
+  const hasActiveFilters =
+    searchTerm ||
+    selectedFolderId ||
+    dateRange?.from ||
+    selectedGroupIds.length > 0 ||
+    selectedKeywords.length > 0;
 
   if (loading && files.length === 0) {
     return (
@@ -862,7 +868,7 @@ export function FilesContent({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick= {() => setSelectedKeywords([])}
+                      onClick={() => setSelectedKeywords([])}
                       className="h-4 w-4 p-0 ml-1 hover:bg-blue-200 rounded-full"
                     >
                       <X className="h-3 w-3" />
@@ -879,7 +885,7 @@ export function FilesContent({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick= {() => setSelectedGroupIds([])}
+                      onClick={() => setSelectedGroupIds([])}
                       className="h-4 w-4 p-0 ml-1 hover:bg-blue-200 rounded-full"
                     >
                       <X className="h-3 w-3" />
@@ -904,7 +910,7 @@ export function FilesContent({
                             ? null
                             : flexRender(
                                 header.column.columnDef.header,
-                                header.getContext()
+                                header.getContext(),
                               )}
                         </TableHead>
                       );
@@ -923,7 +929,7 @@ export function FilesContent({
                           </TableCell>
                         ))}
                       </TableRow>
-                    )
+                    ),
                   )
                 ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
@@ -932,7 +938,7 @@ export function FilesContent({
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}
@@ -1010,7 +1016,7 @@ export function FilesContent({
                 {Math.min(
                   (table.getState().pagination.pageIndex + 1) *
                     table.getState().pagination.pageSize,
-                  table.getFilteredRowModel().rows.length
+                  table.getFilteredRowModel().rows.length,
                 )}{" "}
                 sur {table.getFilteredRowModel().rows.length} fichier(s)
               </div>
@@ -1052,7 +1058,7 @@ export function FilesContent({
                           {page + 1}
                         </Button>
                       );
-                    }
+                    },
                   )}
                 </div>
 
