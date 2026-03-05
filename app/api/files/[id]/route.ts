@@ -1,14 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { requireApiPermission } from "@/lib/auth/session/requireApiPermission";
 
+export const runtime = "nodejs";
+
+function getStoragePath(
+  dbPath: string | null | undefined,
+  fallbackName: string,
+) {
+  const p = (dbPath || "").trim();
+  if (!p) return fallbackName;
+  return p.startsWith("/api/files/serve/")
+    ? p.replace("/api/files/serve/", "")
+    : p;
+}
+
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } },
+  ctx: { params: Promise<{ id: string }> }, // ✅ Next 16: params is a Promise
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_UPDATE);
@@ -20,9 +33,10 @@ export async function PUT(
       );
     }
 
+    const { id } = await ctx.params; // ✅ FIX
+
     const { name, keywordIds, groupIds, folderId, dateTexte, commentaire } =
       await req.json();
-    const { id } = params;
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
@@ -31,12 +45,12 @@ export async function PUT(
       );
     }
 
+    // ✅ Uniqueness is (name, folderId), not global name
     const existingFile = await prisma.file.findFirst({
       where: {
         name: name.trim(),
-        NOT: {
-          id: id,
-        },
+        folderId: folderId || null,
+        NOT: { id },
       },
     });
 
@@ -66,18 +80,9 @@ export async function PUT(
         },
       },
       include: {
-        keywords: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        folder: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        keywords: { select: { id: true, name: true } },
+        folder: { select: { id: true, name: true } },
+        groups: { select: { id: true, name: true } },
       },
     });
 
@@ -99,7 +104,7 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  ctx: { params: Promise<{ id: string }> }, // ✅ Next 16: params is a Promise
 ) {
   try {
     const response = await requireApiPermission(PERMISSIONS.FILES_DELETE);
@@ -111,12 +116,12 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await ctx.params; // ✅ FIX
 
-    // 1) Get file first (we need the filename to delete it locally)
+    // 1) Get file first (need storage path to delete locally)
     const file = await prisma.file.findUnique({
       where: { id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, path: true },
     });
 
     if (!file) {
@@ -126,8 +131,9 @@ export async function DELETE(
       );
     }
 
-    // 2) Delete local file from data/uploads
-    const localPath = path.join(process.cwd(), "data", "uploads", file.name);
+    // 2) Delete local file from data/uploads using DB path (storagePath)
+    const storagePath = getStoragePath(file.path, file.name);
+    const localPath = path.join(process.cwd(), "data", "uploads", storagePath);
 
     try {
       if (fs.existsSync(localPath)) {
@@ -135,7 +141,6 @@ export async function DELETE(
       }
     } catch (e) {
       console.error("Failed to delete local file:", localPath, e);
-      // strict mode: if local delete fails, do not delete DB
       return NextResponse.json(
         { error: "Impossible de supprimer le fichier local" },
         { status: 500 },
@@ -143,9 +148,7 @@ export async function DELETE(
     }
 
     // 3) Delete DB record
-    await prisma.file.delete({
-      where: { id },
-    });
+    await prisma.file.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
